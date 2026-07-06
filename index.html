@@ -10,12 +10,28 @@
    darkened variants for AA text contrast. Status is never color-only: every
    status pairs a symbol (✓ ! ✕) with a word. */
 :root{
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+/* ── DMC-12 (default) — brushed stainless paper, Okabe–Ito amber/blue sides.
+   The DeLorean's body is bare stainless, so the neutral ground stays cool-grey
+   and the two sides use the colorblind-safe amber/blue pair. */
+:root, html[data-theme="dmc12"]{
   --ink:#1c2530; --muted:#5b6573; --faint:#8a93a0;
   --paper:#f6f7f4; --card:#ffffff; --line:rgba(28,37,48,.13);
   --a:#e69f00; --a-text:#8a5800; --a-soft:#faf3e3;   /* 148 — amber  */
   --b:#0072b2; --b-text:#005684; --b-soft:#e8f2f9;   /* 157 — blue   */
   --ok:#1b7a53; --warn:#9a5b00; --over:#b3261e;
-  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+/* ── MGB — British racing green ground, with 157 in BRG and 148 in the
+   contrasting chrome-wire / ochre found on a chrome-bumper MGB. The green/ochre
+   pair keeps a strong hue AND lightness separation, so it stays colorblind-safe
+   the same way amber/blue does. */
+html[data-theme="mgb"]{
+  --ink:#12241a; --muted:#4a5b50; --faint:#7c8a80;
+  --paper:#eef1ea; --card:#fbfcf9; --line:rgba(18,36,26,.14);
+  --a:#b06d00; --a-text:#8a5500; --a-soft:#f7efdd;   /* 148 — ochre / tan  */
+  --b:#0a5c37; --b-text:#064027; --b-soft:#e2efe7;   /* 157 — racing green */
+  --ok:#0a5c37; --warn:#8a5500; --over:#a52a1e;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
@@ -156,6 +172,30 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
 .reset:hover{border-color:var(--faint)}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:8px}
 
+/* PMR home link */
+.page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.pmr-link{flex-shrink:0;font-size:12px;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--b-text);text-decoration:none;background:#fff;
+  border:1px solid var(--line);border-radius:999px;padding:6px 14px;min-height:32px;
+  display:inline-flex;align-items:center}
+.pmr-link:hover{border-color:var(--b-text);background:var(--b-soft)}
+
+/* header action row: theme toggle + copy link */
+.head-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.act-btn{font-size:12px;font-weight:600;color:var(--ink);background:#fff;
+  border:1px solid var(--line);border-radius:8px;padding:6px 11px;min-height:32px;
+  display:inline-flex;align-items:center;gap:6px}
+.act-btn:hover{border-color:var(--faint)}
+.act-btn .dot{width:10px;height:10px;border-radius:999px;flex-shrink:0}
+.act-btn .dot.a{background:var(--a)} .act-btn .dot.b{background:var(--b)}
+.act-btn.copied{border-color:var(--ok);color:var(--ok)}
+
+/* one-line plain takeaway above the primary card */
+.takeaway{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--ink);
+  border-radius:10px;padding:13px 16px;margin-bottom:14px;font-size:14.5px;line-height:1.5}
+.takeaway b{font-weight:700}
+.takeaway .win-a{color:var(--a-text)} .takeaway .win-b{color:var(--b-text)}
+
 .note{font-size:12px;color:var(--muted);margin-top:14px;padding-top:10px;
   border-top:1px solid var(--line);line-height:1.55;max-width:90ch}
 .note b{color:var(--ink)}
@@ -164,7 +204,17 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
 <body>
 <div class="wrap">
 
-<h1>Rear Wheel Comparison: 148 vs 157</h1>
+<div class="page-head">
+  <h1>Rear Wheel Comparison: 148 vs 157</h1>
+  <div class="head-actions">
+    <button class="act-btn" id="theme-btn" onclick="cycleTheme()"
+      aria-label="Switch color scheme"><span class="dot a"></span><span class="dot b"></span><span id="theme-name">DMC-12</span></button>
+    <button class="act-btn" id="copy-btn" onclick="copyLink()"
+      aria-label="Copy shareable link to this comparison"><span id="copy-label">Copy link</span></button>
+    <a class="pmr-link" href="https://www.postmillenniumrenaissance.com/" target="_top"
+       aria-label="Back to Post Millennium Renaissance home">PMR</a>
+  </div>
+</div>
 <p class="sub">Stiffness and spoke-tension engine ported from Matt Ford's
 bike-wheel-calc (Mode Matrix method, Ford 2018) and verified against it to
 floating-point precision. Strength figures are first-spoke-slack thresholds
@@ -265,6 +315,8 @@ built on those stiffnesses.</p>
 
 <!-- Comparison -->
 <div class="cmp-col">
+
+  <div class="takeaway" id="takeaway">—</div>
 
   <div class="cmp-card primary">
     <div class="cmp-title">Lateral strength F_lat</div>
@@ -589,6 +641,103 @@ function toggleAdv() {
   const btn = document.getElementById('adv-btn');
   const open = document.getElementById('adv-panel').classList.toggle('open');
   btn.setAttribute('aria-expanded', open);
+  writeURL();
+}
+
+// ── Color themes ─────────────────────────────────────────────────────────────
+const THEMES = [
+  { id:'dmc12', name:'DMC-12' },
+  { id:'mgb',   name:'MGB'    },
+];
+let themeIdx = 0;
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', THEMES[themeIdx].id);
+  document.getElementById('theme-name').textContent = THEMES[themeIdx].name;
+}
+function cycleTheme() {
+  themeIdx = (themeIdx + 1) % THEMES.length;
+  applyTheme();
+  writeURL();
+}
+
+// ── Shareable URL state ──────────────────────────────────────────────────────
+// Everything a viewer needs to see the same comparison is packed into the URL
+// hash as short key=value pairs, so a copied link reproduces the exact setup.
+function collectState() {
+  return {
+    w1: ST.wheel148, w2: ST.wheel157,
+    h1: ST.hub148,   h2: ST.hub157,
+    s1: document.getElementById('spk148ds').value,
+    s2: document.getElementById('spk148nds').value,
+    s3: document.getElementById('spk157ds').value,
+    s4: document.getElementById('spk157nds').value,
+    eil: document.getElementById('g-eil').value,
+    eir: document.getElementById('g-eir').value,
+    gj:  document.getElementById('g-gj').value,
+    ea:  document.getElementById('g-ea').value,
+    nn:  document.getElementById('g-modes').value,
+    td:  document.getElementById('g-tds').value,
+    ns:  document.getElementById('g-ns').value,
+    th:  THEMES[themeIdx].id,
+    adv: document.getElementById('adv-panel').classList.contains('open') ? 1 : 0,
+  };
+}
+function writeURL() {
+  const s = collectState();
+  const hash = Object.keys(s).map(k => k + '=' + encodeURIComponent(s[k])).join('&');
+  history.replaceState(null, '', '#' + hash);
+}
+function readURL() {
+  const h = location.hash.replace(/^#/, '');
+  if (!h) return;
+  const p = {};
+  h.split('&').forEach(pair => {
+    const [k, v] = pair.split('=');
+    if (k) p[k] = decodeURIComponent(v || '');
+  });
+  const validHub = (arr, id) => arr.some(x => x.id === id);
+  const okWheel = w => ['26','27.5','29','32'].includes(w);
+  const okDia   = d => SPOKE_DIAS.includes(d);
+
+  if (okWheel(p.w1)) ST.wheel148 = p.w1;
+  if (okWheel(p.w2)) ST.wheel157 = p.w2;
+  if (validHub(HUBS_148, p.h1)) ST.hub148 = p.h1;
+  if (validHub(HUBS_157, p.h2)) ST.hub157 = p.h2;
+
+  const setSel = (id, v, ok) => { if (v != null && (!ok || ok(v))) { const el = document.getElementById(id); if (el) el.value = v; } };
+  setSel('spk148ds',  p.s1, okDia); setSel('spk148nds', p.s2, okDia);
+  setSel('spk157ds',  p.s3, okDia); setSel('spk157nds', p.s4, okDia);
+  setSel('g-eil', p.eil); setSel('g-eir', p.eir); setSel('g-gj', p.gj);
+  setSel('g-ea', p.ea);   setSel('g-modes', p.nn); setSel('g-tds', p.td);
+  setSel('g-ns', p.ns);
+
+  const ti = THEMES.findIndex(t => t.id === p.th);
+  if (ti >= 0) themeIdx = ti;
+  if (p.adv === '1') document.getElementById('adv-panel').classList.add('open');
+}
+function copyLink() {
+  writeURL();
+  // Share the PMR-hosted page, not the raw GitHub address, so people who click
+  // the link land on your site next to your other tools. The settings ride along
+  // in the hash; the small snippet on the PMR page passes them into this widget.
+  const PMR_PAGE = 'https://www.postmillenniumrenaissance.com/wheel-comparison-widget2';
+  const url = PMR_PAGE + location.hash;
+  const done = ok => {
+    const btn = document.getElementById('copy-btn');
+    const lbl = document.getElementById('copy-label');
+    lbl.textContent = ok ? 'Copied ✓' : 'Copy failed';
+    btn.classList.toggle('copied', ok);
+    setTimeout(() => { lbl.textContent = 'Copy link'; btn.classList.remove('copied'); }, 1800);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(() => done(true), () => done(false));
+  } else {
+    // fallback for older / iframe-restricted browsers
+    const ta = document.createElement('textarea');
+    ta.value = url; document.body.appendChild(ta); ta.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta); done(ok);
+  }
 }
 
 function buildControls() {
@@ -729,9 +878,44 @@ function refresh() {
     : `${m157.T_safety < m148.T_safety ? '157' : '148'} build has more buckling headroom`;
   document.getElementById('cmp-tc-stmt').firstChild.textContent = tcStmt;
   document.getElementById('sum-tc').textContent = tcStmt;
+
+  buildTakeaway(m148, m157, hub148, hub157);
+  writeURL();
+}
+
+/* Plain-English summary for a casual reader — leads with the F_lat hero metric,
+   names the two hubs, and says what the strength gap means in everyday terms.
+   Kept honest: "before a spoke starts to go slack," not "before it breaks." */
+function buildTakeaway(m148, m157, hub148, hub157) {
+  const d = Math.abs(m157.F_lat - m148.F_lat) / Math.min(m148.F_lat, m157.F_lat) * 100;
+  const el = document.getElementById('takeaway');
+  const n1 = hub148.name, n2 = hub157.name;
+  if (d < 1) {
+    el.innerHTML = `<b>Bottom line:</b> with these two builds, the 148 (${n1}) and the ` +
+      `157 (${n2}) are within a hair of each other — you'd take about the same ` +
+      `sideways hit before a spoke starts to go slack. The choice comes down to ` +
+      `other factors, not strength.`;
+    return;
+  }
+  const winIs157 = m157.F_lat > m148.F_lat;
+  const winName  = winIs157 ? n2 : n1;
+  const winStd   = winIs157 ? '157' : '148';
+  const winCls   = winIs157 ? 'win-b' : 'win-a';
+  el.innerHTML = `<b>Bottom line:</b> the <span class="${winCls}"><b>${winStd}</b> build ` +
+    `(${winName})</span> takes about <b>${d.toFixed(0)}% more</b> sideways force before a ` +
+    `spoke starts to go slack — the point where a wheel begins to lose its trueness. ` +
+    `That's the headline difference; open the cards below for stiffness, vertical hits, and buckling margin.`;
 }
 
 buildControls();
+readURL();          // hydrate state from a shared link, if present
+applyTheme();       // set the color scheme (default DMC-12)
+// re-sync the wheel-size buttons + hub dropdowns to any URL-loaded state
+setWheelSilent('148', ST.wheel148); setWheelSilent('157', ST.wheel157);
+document.getElementById('hub148').value = ST.hub148;
+document.getElementById('hub157').value = ST.hub157;
+document.getElementById('adv-btn').setAttribute('aria-expanded',
+  document.getElementById('adv-panel').classList.contains('open'));
 refresh();
 </script>
 </body>
