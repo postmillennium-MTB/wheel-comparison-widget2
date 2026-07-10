@@ -685,7 +685,14 @@ function collectState() {
 function writeURL() {
   const s = collectState();
   const hash = Object.keys(s).map(k => k + '=' + encodeURIComponent(s[k])).join('&');
-  history.replaceState(null, '', '#' + hash);
+  try {
+    history.replaceState(null, '', '#' + hash);
+  } catch (e) {
+    // In sandboxed contexts (iframes, about:srcdoc, different origins),
+    // replaceState may be blocked. The tool still works — settings update
+    // in memory and render on screen. Sharing links just won't work in these
+    // contexts, which is fine since they're not production deployments.
+  }
 }
 function readURL() {
   const h = location.hash.replace(/^#/, '');
