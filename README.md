@@ -10,7 +10,23 @@ Live widget: [postmillennium-mtb.github.io/wheel-comparison-widget2](https://pos
 
 This widget lets you select a real hub from each axle standard, choose wheel size and spoke gauge, and see how the two builds compare across four structural metrics: lateral stiffness, lateral strength, radial strength, and buckling margin. All four are computed from the geometry you enter — not looked up from a table.
 
+The result the widget is built around — lateral strength, F_lat — is surfaced as a single headline verdict at the top of the comparison column ("157x12 wheel wins," followed by the percentage), with the raw kgf for both builds shown underneath it. Every other metric lives in the cards below, available but deliberately secondary; the point of the tool is that one number, and the layout says so.
+
+A **"Compare two at random"** button sits above the headline. It rolls one wheel size (25% chance each, applied to both sides so the size itself isn't a variable) and one hub per side from the full catalogue, resetting everything else — spoke gauge, spoke count, tension, rim properties — to default first, so the roll is always an apples-to-apples comparison of hub geometry alone.
+
 The intended audience is two groups who often want the same answer for different reasons: wheel builders and bike engineers who want to check the math, and riders trying to understand whether the 157 standard offers a meaningful structural advantage for their specific hub and build.
+
+---
+
+## Interface
+
+**Headline verdict.** The card at the top of the comparison column is the tool's focal point: which axle standard wins on lateral strength, by how much, and the two raw kgf values it's built from. Its color tracks whichever side won (amber for 148, blue for 157), and it restates the exact wheel size, spoke count, and DS tension it was computed under, so a screenshot of just that card is self-explanatory without the rest of the page.
+
+**Compare two at random.** Rerolls if it happens to land on the exact setup already on screen. The resulting comparison updates the shareable link like any manual change, so an interesting random pairing can be copied and sent as-is.
+
+**Secondary cards.** Radial strength, lateral stiffness, and tension balance are expanded by default. **Buckling margin is collapsed by default** — it's the metric readers reach for least often, so it starts out of the way and opens on tap.
+
+**Shareable link.** "Copy link" packs every current setting — both hubs, wheel sizes, spoke gauges, and any advanced rim/tension overrides — into the URL hash, so a copied link reproduces the exact comparison for whoever opens it.
 
 ---
 
@@ -57,6 +73,8 @@ Every analytical model makes simplifying assumptions. The ones that matter most 
 
 **Steel spokes, E = 210 GPa.** Titanium or carbon spokes would require a different Young's modulus. The widget does not support non-steel spokes.
 
+**Straight-gauge spokes only.** Each spoke's diameter is constant along its full length. Real butted spokes (e.g. 2.0–1.5–2.0) have thicker ends than their nominal middle gauge, giving them higher effective axial stiffness than a straight-gauge spoke of the same nominal diameter. This mainly affects F_lat at thin gauges — see the caution under "Lateral strength F_lat" below.
+
 ---
 
 ## What each metric means
@@ -89,6 +107,13 @@ F_lat   = K_lat × min(u_slack_DS, u_slack_NDS)
 ```
 
 Where `u_slack` is the lateral rim deflection that bleeds off all pre-tension in the governing spoke, and the governing side (almost always NDS) is reported on the widget. This is a first-order linear approximation. The actual load at which a spoke first goes slack in a real wheel may differ due to spoke bedding, nipple friction, and local load concentration. Use this as a relative comparison between the two builds, not as an absolute failure prediction.
+
+**Caution: thinning the governing spoke's gauge always raises F_lat, with no ceiling.** Because `u_slack` scales with `1 / EA_side` and cross-sectional area falls as the square of diameter, thinning the governing spoke (almost always NDS) increases F_lat at an *accelerating* rate — each 0.1 mm step buys more than the last. Taken to its limit the formula implies an infinitely thin spoke gives an infinitely strong wheel, which is obviously not physical. Two things are actually happening when you do this in the widget:
+
+- **The tradeoff is real but lives in a different card.** A thinner, stretchier NDS spoke genuinely does stay tensioned through more deflection — this is the real-world reason NDS-side bladed or butted spokes are common on dished rear wheels. But it comes at the cost of lateral stiffness (K_lat), which drops steadily as gauge thins. F_lat only tells half the story; check K_lat alongside it before reading a thin-NDS build as an unqualified win.
+- **The model has no term that bounds the gain.** F_lat has no yield criterion, no fatigue term, and assumes straight-gauge spokes rather than the butted (e.g. 2.0–1.5–2.0) spokes typically paired with thin NDS gauges — a butted spoke's thicker ends raise its effective axial stiffness above straight-gauge 1.5 mm, so the widget likely overstates the F_lat gain at thin gauges, more so the thinner you go. Spoke tensile stress also isn't modeled; at fixed tension, thinning the spoke raises its stress roughly as `1/d²`.
+
+In short: F_lat correctly ranks two builds at a fixed spoke gauge, but it should not be used to justify going to unrealistically thin NDS spokes in isolation. Cross-check against K_lat, and treat straight-gauge results at 1.5–1.6 mm as an upper-bound estimate rather than a build recommendation.
 
 ### Radial strength F_rad (kgf)
 
