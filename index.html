@@ -6,42 +6,50 @@
 <title>Rear Wheel Comparison: 148 vs 157</title>
 <style>
 /* ── Tokens ─────────────────────────────────────────────────────────────────
-   Side colors are the Okabe–Ito colorblind-safe pair (orange / blue), with
-   darkened variants for AA text contrast. Status is never color-only: every
-   status pairs a symbol (✓ ! ✕) with a word. */
+   Side colors (--a/--b) are the Okabe–Ito colorblind-safe pair, unchanged
+   across themes — they carry meaning (148 vs 157) so they stay fixed.
+   --accent is purely decorative "theme chrome": tagline, focus rings, link
+   hovers, header glow. It never appears on anything that encodes a result. */
 :root{
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
-/* ── DMC-12 (default) — brushed stainless paper, Okabe–Ito amber/blue sides.
-   The DeLorean's body is bare stainless, so the neutral ground stays cool-grey
-   and the two sides use the colorblind-safe amber/blue pair. */
+/* ── DMC-12 (default) — brushed stainless + Miami-sunset neon. The DeLorean
+   reads cool and metallic, so the ground stays a hint of violet-white steel;
+   the neon pink accent carries the 80s synthwave signature in the chrome
+   (tagline, glow, link hovers) without touching the amber/blue comparison. */
 :root, html[data-theme="dmc12"]{
   --ink:#1c2530; --muted:#5b6573; --faint:#8a93a0;
-  --paper:#f6f7f4; --card:#ffffff; --line:rgba(28,37,48,.13);
+  --paper:#f7f5f8; --card:#ffffff; --line:rgba(120,40,90,.14);
   --a:#e69f00; --a-text:#8a5800; --a-soft:#faf3e3;   /* 148 — amber  */
   --b:#0072b2; --b-text:#005684; --b-soft:#e8f2f9;   /* 157 — blue   */
   --ok:#1b7a53; --warn:#9a5b00; --over:#b3261e;
+  --accent:#ff2d78; --accent-text:#c2185b; --accent-soft:#ffe2ee;
+  --accent-glow:rgba(255,45,120,.38);
 }
-/* ── MGB — British racing green ground, with 157 in BRG and 148 in the
-   contrasting chrome-wire / ochre found on a chrome-bumper MGB. The green/ochre
-   pair keeps a strong hue AND lightness separation, so it stays colorblind-safe
-   the same way amber/blue does. */
+/* ── MGB — deepened British Racing Green cabin: ivory-cream paper and card
+   (evoking cream leather and ivory gauges), a richer BRG accent used for
+   chrome (tagline, focus rings, link hovers) distinct from the 157 side's
+   own green, and warmer hairlines throughout. */
 html[data-theme="mgb"]{
   --ink:#12241a; --muted:#4a5b50; --faint:#7c8a80;
-  --paper:#eef1ea; --card:#fbfcf9; --line:rgba(18,36,26,.14);
+  --paper:#f1ecdd; --card:#fdfbf3; --line:rgba(4,73,44,.16);
   --a:#b06d00; --a-text:#8a5500; --a-soft:#f7efdd;   /* 148 — ochre / tan  */
   --b:#0a5c37; --b-text:#064027; --b-soft:#e2efe7;   /* 157 — racing green */
   --ok:#0a5c37; --warn:#8a5500; --over:#a52a1e;
+  --accent:#04492c; --accent-text:#033a23; --accent-soft:#dfe9e1;
+  --accent-glow:rgba(4,73,44,.28);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
   font-size:15px;line-height:1.5;color:var(--ink);background:var(--paper);padding:14px}
 .wrap{max-width:1100px;margin:0 auto}
-h1{font-size:19px;font-weight:650;letter-spacing:-.01em}
+h1{font-size:29px;font-weight:750;letter-spacing:-.015em;line-height:1.15}
+.tagline{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--b-text);margin:3px 0 0}
 .sub{font-size:12.5px;color:var(--muted);margin:2px 0 14px;max-width:62ch}
 button{cursor:pointer;font-family:inherit;color:var(--ink)}
-:focus-visible{outline:2px solid var(--b);outline-offset:2px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* labels + controls */
 .slbl{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;
@@ -92,9 +100,13 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
   padding:16px;margin-bottom:10px}
 
 /* ── Primary card (F_lat) — hero treatment ─── */
-.cmp-card.primary{padding:24px 22px 20px;border:2px solid var(--ink);margin-bottom:14px}
-.cmp-card.primary .cmp-title{font-size:15px;font-weight:750;letter-spacing:.01em}
-.cmp-card.primary .cmp-plain{font-size:13px;margin:4px 0 16px}
+.cmp-card.primary{padding:0;overflow:hidden;border:2px solid var(--ink);margin-bottom:14px}
+.cmp-card.primary .sec-toggle{padding:15px 20px;min-height:52px}
+.cmp-card.primary .sec-title{font-size:15px;font-weight:750;letter-spacing:.01em}
+.cmp-card.primary .sec-sum{font-size:12.5px}
+.cmp-card.primary .sec-arrow{font-size:10px}
+.cmp-card.primary .cmp-body{padding:0 20px 18px}
+.cmp-card.primary .cmp-plain{font-size:13px;margin:10px 0 16px}
 .cmp-card.primary .tug{height:18px;margin:14px 0 5px}
 .cmp-card.primary .verdict{font-size:15px;margin-top:12px}
 
@@ -178,14 +190,14 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
   text-transform:uppercase;color:var(--b-text);text-decoration:none;background:#fff;
   border:1px solid var(--line);border-radius:999px;padding:6px 14px;min-height:32px;
   display:inline-flex;align-items:center}
-.pmr-link:hover{border-color:var(--b-text);background:var(--b-soft)}
+.pmr-link:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-text)}
 
 /* header action row: theme toggle + copy link */
 .head-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .act-btn{font-size:12px;font-weight:600;color:var(--ink);background:#fff;
   border:1px solid var(--line);border-radius:8px;padding:6px 11px;min-height:32px;
   display:inline-flex;align-items:center;gap:6px}
-.act-btn:hover{border-color:var(--faint)}
+.act-btn:hover{border-color:var(--accent);color:var(--accent-text)}
 .act-btn .dot{width:10px;height:10px;border-radius:999px;flex-shrink:0}
 .act-btn .dot.a{background:var(--a)} .act-btn .dot.b{background:var(--b)}
 .act-btn.copied{border-color:var(--ok);color:var(--ok)}
@@ -204,7 +216,7 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
 .hero{position:relative;overflow:hidden;background:var(--card);
   border:2px solid var(--win);border-radius:16px;padding:20px 18px 16px;
   margin-bottom:10px;text-align:center;
-  box-shadow:0 10px 30px -22px rgba(0,0,0,.65)}
+  box-shadow:0 10px 30px -22px rgba(0,0,0,.65),0 0 0 1px var(--accent-glow),0 0 28px -14px var(--accent-glow)}
 .hero[data-win="a"]{--win:var(--a);--win-text:var(--a-text);--win-soft:var(--a-soft)}
 .hero[data-win="b"]{--win:var(--b);--win-text:var(--b-text);--win-soft:var(--b-soft)}
 .hero[data-win="tie"]{--win:var(--faint);--win-text:var(--ink);--win-soft:var(--paper)}
@@ -241,6 +253,12 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
   margin-top:11px;padding-top:9px;border-top:1px solid var(--line)}
 .hero.flash{animation:heropop .45s cubic-bezier(.22,1,.36,1)}
 @keyframes heropop{0%{transform:scale(.978);opacity:.6}100%{transform:none;opacity:1}}
+
+/* MGB reads as a classic instrument, not a neon sign — swap the blurred glow
+   for a crisp brass/BRG hairline instead. */
+html[data-theme="mgb"] .hero{
+  box-shadow:0 10px 30px -22px rgba(0,0,0,.55),0 0 0 1px var(--accent-glow);
+}
 
 /* ── Random comparison button ─────────────────────────────────────────────────
    A soft amber→blue band sweeps across every 5 seconds — enough to catch the
@@ -284,7 +302,10 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
 <div class="wrap">
 
 <div class="page-head">
-  <h1>Rear Wheel Comparison: 148 vs 157</h1>
+  <div class="title-block">
+    <h1>Rear Wheel Comparison: 148 vs 157</h1>
+    <p class="tagline">Symmetry equals strength</p>
+  </div>
   <div class="head-actions">
     <button class="act-btn" id="theme-btn" onclick="cycleTheme()"
       aria-label="Switch color scheme"><span class="dot a"></span><span class="dot b"></span><span id="theme-name">DMC-12</span></button>
@@ -427,15 +448,21 @@ built on those stiffnesses.</p>
   <div class="takeaway" id="takeaway">—</div>
 
   <div class="cmp-card primary">
-    <div class="cmp-title">Lateral strength F_lat</div>
-    <div class="cmp-plain">Sideways push at the rim before the first spoke goes slack — <span id="flat-gov">—</span></div>
-    <div class="cmp-values">
-      <div><div class="cmp-num lg va" id="cmp-flat148">—</div><div class="cmp-unit">kgf · 148</div></div>
-      <div style="text-align:right"><div class="cmp-num lg vb" id="cmp-flat157">—</div><div class="cmp-unit">kgf · 157</div></div>
+    <button class="sec-toggle" id="tog-flat" aria-expanded="false" aria-controls="body-flat" onclick="toggleCard('flat')">
+      <span class="sec-title">Lateral strength F_lat</span>
+      <span class="sec-sum" id="sum-flat">—</span>
+      <span class="sec-arrow">▼</span>
+    </button>
+    <div class="cmp-body" id="body-flat" hidden>
+      <div class="cmp-plain">Sideways push at the rim before the first spoke goes slack — <span id="flat-gov">—</span></div>
+      <div class="cmp-values">
+        <div><div class="cmp-num lg va" id="cmp-flat148">—</div><div class="cmp-unit">kgf · 148</div></div>
+        <div style="text-align:right"><div class="cmp-num lg vb" id="cmp-flat157">—</div><div class="cmp-unit">kgf · 157</div></div>
+      </div>
+      <div class="tug" aria-hidden="true"><div class="half l"><div class="ha" id="bar-flat-a"></div></div><div class="half"><div class="hb" id="bar-flat-b"></div></div></div>
+      <div class="tug-lbl"><span>148</span><span>157</span></div>
+      <div class="verdict" id="cmp-flat-stmt">—</div>
     </div>
-    <div class="tug" aria-hidden="true"><div class="half l"><div class="ha" id="bar-flat-a"></div></div><div class="half"><div class="hb" id="bar-flat-b"></div></div></div>
-    <div class="tug-lbl"><span>148</span><span>157</span></div>
-    <div class="verdict" id="cmp-flat-stmt">—</div>
   </div>
 
   <div class="cmp-card secondary">
@@ -1003,6 +1030,7 @@ function refresh() {
   document.getElementById('cmp-flat157').textContent = fmt(m157.F_lat, 1);
   tug('flat', m148.F_lat, m157.F_lat);
   document.getElementById('cmp-flat-stmt').textContent = verdict(m148.F_lat, m157.F_lat, 'stronger');
+  document.getElementById('sum-flat').textContent = verdict(m148.F_lat, m157.F_lat, 'stronger');
   document.getElementById('flat-gov').textContent =
     `${m148.latGov} spokes govern the 148 build, ${m157.latGov} the 157`;
 
