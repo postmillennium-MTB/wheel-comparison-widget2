@@ -242,18 +242,33 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
 .hero.flash{animation:heropop .45s cubic-bezier(.22,1,.36,1)}
 @keyframes heropop{0%{transform:scale(.978);opacity:.6}100%{transform:none;opacity:1}}
 
-/* ── Random comparison button ─────────────────────────────────────────────── */
-.rand-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;
-  background:var(--card);border:1.5px dashed var(--line);border-radius:12px;
+/* ── Random comparison button ─────────────────────────────────────────────────
+   A soft amber→blue band sweeps across every 5 seconds — enough to catch the
+   eye and signal "this is interactive" without becoming a distraction while
+   someone is reading the numbers below. */
+.rand-btn{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;
+  gap:9px;width:100%;background:var(--card);border:1.5px dashed var(--line);border-radius:12px;
   padding:10px 14px;min-height:46px;margin-bottom:12px;font-size:13.5px;font-weight:700;
   letter-spacing:.01em;transition:border-color .15s,background .15s}
 .rand-btn:hover{border-color:var(--ink);background:var(--paper)}
+.rand-btn > *{position:relative;z-index:1}
+.rand-btn::after{content:"";position:absolute;z-index:0;top:0;bottom:0;left:0;width:55%;
+  pointer-events:none;transform:translateX(-180%);
+  background:linear-gradient(100deg,transparent 0%,var(--a-soft) 35%,
+    var(--b-soft) 65%,transparent 100%);
+  animation:shimmer 5s cubic-bezier(.4,0,.2,1) infinite}
+@keyframes shimmer{
+  0%{transform:translateX(-180%)}
+  22%{transform:translateX(300%)}
+  100%{transform:translateX(300%)}
+}
 .rand-btn .dice{font-size:17px;line-height:1;display:inline-block}
 .rand-btn .hint{font-weight:400;font-size:11.5px;color:var(--faint)}
 .rand-btn.rolling .dice{animation:roll .55s ease-in-out}
 @keyframes roll{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){
   .hero.flash{animation:none}.rand-btn.rolling .dice{animation:none}
+  .rand-btn::after{animation:none;opacity:0}
   .hero-row .fill{transition:none}
 }
 
@@ -380,6 +395,13 @@ built on those stiffnesses.</p>
 <!-- Comparison -->
 <div class="cmp-col">
 
+  <button class="rand-btn" id="rand-btn" onclick="randomCompare()"
+    aria-label="Compare two randomly chosen hubs">
+    <span class="dice" aria-hidden="true">🎲</span>
+    <span>Compare two at random</span>
+    <span class="hint">random size · random hub each side</span>
+  </button>
+
   <!-- HERO: the single number this whole tool exists to produce -->
   <div class="hero" id="hero" data-win="b" role="group" aria-label="Headline result">
     <div class="hero-eyebrow">Headline result · lateral strength</div>
@@ -401,13 +423,6 @@ built on those stiffnesses.</p>
     </div>
     <div class="hero-cond" id="hero-cond">—</div>
   </div>
-
-  <button class="rand-btn" id="rand-btn" onclick="randomCompare()"
-    aria-label="Compare two randomly chosen hubs">
-    <span class="dice" aria-hidden="true">🎲</span>
-    <span>Compare two at random</span>
-    <span class="hint">random size · random hub each side</span>
-  </button>
 
   <div class="takeaway" id="takeaway">—</div>
 
@@ -1075,7 +1090,7 @@ function buildHero(m148, m157, hub148, hub157) {
     numEl.classList.add('word');
     numEl.textContent = 'EVEN';
     document.getElementById('hero-word').textContent = 'dead heat';
-    document.getElementById('hero-badge').textContent = '148 = 157';
+    document.getElementById('hero-badge').textContent = '148x12 = 157x12';
     document.getElementById('hero-sub').innerHTML =
       `<b>${hub148.name}</b> and <b>${hub157.name}</b> take the same sideways load ` +
       `before the first spoke goes slack. Pick on something other than strength.`;
@@ -1084,7 +1099,7 @@ function buildHero(m148, m157, hub148, hub157) {
     animateHeroNum(numEl, d);
     document.getElementById('hero-word').textContent = 'stronger';
     document.getElementById('hero-badge').textContent =
-      winIs157 ? '157 Super Boost wins' : '148 Boost wins';
+      winIs157 ? '157x12 wheel wins' : '148x12 wheel wins';
     const winName  = winIs157 ? hub157.name : hub148.name;
     const loseName = winIs157 ? hub148.name : hub157.name;
     const loseStd  = winIs157 ? '148' : '157';
