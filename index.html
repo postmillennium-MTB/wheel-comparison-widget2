@@ -196,9 +196,73 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
 .takeaway b{font-weight:700}
 .takeaway .win-a{color:var(--a-text)} .takeaway .win-b{color:var(--b-text)}
 
+/* ── HERO VERDICT — the headline of the entire tool ───────────────────────────
+   Everything else on the page supports this one number. The winning side's
+   color drives the whole block via a --win custom property, but color is never
+   the only signal: the standard (148 / 157) is spelled out in the badge, the
+   bars are labelled, and the raw kgf values are printed. */
+.hero{position:relative;overflow:hidden;background:var(--card);
+  border:2px solid var(--win);border-radius:16px;padding:20px 18px 16px;
+  margin-bottom:10px;text-align:center;
+  box-shadow:0 10px 30px -22px rgba(0,0,0,.65)}
+.hero[data-win="a"]{--win:var(--a);--win-text:var(--a-text);--win-soft:var(--a-soft)}
+.hero[data-win="b"]{--win:var(--b);--win-text:var(--b-text);--win-soft:var(--b-soft)}
+.hero[data-win="tie"]{--win:var(--faint);--win-text:var(--ink);--win-soft:var(--paper)}
+.hero::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(125% 95% at 50% -25%, var(--win-soft) 0%, transparent 72%)}
+.hero > *{position:relative}
+.hero-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--faint);font-weight:600}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;margin-top:10px;
+  background:var(--win-soft);color:var(--win-text);border:1.5px solid var(--win);
+  font-size:12.5px;font-weight:750;letter-spacing:.05em;text-transform:uppercase;
+  padding:5px 15px;border-radius:999px}
+.hero-num{font-family:var(--mono);font-variant-numeric:tabular-nums;
+  font-size:clamp(58px,17vw,94px);line-height:.94;font-weight:700;letter-spacing:-.04em;
+  color:var(--win-text);margin-top:8px}
+.hero-num .pct{font-size:.42em;font-weight:650;letter-spacing:0;vertical-align:.45em;margin-left:1px}
+.hero-num.word{font-size:clamp(38px,11vw,60px);letter-spacing:-.02em}
+.hero-word{font-size:clamp(19px,5.5vw,27px);font-weight:750;letter-spacing:-.015em;
+  color:var(--ink);margin-top:1px}
+.hero-sub{font-size:12.5px;color:var(--muted);line-height:1.45;margin:8px auto 0;max-width:46ch}
+.hero-sub b{color:var(--ink);font-weight:650}
+.hero-bars{margin-top:15px;display:grid;gap:7px;text-align:left}
+.hero-row{display:grid;grid-template-columns:30px 1fr auto;align-items:center;gap:9px}
+.hero-row .lbl{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--muted)}
+.hero-row .track{display:block;height:12px;background:var(--paper);
+  border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.hero-row .fill{display:block;height:100%;border-radius:999px;
+  transition:width .5s cubic-bezier(.22,1,.36,1)}
+.hero-row.a .fill{background:var(--a)} .hero-row.b .fill{background:var(--b)}
+.hero-row .val{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;
+  font-weight:650;min-width:66px;text-align:right}
+.hero-row.a .val{color:var(--a-text)} .hero-row.b .val{color:var(--b-text)}
+.hero-cond{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:var(--faint);
+  margin-top:11px;padding-top:9px;border-top:1px solid var(--line)}
+.hero.flash{animation:heropop .45s cubic-bezier(.22,1,.36,1)}
+@keyframes heropop{0%{transform:scale(.978);opacity:.6}100%{transform:none;opacity:1}}
+
+/* ── Random comparison button ─────────────────────────────────────────────── */
+.rand-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;
+  background:var(--card);border:1.5px dashed var(--line);border-radius:12px;
+  padding:10px 14px;min-height:46px;margin-bottom:12px;font-size:13.5px;font-weight:700;
+  letter-spacing:.01em;transition:border-color .15s,background .15s}
+.rand-btn:hover{border-color:var(--ink);background:var(--paper)}
+.rand-btn .dice{font-size:17px;line-height:1;display:inline-block}
+.rand-btn .hint{font-weight:400;font-size:11.5px;color:var(--faint)}
+.rand-btn.rolling .dice{animation:roll .55s ease-in-out}
+@keyframes roll{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){
+  .hero.flash{animation:none}.rand-btn.rolling .dice{animation:none}
+  .hero-row .fill{transition:none}
+}
+
 .note{font-size:12px;color:var(--muted);margin-top:14px;padding-top:10px;
   border-top:1px solid var(--line);line-height:1.55;max-width:90ch}
 .note b{color:var(--ink)}
+.note a{color:var(--b-text);text-decoration:underline;text-underline-offset:2px}
+.note a:hover{text-decoration-thickness:2px}
+.note .credit{display:block;margin-top:10px;color:var(--ink);font-weight:600}
 </style>
 </head>
 <body>
@@ -316,6 +380,35 @@ built on those stiffnesses.</p>
 <!-- Comparison -->
 <div class="cmp-col">
 
+  <!-- HERO: the single number this whole tool exists to produce -->
+  <div class="hero" id="hero" data-win="b" role="group" aria-label="Headline result">
+    <div class="hero-eyebrow">Headline result · lateral strength</div>
+    <div class="hero-badge" id="hero-badge">—</div>
+    <div class="hero-num" id="hero-num">—</div>
+    <div class="hero-word" id="hero-word">&nbsp;</div>
+    <div class="hero-sub" id="hero-sub">—</div>
+    <div class="hero-bars">
+      <div class="hero-row a">
+        <span class="lbl">148</span>
+        <span class="track"><span class="fill" id="hero-fill-a" style="width:0"></span></span>
+        <span class="val" id="hero-val-a">—</span>
+      </div>
+      <div class="hero-row b">
+        <span class="lbl">157</span>
+        <span class="track"><span class="fill" id="hero-fill-b" style="width:0"></span></span>
+        <span class="val" id="hero-val-b">—</span>
+      </div>
+    </div>
+    <div class="hero-cond" id="hero-cond">—</div>
+  </div>
+
+  <button class="rand-btn" id="rand-btn" onclick="randomCompare()"
+    aria-label="Compare two randomly chosen hubs">
+    <span class="dice" aria-hidden="true">🎲</span>
+    <span>Compare two at random</span>
+    <span class="hint">random size · random hub each side</span>
+  </button>
+
   <div class="takeaway" id="takeaway">—</div>
 
   <div class="cmp-card primary">
@@ -385,12 +478,12 @@ built on those stiffnesses.</p>
   </div>
 
   <div class="cmp-card secondary">
-    <button class="sec-toggle" id="tog-tc" aria-expanded="true" aria-controls="body-tc" onclick="toggleCard('tc')">
+    <button class="sec-toggle" id="tog-tc" aria-expanded="false" aria-controls="body-tc" onclick="toggleCard('tc')">
       <span class="sec-title">Buckling margin</span>
       <span class="sec-sum" id="sum-tc">—</span>
       <span class="sec-arrow">▼</span>
     </button>
-    <div class="cmp-body" id="body-tc">
+    <div class="cmp-body" id="body-tc" hidden>
       <div class="cmp-plain">Headroom against tension-induced rim buckling ("taco"), Ford's linear approximation</div>
       <table class="btable">
         <thead><tr><th scope="col">Build</th><th scope="col">T_c avg (kgf)</th><th scope="col">T_c as DS (kgf)</th><th scope="col">Used</th></tr></thead>
@@ -409,7 +502,8 @@ built on those stiffnesses.</p>
 <p class="note">
 <b>Method.</b> Tension balance, lateral stiffness K_lat, radial stiffness K_rad, and buckling
 tension T_c are computed with a JavaScript port of Matt Ford's open-source
-<b>bike-wheel-calc</b> library (Mode Matrix method; Ford 2018, <i>A Theoretical Analysis of the
+<a href="https://github.com/dashdotrobot/bike-wheel-calc" target="_blank"
+rel="noopener"><b>bike-wheel-calc</b></a> library (Mode Matrix method; Ford 2018, <i>A Theoretical Analysis of the
 Bicycle Wheel</i>, Northwestern University) using smeared spokes, N Fourier modes, tension
 softening, and the linear buckling approximation. The port matches the library to
 floating-point precision across the full hub catalogue.
@@ -418,6 +512,8 @@ first-spoke-slack thresholds — the load at which the lowest-tension spoke at t
 reaches zero tension — marking the onset of lost preload, not wheel collapse.
 Spoke geometry uses the rim beam-centroid radius (ERD/2 + 11 mm) per Ford §3.2; 3-cross lacing;
 steel spokes, E = 210 GPa. Hub flange dimensions compiled from manufacturer documentation.
+<span class="credit">This project could not have been possible without the work of Mechanical
+Engineer <a href="https://dashdotrobot.com" target="_blank" rel="noopener">Matt Ford</a>.</span>
 </p>
 </div>
 
@@ -789,6 +885,55 @@ function setWheelSilent(side, w) {
       .setAttribute('aria-pressed', sz === w ? 'true' : 'false'));
 }
 
+/* ── Random comparison ────────────────────────────────────────────────────────
+   Picks one wheel size (uniform 25% across 26 / 27.5 / 29 / 32) and applies it
+   to BOTH sides, so the only difference on the table is hub geometry. Then one
+   random 148 hub on the left and one random 157 hub on the right. Every other
+   setting — spoke gauge, spoke count, tension, rim properties — is forced back
+   to its default, so the comparison stays apples-to-apples.
+   Rerolls if it happens to draw the exact setup already on screen. */
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+function randomCompare() {
+  const btn = document.getElementById('rand-btn');
+  btn.classList.add('rolling');
+  setTimeout(() => btn.classList.remove('rolling'), 600);
+
+  // everything except wheel size + hub returns to default
+  ['spk148ds','spk148nds','spk157ds','spk157nds']
+    .forEach(id => document.getElementById(id).value = '2.0');
+  document.getElementById('g-eil').value = 50;
+  document.getElementById('g-eir').value = 150;
+  document.getElementById('g-gj').value  = 22;
+  document.getElementById('g-ea').value  = 11.5;
+  document.getElementById('g-modes').value = '24';
+  document.getElementById('g-tds').value   = '100';
+  document.getElementById('g-ns').value    = '32';
+
+  const sizes = ['26','27.5','29','32'];
+  let w, h1, h2, guard = 0;
+  do {
+    w  = pick(sizes);
+    h1 = pick(HUBS_148).id;
+    h2 = pick(HUBS_157).id;
+    guard++;
+  } while (guard < 20 && w === ST.wheel148 && w === ST.wheel157 &&
+           h1 === ST.hub148 && h2 === ST.hub157);
+
+  ST.wheel148 = w; ST.wheel157 = w;
+  ST.hub148 = h1;  ST.hub157 = h2;
+  setWheelSilent('148', w); setWheelSilent('157', w);
+  document.getElementById('hub148').value = h1;
+  document.getElementById('hub157').value = h2;
+
+  const hero = document.getElementById('hero');
+  hero.classList.remove('flash');
+  void hero.offsetWidth;          // restart the animation
+  hero.classList.add('flash');
+
+  refresh();
+}
+
 const fmt = (v, d) => v.toFixed(d);
 
 /* Verdict for a metric where bigger is better for the given adjective.
@@ -886,8 +1031,82 @@ function refresh() {
   document.getElementById('cmp-tc-stmt').firstChild.textContent = tcStmt;
   document.getElementById('sum-tc').textContent = tcStmt;
 
+  buildHero(m148, m157, hub148, hub157);
   buildTakeaway(m148, m157, hub148, hub157);
   writeURL();
+}
+
+/* ── Hero verdict ─────────────────────────────────────────────────────────────
+   The headline number, animated so a change is impossible to miss. Reads the
+   same F_lat values as the primary card — this is presentation only, no second
+   source of truth. */
+let heroAnim = null, heroLast = null;
+const reducedMotion = () =>
+  window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function animateHeroNum(el, to) {
+  const from = (heroLast === null) ? 0 : heroLast;
+  heroLast = to;
+  const paint = v => el.innerHTML = v.toFixed(1) + '<span class="pct">%</span>';
+  if (heroAnim) cancelAnimationFrame(heroAnim);
+  if (reducedMotion() || Math.abs(to - from) < 0.05) { paint(to); return; }
+  const t0 = performance.now(), dur = 500;
+  const step = now => {
+    const p = Math.min(1, (now - t0) / dur);
+    const e = 1 - Math.pow(1 - p, 3);          // ease-out cubic
+    paint(from + (to - from) * e);
+    if (p < 1) heroAnim = requestAnimationFrame(step);
+  };
+  heroAnim = requestAnimationFrame(step);
+}
+
+function buildHero(m148, m157, hub148, hub157) {
+  const hero  = document.getElementById('hero');
+  const numEl = document.getElementById('hero-num');
+  const d = Math.abs(m157.F_lat - m148.F_lat) / Math.min(m148.F_lat, m157.F_lat) * 100;
+  const tie = d < 0.05;
+  const winIs157 = m157.F_lat > m148.F_lat;
+
+  hero.dataset.win = tie ? 'tie' : (winIs157 ? 'b' : 'a');
+
+  if (tie) {
+    if (heroAnim) cancelAnimationFrame(heroAnim);
+    heroLast = 0;
+    numEl.classList.add('word');
+    numEl.textContent = 'EVEN';
+    document.getElementById('hero-word').textContent = 'dead heat';
+    document.getElementById('hero-badge').textContent = '148 = 157';
+    document.getElementById('hero-sub').innerHTML =
+      `<b>${hub148.name}</b> and <b>${hub157.name}</b> take the same sideways load ` +
+      `before the first spoke goes slack. Pick on something other than strength.`;
+  } else {
+    numEl.classList.remove('word');
+    animateHeroNum(numEl, d);
+    document.getElementById('hero-word').textContent = 'stronger';
+    document.getElementById('hero-badge').textContent =
+      winIs157 ? '157 Super Boost wins' : '148 Boost wins';
+    const winName  = winIs157 ? hub157.name : hub148.name;
+    const loseName = winIs157 ? hub148.name : hub157.name;
+    const loseStd  = winIs157 ? '148' : '157';
+    document.getElementById('hero-sub').innerHTML =
+      `<b>${winName}</b> takes that much more sideways force than the ${loseStd} ` +
+      `build (<b>${loseName}</b>) before its first spoke goes slack.`;
+  }
+
+  // side-by-side bars, both scaled to the larger value
+  const mx = Math.max(m148.F_lat, m157.F_lat) || 1;
+  document.getElementById('hero-fill-a').style.width = (m148.F_lat / mx * 100).toFixed(1) + '%';
+  document.getElementById('hero-fill-b').style.width = (m157.F_lat / mx * 100).toFixed(1) + '%';
+  document.getElementById('hero-val-a').textContent = fmt(m148.F_lat, 1) + ' kgf';
+  document.getElementById('hero-val-b').textContent = fmt(m157.F_lat, 1) + ' kgf';
+
+  // the conditions this result was produced under — makes a screenshot self-contained
+  const wtxt = ST.wheel148 === ST.wheel157
+    ? ST.wheel148 + '″'
+    : ST.wheel148 + '″ vs ' + ST.wheel157 + '″';
+  document.getElementById('hero-cond').textContent =
+    `${wtxt} · ${document.getElementById('g-ns').value}H · ` +
+    `${document.getElementById('g-tds').value} kgf DS · same rim both sides`;
 }
 
 /* Plain-English summary for a casual reader — leads with the F_lat hero metric,
@@ -908,8 +1127,10 @@ function buildTakeaway(m148, m157, hub148, hub157) {
   const winName  = winIs157 ? n2 : n1;
   const winStd   = winIs157 ? '157' : '148';
   const winCls   = winIs157 ? 'win-b' : 'win-a';
+  // qualitative, so the exact figure stays in one place: the hero above
+  const qual = d < 3 ? 'slightly' : d < 8 ? 'modestly' : d < 15 ? 'clearly' : 'substantially';
   el.innerHTML = `<b>Bottom line:</b> the <span class="${winCls}"><b>${winStd}</b> build ` +
-    `(${winName})</span> takes about <b>${d.toFixed(0)}% more</b> sideways force before a ` +
+    `(${winName})</span> takes a <b>${qual} higher</b> sideways load before a ` +
     `spoke starts to go slack — the point where a wheel begins to lose its trueness. ` +
     `That's the headline difference; open the cards below for stiffness, vertical hits, and buckling margin.`;
 }
