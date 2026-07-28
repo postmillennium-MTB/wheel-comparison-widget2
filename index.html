@@ -290,6 +290,15 @@ html[data-theme="mgb"] .hero{
   .hero-row .fill{transition:none}
 }
 
+/* ── "No Drama Zone" card — an editorial aside, not a hub metric. The gradient
+   strip blends both side colors into one bar to say "both, together" rather
+   than "versus." Collapsed by default like the other secondary cards. */
+.cmp-card.calm{position:relative}
+.cmp-card.calm::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;z-index:1;
+  background:linear-gradient(90deg,var(--a) 0%,var(--a) 44%,var(--b) 56%,var(--b) 100%)}
+.cmp-card.calm .sec-toggle{padding-top:14px}
+.cmp-card.calm .cmp-plain{color:var(--ink);font-size:13px;line-height:1.55;margin:10px 0 2px}
+
 .note{font-size:12px;color:var(--muted);margin-top:14px;padding-top:10px;
   border-top:1px solid var(--line);line-height:1.55;max-width:90ch}
 .note b{color:var(--ink)}
@@ -535,6 +544,16 @@ built on those stiffnesses.</p>
         </tbody>
       </table>
       <div class="verdict" style="margin-top:12px" id="cmp-tc-stmt">—<span class="ctx">"Used" = current average tension ÷ critical tension. The ✓ below 70% is this widget's chosen comfort margin, not a threshold from Ford.</span></div>
+    </div>
+  </div>
+  <div class="cmp-card secondary calm">
+    <button class="sec-toggle" id="tog-nodrama" aria-expanded="false" aria-controls="body-nodrama" onclick="toggleCard('nodrama')">
+      <span class="sec-title">🤝 No Drama Zone</span>
+      <span class="sec-sum">Both standards, one dropout</span>
+      <span class="sec-arrow">▼</span>
+    </button>
+    <div class="cmp-body" id="body-nodrama" hidden>
+      <div class="cmp-plain">Mountain bikes could be compatible with both 148x12 and 157x12 hub standards using modular dropouts. Banshee has done this for years allowing riders to choose between the 142x12 and 148x12 hub standards.</div>
     </div>
   </div>
 
