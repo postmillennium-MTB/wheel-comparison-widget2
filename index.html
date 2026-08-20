@@ -372,7 +372,7 @@ built on those stiffnesses.</p>
       <div><div class="h">EI_rad</div><p>Rim in-plane bending stiffness — how the rim spreads load around its hoop. Usually 3–10× EI_lat (100–300 N·m²).</p></div>
       <div><div class="h">GJ</div><p>Rim torsional stiffness. Because the rim is curved, bending and twist are coupled, so GJ shapes lateral flexibility more than EI_lat does. Typical: 15–35 N·m².</p></div>
       <div><div class="h">EA_rim</div><p>Rim hoop (axial) stiffness, used for the rim's in-plane response and the tension-softening terms. Typical alloy: 8–15 MN.</p></div>
-      <div><div class="h">Modes N</div><p>Fourier modes in the Mode Matrix sum. Results converge by ~16–24 modes; more adds precision at negligible cost.</p></div>
+      <div><div class="h">Modes N</div><p>Fourier modes in the Mode Matrix sum. Harmonics used to approximate the rim's deformed shape. Accuracy converges by N~16–24; higher settings add no meaningful precision.</p></div>
     </div>
     <div class="adv-note">Rim defaults: DT Swiss TK540 (EI_lat 50, EI_rad 150, GJ 22 N·m², EA 11.5 MN). Both wheels always share the same rim, tension, and spoke count, so differences below come from hub geometry, wheel size, and spoke gauge only.</div>
   </div>
