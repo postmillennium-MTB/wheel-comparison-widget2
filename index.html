@@ -74,16 +74,37 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
 .side-card{border-top:4px solid}
 .side-a{border-top-color:var(--a)} .side-b{border-top-color:var(--b)}
 /* card header: big numeric standard ("148x12") over a small marketing
-   nickname ("Boost axle"). The nickname carries a native title tooltip with
-   its trademark trivia — dotted underline + help cursor are the only hint
-   it's hoverable, since a title attribute alone gives no visual affordance. */
+   nickname ("Boost axle"). The nickname's trademark trivia renders as a
+   CSS tooltip (not the native `title` popup) — the browser-native version
+   is unreliable inside an iframe (this widget is always embedded, see
+   README "Interface") and its timing varies too much across browsers to
+   trust. `title` is kept on the element as the accessible-name fallback;
+   `data-tip` drives the visible bubble, shown on both :hover and :focus
+   so keyboard users (tabindex=0) get it too. */
 .side-head{margin-bottom:12px;text-align:center}
 .side-head .std-name{display:block;font-size:32px;font-weight:800;
   letter-spacing:-.01em;line-height:1.15}
 .side-a .std-name{color:var(--a-text)}
 .side-b .std-name{color:var(--b-text)}
-.side-head .std-nick{display:inline-block;font-size:14px;color:var(--muted);
+.side-head .std-nick{position:relative;display:inline-block;font-size:14px;color:var(--muted);
   margin-top:1px;border-bottom:1px dotted var(--faint);cursor:help}
+.side-head .std-nick::after{content:attr(data-tip);position:absolute;top:calc(100% + 9px);
+  width:230px;max-width:min(230px,70vw);padding:9px 11px;
+  background:var(--ink);color:#fff;font-size:12px;font-weight:500;line-height:1.4;
+  text-align:left;border-radius:7px;box-shadow:0 6px 16px rgba(0,0,0,.2);
+  opacity:0;visibility:hidden;transition:opacity .15s;pointer-events:none;z-index:30}
+/* Bubble anchors away from each card's outer edge (left card -> grows right,
+   right card -> grows left) since the widget is always shown in a narrow
+   iframe with no guaranteed margin outside the card to clip into. The arrow
+   stays centered under the word either way. */
+.side-a .std-nick::after{left:0}
+.side-b .std-nick::after{right:0}
+.side-head .std-nick::before{content:"";position:absolute;left:50%;top:100%;
+  transform:translateX(-50%);border:6px solid transparent;border-bottom-color:var(--ink);
+  opacity:0;visibility:hidden;transition:opacity .15s;pointer-events:none;z-index:30}
+.side-head .std-nick:hover::after,.side-head .std-nick:hover::before,
+.side-head .std-nick:focus-visible::after,.side-head .std-nick:focus-visible::before{
+  opacity:1;visibility:visible}
 .fld{margin-bottom:12px}
 .fld:last-child{margin-bottom:0}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -383,7 +404,7 @@ built on those stiffnesses.</p>
 
   <!-- 148 -->
   <div class="card side-card side-a">
-    <div class="side-head"><span class="std-name">148x12</span><span class="std-nick" title="Boost is a marketing nickname from Trek, circa 2014/2015.">Boost axle</span></div>
+    <div class="side-head"><span class="std-name">148x12</span><span class="std-nick" tabindex="0" title="Boost is a marketing nickname from Trek, circa 2014/2015." data-tip="Boost is a marketing nickname from Trek, circa 2014/2015.">Boost axle</span></div>
     <div class="fld"><div class="slbl">Wheel size</div>
       <div class="seg" id="seg148" role="group" aria-label="148 wheel size">
         <button id="w148-26" aria-pressed="false" onclick="setWheel('148','26')">26″</button>
@@ -407,7 +428,7 @@ built on those stiffnesses.</p>
 
   <!-- 157 -->
   <div class="card side-card side-b">
-    <div class="side-head"><span class="std-name">157x12</span><span class="std-nick" title="Super Boost is a marketing nickname from Pivot, circa 2016.">Super Boost axle</span></div>
+    <div class="side-head"><span class="std-name">157x12</span><span class="std-nick" tabindex="0" title="Super Boost is a marketing nickname from Pivot, circa 2016." data-tip="Super Boost is a marketing nickname from Pivot, circa 2016.">Super Boost axle</span></div>
     <div class="fld"><div class="slbl">Wheel size</div>
       <div class="seg" id="seg157" role="group" aria-label="157 wheel size">
         <button id="w157-26" aria-pressed="false" onclick="setWheel('157','26')">26″</button>
