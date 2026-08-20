@@ -22,6 +22,8 @@ The intended audience is two groups who often want the same answer for different
 
 **Headline verdict.** The card at the top of the comparison column is the tool's focal point: which axle standard wins on lateral strength, by how much, and the two raw kgf values it's built from. Its color tracks whichever side won (amber for 148, blue for 157), and it restates the exact wheel size, spoke count, and DS tension it was computed under, so a screenshot of just that card is self-explanatory without the rest of the page.
 
+**Card headers.** Each side's config card leads with the numeric axle standard ("148x12" / "157x12") set large and centered, with the marketing nickname ("Boost axle" / "Super Boost axle") in smaller type beneath it. The nickname carries a hover tooltip with its trademark trivia — "Boost is a marketing nickname from Trek, circa 2014/2015" and "Super Boost is a marketing nickname from Pivot, circa 2016" — so the jargon stays in the UI but is explained on demand rather than assumed.
+
 **Compare two at random.** Rerolls if it happens to land on the exact setup already on screen. The resulting comparison updates the shareable link like any manual change, so an interesting random pairing can be copied and sent as-is.
 
 **Secondary cards.** Radial strength, lateral stiffness, and tension balance are expanded by default. **Buckling margin is collapsed by default** — it's the metric readers reach for least often, so it starts out of the way and opens on tap.
@@ -208,6 +210,8 @@ All 20 hubs passed. Worst-case absolute percentage difference across all hubs an
 
 The validation results are stored in [`validation_baseline_v4_2026-06-11.csv`](./validation_baseline_v4_2026-06-11.csv), which contains the side-by-side library and widget outputs for every hub, with the diff column confirming the match.
 
+**Re-run, 2026-08-20.** The same congruence check was re-run two months later — `bikewheelcalc` source fetched fresh from GitHub, engine re-extracted from the then-current `index.html` — after several UI-only changes had been made to the widget (card header layout, advanced-settings copy). All 20 hubs still passed at the same floating-point-noise level (worst case **1.13 × 10⁻¹³ %**), confirming the engine had not drifted from the Ford library across those changes. Results are in [`validation_baseline_v4_2026-08-20.csv`](./validation_baseline_v4_2026-08-20.csv); the June file is kept alongside it rather than overwritten, so the history of passing baselines is auditable over time.
+
 ### What the validation does and does not establish
 
 The validation confirms that the JavaScript engine faithfully reproduces Matt Ford's Python library under the same model assumptions. It does **not** independently validate Ford's model against physical measurements on real wheels — that is the work Ford's thesis itself undertakes, and readers interested in the theoretical foundations and experimental comparisons should consult the original work.
@@ -260,6 +264,7 @@ The validation logic is the `congruence.py` script from the v1 repository's vali
 |---|---|
 | `index.html` | The complete widget — all HTML, CSS, and JavaScript in a single file. The physics engine is in the `<script id="engine">` tag. |
 | `validation_baseline_v4_2026-06-11.csv` | Congruence test results: widget vs `bike-wheel-calc` library, all 20 hubs, four metrics each. All rows PASS. |
+| `validation_baseline_v4_2026-08-20.csv` | Re-run of the same congruence check, ~2 months later, after UI-only changes. All rows PASS, matching the June baseline to floating-point precision — confirms no engine drift. |
 | `README.md` | This document. |
 
 ---
