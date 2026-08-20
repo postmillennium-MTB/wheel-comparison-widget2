@@ -73,11 +73,17 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
 .side-card{border-top:4px solid}
 .side-a{border-top-color:var(--a)} .side-b{border-top-color:var(--b)}
-.badge{display:inline-block;font-size:13px;font-weight:700;padding:3px 11px;border-radius:999px}
-.side-a .badge{background:var(--a-soft);color:var(--a-text)}
-.side-b .badge{background:var(--b-soft);color:var(--b-text)}
-.side-head{display:flex;align-items:baseline;gap:8px;margin-bottom:12px}
-.side-head span.w{font-size:12px;color:var(--muted)}
+/* card header: big numeric standard ("148x12") over a small marketing
+   nickname ("Boost axle"). The nickname carries a native title tooltip with
+   its trademark trivia — dotted underline + help cursor are the only hint
+   it's hoverable, since a title attribute alone gives no visual affordance. */
+.side-head{margin-bottom:12px}
+.side-head .std-name{display:block;font-size:26px;font-weight:800;
+  letter-spacing:-.01em;line-height:1.15}
+.side-a .std-name{color:var(--a-text)}
+.side-b .std-name{color:var(--b-text)}
+.side-head .std-nick{display:inline-block;font-size:12px;color:var(--muted);
+  margin-top:1px;border-bottom:1px dotted var(--faint);cursor:help}
 .fld{margin-bottom:12px}
 .fld:last-child{margin-bottom:0}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -377,7 +383,7 @@ built on those stiffnesses.</p>
 
   <!-- 148 -->
   <div class="card side-card side-a">
-    <div class="side-head"><span class="badge">148 mm</span><span class="w">Boost axle</span></div>
+    <div class="side-head"><span class="std-name">148x12</span><span class="std-nick" title="Boost is a marketing nickname from Trek, circa 2014/2015.">Boost axle</span></div>
     <div class="fld"><div class="slbl">Wheel size</div>
       <div class="seg" id="seg148" role="group" aria-label="148 wheel size">
         <button id="w148-26" aria-pressed="false" onclick="setWheel('148','26')">26″</button>
@@ -401,7 +407,7 @@ built on those stiffnesses.</p>
 
   <!-- 157 -->
   <div class="card side-card side-b">
-    <div class="side-head"><span class="badge">157 mm</span><span class="w">Super Boost axle</span></div>
+    <div class="side-head"><span class="std-name">157x12</span><span class="std-nick" title="Super Boost is a marketing nickname from Pivot, circa 2016.">Super Boost axle</span></div>
     <div class="fld"><div class="slbl">Wheel size</div>
       <div class="seg" id="seg157" role="group" aria-label="157 wheel size">
         <button id="w157-26" aria-pressed="false" onclick="setWheel('157','26')">26″</button>
