@@ -175,6 +175,24 @@ The v1 value sat on the *150* row, not the *157 SB* row. Hope ships those as two
 
 While checking this, the Pro5 **148** entry was verified against the same chart and is correct as stored (35.0 / 22.6, PCD 57 / 59). Its NDS PCD is 57 because this is the 6-bolt version; Hope's *centerlock* Pro5 148 uses 51. Any future Hope addition needs the right disc-interface row, not just the right axle width.
 
+### What is in the catalogue, and what is deliberately not
+
+The catalogue holds rear hubs whose freehub takes a current wide-range MTB cassette — HG, XD or Microspline, 11- or 12-speed. That is the inclusion rule, and it exists so that every pairing the widget can produce is a choice a rider could actually make. Front hubs are out of scope entirely; the tool compares rear axle standards, and the manufacturer documents cited above list front hubs alongside rear ones, so this is worth stating rather than assuming.
+
+**Downhill-driver hubs are excluded on purpose.** Several manufacturers publish a DH version of a rear hub that takes only a 7- or 8-speed downhill cassette. These are not omissions and should not be added:
+
+| Hub | Flange offset NDS / DS | PCD NDS / DS | Tension ratio | K_lat |
+|---|---|---|---|---|
+| KOM Xeno Rear Downhill 157 | 35.0 / 34.0 | 46.0 / 46.0 | 97.2% | 84.5 |
+| Hope PRO5 Rear 150 DH 6 Bolt | 33.0 / 33.0 | 60.0 / 64.0 | 100.2% | 78.3 |
+| Hope PRO5 Rear 148 DH 6 Bolt | 28.5 / 28.5 | 60.0 / 64.0 | 100.2% | 55.4 |
+
+Computed at the same standard build conditions as the catalogue table below, from the manufacturer documents already cited. The two Hope rows exceed 100% because their flange offsets are equal while the drive-side PCD is the larger of the two (64 vs 60), which leaves the non-drive spokes at fractionally the shallower angle — a hair past undished, in the direction opposite to every other rear hub here.
+
+Their geometry is genuinely remarkable — a DH driver is short, which frees the drive-side flange to move outboard until the wheel is nearly undished, and the tension balance that follows is far beyond anything else here. That is exactly why they are a trap in this particular tool. Dropped into the same list, they would top the tension-balance column and win random pairings against hubs they are not an alternative to: no one choosing between a 148 and a 157 trail build can run a 7-speed cassette. The comparison would read as a recommendation while describing an unavailable option.
+
+The numbers are recorded here so the research is not lost and nobody re-derives it. If DH builds are ever brought into scope, they belong in their own group with their own baseline, not mixed into this one.
+
 ### Hub catalogue (standard build conditions: 29 in, 32H, 2.0 mm, 100 kgf DS, DT Swiss TK540 rim defaults)
 
 | Hub | Std | NDS/DS ratio | K_lat (N/mm) | K_rad (N/mm) | T_c avg (kgf) | Baseline |
