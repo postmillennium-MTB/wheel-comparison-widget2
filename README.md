@@ -95,7 +95,7 @@ The most fundamental constraint on a dished rear wheel. Because the rim sits clo
 
 How hard it is to push the rim sideways at the contact patch with a unit force. Higher is stiffer. Under the Mode Matrix method, the value accounts for both the rim's resistance to bending and torsion and the spoke bed's resistance to lateral displacement. The tension-softening effect — whereby pre-tension in the spokes actually reduces lateral stiffness slightly via hoop compression — is included.
 
-Across the 20 hubs in this dataset at standard build conditions (29 in, 32H, 2.0 mm spokes, 100 kgf DS tension, DT Swiss TK540 rim), K_lat ranges from **57.9 to 82.6 N/mm for 148** builds and **63.0 to 102.5 N/mm for 157** builds. The variation within each standard is as large as the difference between standards — meaning hub geometry and wheel size matter as much as the axle width.
+Across the 22 hubs in this dataset at standard build conditions (29 in, 32H, 2.0 mm spokes, 100 kgf DS tension, DT Swiss TK540 rim), K_lat ranges from **57.9 to 82.6 N/mm for 148** builds and **63.0 to 102.5 N/mm for 157** builds. The variation within each standard is as large as the difference between standards — meaning hub geometry and wheel size matter as much as the axle width.
 
 ### Lateral strength F_lat (kgf)
 
@@ -142,6 +142,8 @@ Hub flange dimensions — center-to-flange offsets (DS and NDS) and flange pitch
 
 No measurements in this dataset were taken with calipers by the widget author. Hub geometry is inherently difficult to measure and varies slightly between production batches. If you have caliper measurements from a specific hub and they differ from the values here, the measured values should be considered more reliable. The widget accepts any geometry values via the advanced panel if you want to compare directly.
 
+**Addition (2026-09).** The two OneUp Components rear hubs were added from OneUp's own published product-page dimensions, which are given in spoke-calculator form (PCD-L / Flange Dist-L / PCD-R / Flange Dist-R). Left maps to non-drive side, right to drive side, and "PCD" is the flange pitch circle diameter this dataset calls `pds`/`pnds`. One thing to note when reading these two rows: OneUp's published NDS offset is *smaller* on the 157 (35.0 mm) than on the 148 (38.0 mm), which is the reverse of the pattern in every other hub pair here. That is what the manufacturer publishes and it is recorded unaltered, but it means the OneUp 157's advantage over the OneUp 148 shows up as tension balance (74.3% vs 60.7%) rather than as lateral stiffness, where it is actually the lower of the two. Caliper measurements confirming or contradicting these figures are welcome.
+
 **Known correction (v2).** The Hope Pro5 150/157 geometry in v1 of this widget was incorrect (nds = 28.0 mm, sourced in error). The corrected value (nds = 39.6 mm) is used in v2. This correction substantially changes the results for this hub: with the wrong geometry, the 148 version appeared stiffer than the 157, which created an interesting counter-narrative; with the correct geometry, the 157 is stiffer as expected from physics. The v1 repo and its validation artifacts should not be used as reference.
 
 ### Hub catalogue (standard build conditions: 29 in, 32H, 2.0 mm, 100 kgf DS, DT Swiss TK540 rim defaults)
@@ -158,6 +160,7 @@ No measurements in this dataset were taken with calipers by the widget author. H
 | Hope Pro5 148 6 bolt | 148 | 64.9% | 68.4 | 4743 | 148.3 | PASS |
 | Erase MTB IS 148x12 V2 j-bend | 148 | 66.3% | 80.6 | 4729 | 162.8 | PASS |
 | Hadley 148x12 | 148 | 62.2% | 75.2 | 4736 | 155.3 | PASS |
+| OneUp Rear Hub 148x12 | 148 | 60.7% | 77.9 | 4728 | 158.1 | not yet run |
 | Onyx 150/157 | 157 | 66.6% | 95.2 | 4715 | 180.4 | PASS |
 | Onyx 150/157 Vesper | 157 | 65.8% | 93.7 | 4711 | 178.3 | PASS |
 | SPANK HEX J-TYPE R150/157 | 157 | 75.2% | 93.6 | 4726 | 180.9 | PASS |
@@ -168,8 +171,11 @@ No measurements in this dataset were taken with calipers by the widget author. H
 | Hope Pro5 157 SB 6 bolt | 157 | 68.6% | 89.7 | 4727 | 174.2 | PASS |
 | Erase MTB IS 157x12 v2 j-bend | 157 | 70.0% | 102.5 | 4712 | 190.4 | PASS |
 | Hadley 150/157 | 157 | 66.6% | 97.0 | 4723 | 182.7 | PASS |
+| OneUp Rear Hub 157x12 | 157 | 74.3% | 72.1 | 4731 | 155.0 | not yet run |
 
 "PASS" means the widget value matched the `bike-wheel-calc` Python library to < 10⁻¹² % (floating-point noise).
+
+"not yet run" marks a hub added after the most recent congruence run (2026-08-20). Its figures above were computed with the shipped engine, but that engine has not been re-checked against the Python library *with this hub's geometry in the input set*. The two are not equivalent claims, so the column records the difference rather than glossing it. Since the engine is geometry-independent — the same code path runs for every hub — a passing run on 20 hubs is strong evidence the engine is correct, not proof for a specific untested row. These rows change to PASS at the next congruence re-run.
 
 ### Notable results worth examining
 
