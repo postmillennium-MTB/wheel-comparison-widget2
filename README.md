@@ -89,13 +89,13 @@ The most fundamental constraint on a dished rear wheel. Because the rim sits clo
 
 **What the number means.** A ratio of 66% means the NDS spokes carry 66 kgf for every 100 kgf on the DS. Wider axles (157 vs 148) push the flanges further apart and typically improve the ratio, because the NDS offset increases relative to the DS offset. Larger flange diameters can raise it further.
 
-**Editorial note on thresholds.** The widget displays the ratio without a pass/fail line. Dished MTB rear wheels in this dataset land between 62–82% under standard conditions. The often-cited "80% target" appears in wheel building guides as a quality aspiration, not a structural requirement from Ford's analysis, and most production Boost hubs do not reach it. Labeling builds below 80% as "failing" would flag the majority of wheels in common use; this widget instead lets the numbers speak.
+**Editorial note on thresholds.** The widget displays the ratio without a pass/fail line. Dished MTB rear wheels in this dataset land between 61–96% under standard conditions, though that top figure needs context: the only entries above 82% are hubs that are barely dished to begin with (the Hope Pro5 150 converted to 157, at 95.8%), not well-balanced versions of conventional ones. The often-cited "80% target" appears in wheel building guides as a quality aspiration, not a structural requirement from Ford's analysis, and most production Boost hubs do not reach it. Labeling builds below 80% as "failing" would flag the majority of wheels in common use; this widget instead lets the numbers speak.
 
 ### Lateral stiffness K_lat (N/mm)
 
 How hard it is to push the rim sideways at the contact patch with a unit force. Higher is stiffer. Under the Mode Matrix method, the value accounts for both the rim's resistance to bending and torsion and the spoke bed's resistance to lateral displacement. The tension-softening effect — whereby pre-tension in the spokes actually reduces lateral stiffness slightly via hoop compression — is included.
 
-Across the 20 hubs in this dataset at standard build conditions (29 in, 32H, 2.0 mm spokes, 100 kgf DS tension, DT Swiss TK540 rim), K_lat ranges from **57.9 to 82.6 N/mm for 148** builds and **63.0 to 102.5 N/mm for 157** builds. The variation within each standard is as large as the difference between standards — meaning hub geometry and wheel size matter as much as the axle width.
+Across the 25 hubs in this dataset at standard build conditions (29 in, 32H, 2.0 mm spokes, 100 kgf DS tension, DT Swiss TK540 rim), K_lat ranges from **53.6 to 82.6 N/mm for 148** builds and **50.8 to 102.5 N/mm for 157** builds. The variation within each standard is as large as the difference between standards — meaning hub geometry and wheel size matter as much as the axle width.
 
 ### Lateral strength F_lat (kgf)
 
@@ -140,9 +140,64 @@ The table shows two representations of T_c:
 
 Hub flange dimensions — center-to-flange offsets (DS and NDS) and flange pitch circle diameters — are compiled from **manufacturer documentation and published specifications**. All values are in millimeters.
 
+### Primary source documents
+
+Manufacturer documents the entries in this catalogue were read from directly. Links are to the manufacturers' own files, not to mirrors or third-party spoke-calculator databases.
+
+| Source | Covers | Link |
+|---|---|---|
+| KOM, *2023v8.0 Hub Spoke Offset, Pitch Circle Diameter and Spoke Seat Offset for KOM Xeno Hubs* | Both KOM Xeno entries | [PDF](https://a57737a1-faee-44f3-9d3e-369eef96078a.filesusr.com/ugd/f3b2d6_b44b975756194f24bea35c5b5da6b68a.pdf?index=true) |
+| Hope Technology, *Pro5 PCD — J-Bend, 2025* | Both Hope Pro5 entries, and the 2026-09 correction below | [PDF](https://www.hopetech.com/webtop/modules/_repository/1/documents/Pro5_PCD_J_Bend_2025.pdf) |
+| OneUp Components, rear hub product pages | OneUp 148 entry / OneUp 157 entry | [148x12](https://www.oneupcomponents.com/products/rear-hub) · [157x12](https://www.oneupcomponents.com/products/rear-hub-157x12) |
+
+The KOM link is a direct file URL from KOM's site and carries a generated filename, so it is the kind of link that rots; the document is identified above by its full title and version (2023v8.0) so it stays findable if the URL moves. Entries predating this table were compiled from manufacturer specifications without the source file being recorded at the time — a gap worth closing as those hubs are next revisited.
+
 No measurements in this dataset were taken with calipers by the widget author. Hub geometry is inherently difficult to measure and varies slightly between production batches. If you have caliper measurements from a specific hub and they differ from the values here, the measured values should be considered more reliable. The widget accepts any geometry values via the advanced panel if you want to compare directly.
 
+**Addition (2026-09), KOM.** The two KOM Xeno rear hubs were taken from KOM's own technical document *"2023v8.0 Hub Spoke Offset, Pitch Circle Diameter and Spoke Seat Offset for KOM Xeno Hubs"* ([PDF](https://a57737a1-faee-44f3-9d3e-369eef96078a.filesusr.com/ugd/f3b2d6_b44b975756194f24bea35c5b5da6b68a.pdf?index=true)), which lists "Spoke PCD Left & Right", "Flange Offset Left" and "Flange Offset Right" per model. Left maps to the non-drive side and right to the drive side; the document's own front-hub rows confirm that reading, since they place the left flange *closer* to centre (23.5 mm vs 34.0 mm), which is only correct if left is the disc side. KOM publishes identical geometry for the 28-hole and 32-hole versions of each model, so one catalogue entry covers both — spoke count is a separate control in the widget and is not baked into the hub entry.
+
+**These two hubs are straight-pull.** KOM states that every Xeno version uses straight-pull spokes, and the document is explicitly written for straight-pull spoke calculators. Every other hub in this catalogue is J-bend. The model does not distinguish between the two: a spoke is a line from a point on the flange pitch circle to a point on the rim, so the stiffness, tension and buckling figures for the KOM rows are computed on the same basis as every other row and are directly comparable. What the model does not capture is where the two differ in practice — fatigue life at the spoke-hub interface, which is the J-bend elbow's characteristic failure point and does not exist on a straight-pull hub. Read the KOM rows as geometry, not as a verdict on durability.
+
+The same document lists a "Spoke Offset Left & Right" of 0.5 mm, its spoke *seat* offset. This model has no input for it: the Mode Matrix treats each spoke as attaching at a point on the flange pitch circle, so a 0.5 mm lateral offset of the seat from the flange plane is not represented. At that magnitude the effect is far below the batch-to-batch variation in the rest of this dataset, but it is unmodelled rather than accounted for, and is recorded here as such.
+
+**Addition (2026-09), Hope 150 converted to 157.** Hope's PRO5 Rear 150 6 Bolt accepts a normal wide-range cassette and converts to 157x12 with 3.5 mm endcaps per side, so it is listed on the 157 side. Its geometry is entered unchanged from Hope's 150 row (28.0 / 26.8, PCD 57 / 59): symmetric endcaps widen the axle without moving the shell relative to hub centre, and the rim still centres on that same point, so the flange offsets the model needs are the ones Hope publishes for the 150. Nothing about the conversion needs to be recomputed.
+
+What the conversion *does* change is the cassette's position relative to the frame. Symmetric caps leave the cassette where it sat on the 150, so a converted hub does not inherit a native Super Boost chainline, and frame and drivetrain clearance should be checked against the specific bike rather than assumed from the axle width. That is a fitment question, not a structural one, and it sits outside what this widget computes — but it is the reason a converted 150 and a native 157 SB are two different rows here rather than interchangeable ones.
+
+**Addition (2026-09), OneUp.** The two OneUp Components rear hubs were added from OneUp's own published product-page dimensions ([148x12](https://www.oneupcomponents.com/products/rear-hub), [157x12](https://www.oneupcomponents.com/products/rear-hub-157x12)), which are given in spoke-calculator form (PCD-L / Flange Dist-L / PCD-R / Flange Dist-R). Left maps to non-drive side, right to drive side, and "PCD" is the flange pitch circle diameter this dataset calls `pds`/`pnds`. One thing to note when reading these two rows: OneUp's published NDS offset is *smaller* on the 157 (35.0 mm) than on the 148 (38.0 mm), which is the reverse of the pattern in every other hub pair here. That is what the manufacturer publishes and it is recorded unaltered, but it means the OneUp 157's advantage over the OneUp 148 shows up as tension balance (74.3% vs 60.7%) rather than as lateral stiffness, where it is actually the lower of the two. Caliper measurements confirming or contradicting these figures are welcome.
+
 **Known correction (v2).** The Hope Pro5 150/157 geometry in v1 of this widget was incorrect (nds = 28.0 mm, sourced in error). The corrected value (nds = 39.6 mm) is used in v2. This correction substantially changes the results for this hub: with the wrong geometry, the 148 version appeared stiffer than the 157, which created an interesting counter-narrative; with the correct geometry, the 157 is stiffer as expected from physics. The v1 repo and its validation artifacts should not be used as reference.
+
+**Root cause of that correction, identified 2026-09.** Hope's own PCD chart (*Pro5 PCD — J-Bend, 2025*, [PDF](https://www.hopetech.com/webtop/modules/_repository/1/documents/Pro5_PCD_J_Bend_2025.pdf)) shows where the v1 number came from:
+
+| Hope row | PCD NDS / DS | Flange offset NDS / DS |
+|---|---|---|
+| PRO5 Rear 150 6 Bolt | 57 / 59 | **28.0** / 26.8 |
+| PRO5 Rear 157 SB 6 Bolt | 57 / 59 | **39.6** / 27.0 |
+
+The v1 value sat on the *150* row, not the *157 SB* row. Hope ships those as two separate hubs with materially different geometry, and the v1 entry name — "Hope Pro5 150/157" — is what invited the slip. The entry is now named "Hope Pro5 157 SB 6 bolt" for that reason.
+
+**The 150 row is not irrelevant to the 157 side, though — which is the subtler half of this.** Hope's 150 shell converts to 157x12 with 3.5 mm endcaps per side, so it is a real 157x12 option, and it is now in the catalogue in its own right as "Hope Pro5 150 6 bolt (157 conv)". The v1 error was therefore not "used a 150 hub, which has no business here"; it was collapsing two genuinely different 157-capable Hope hubs into one entry and attaching the wrong geometry to the wrong name. Both belong, as separate rows with separate numbers. A catalogue name that merges two axle standards is a latent sourcing bug precisely because the merge hides a real distinction rather than inventing a fake one.
+
+While checking this, the Pro5 **148** entry was verified against the same chart and is correct as stored (35.0 / 22.6, PCD 57 / 59). Its NDS PCD is 57 because this is the 6-bolt version; Hope's *centerlock* Pro5 148 uses 51. Any future Hope addition needs the right disc-interface row, not just the right axle width.
+
+### What is in the catalogue, and what is deliberately not
+
+The catalogue holds rear hubs whose freehub takes a current wide-range MTB cassette — HG, XD or Microspline, 11- or 12-speed. That is the inclusion rule, and it exists so that every pairing the widget can produce is a choice a rider could actually make. A hub that reaches one of the two axle widths through the manufacturer's own endcaps counts as that width, which is why Hope's 150 shell appears on the 157 side; note that the *DH* version of that same shell is excluded below, on the cassette rule, so "Hope 150" is not simply in or out — it depends which driver it carries. Front hubs are out of scope entirely; the tool compares rear axle standards, and the manufacturer documents cited above list front hubs alongside rear ones, so this is worth stating rather than assuming.
+
+**Downhill-driver hubs are excluded on purpose.** Several manufacturers publish a DH version of a rear hub that takes only a 7- or 8-speed downhill cassette. These are not omissions and should not be added:
+
+| Hub | Flange offset NDS / DS | PCD NDS / DS | Tension ratio | K_lat |
+|---|---|---|---|---|
+| KOM Xeno Rear Downhill 157 | 35.0 / 34.0 | 46.0 / 46.0 | 97.2% | 84.5 |
+| Hope PRO5 Rear 150 DH 6 Bolt | 33.0 / 33.0 | 60.0 / 64.0 | 100.2% | 78.3 |
+| Hope PRO5 Rear 148 DH 6 Bolt | 28.5 / 28.5 | 60.0 / 64.0 | 100.2% | 55.4 |
+
+Computed at the same standard build conditions as the catalogue table below, from the manufacturer documents already cited. The two Hope rows exceed 100% because their flange offsets are equal while the drive-side PCD is the larger of the two (64 vs 60), which leaves the non-drive spokes at fractionally the shallower angle — a hair past undished, in the direction opposite to every other rear hub here.
+
+Their geometry is genuinely remarkable — a DH driver is short, which frees the drive-side flange to move outboard until the wheel is nearly undished, and the tension balance that follows is far beyond anything else here. That is exactly why they are a trap in this particular tool. Dropped into the same list, they would top the tension-balance column and win random pairings against hubs they are not an alternative to: no one choosing between a 148 and a 157 trail build can run a 7-speed cassette. The comparison would read as a recommendation while describing an unavailable option.
+
+The numbers are recorded here so the research is not lost and nobody re-derives it. If DH builds are ever brought into scope, they belong in their own group with their own baseline, not mixed into this one.
 
 ### Hub catalogue (standard build conditions: 29 in, 32H, 2.0 mm, 100 kgf DS, DT Swiss TK540 rim defaults)
 
@@ -158,6 +213,8 @@ No measurements in this dataset were taken with calipers by the widget author. H
 | Hope Pro5 148 6 bolt | 148 | 64.9% | 68.4 | 4743 | 148.3 | PASS |
 | Erase MTB IS 148x12 V2 j-bend | 148 | 66.3% | 80.6 | 4729 | 162.8 | PASS |
 | Hadley 148x12 | 148 | 62.2% | 75.2 | 4736 | 155.3 | PASS |
+| OneUp Rear Hub 148x12 | 148 | 60.7% | 77.9 | 4728 | 158.1 | not yet run |
+| KOM Xeno Rear Boost 148x12 | 148 | 77.2% | 53.6 | 4737 | 135.2 | not yet run |
 | Onyx 150/157 | 157 | 66.6% | 95.2 | 4715 | 180.4 | PASS |
 | Onyx 150/157 Vesper | 157 | 65.8% | 93.7 | 4711 | 178.3 | PASS |
 | SPANK HEX J-TYPE R150/157 | 157 | 75.2% | 93.6 | 4726 | 180.9 | PASS |
@@ -168,16 +225,23 @@ No measurements in this dataset were taken with calipers by the widget author. H
 | Hope Pro5 157 SB 6 bolt | 157 | 68.6% | 89.7 | 4727 | 174.2 | PASS |
 | Erase MTB IS 157x12 v2 j-bend | 157 | 70.0% | 102.5 | 4712 | 190.4 | PASS |
 | Hadley 150/157 | 157 | 66.6% | 97.0 | 4723 | 182.7 | PASS |
+| OneUp Rear Hub 157x12 | 157 | 74.3% | 72.1 | 4731 | 155.0 | not yet run |
+| KOM Xeno Rear Super Boost 157 | 157 | 80.2% | 74.4 | 4723 | 159.3 | not yet run |
+| Hope Pro5 150 6 bolt (157 conv) | 157 | 95.8% | 50.8 | 4750 | 137.6 | not yet run |
 
 "PASS" means the widget value matched the `bike-wheel-calc` Python library to < 10⁻¹² % (floating-point noise).
 
+"not yet run" marks a hub added after the most recent congruence run (2026-08-20). Its figures above were computed with the shipped engine, but that engine has not been re-checked against the Python library *with this hub's geometry in the input set*. The two are not equivalent claims, so the column records the difference rather than glossing it. Since the engine is geometry-independent — the same code path runs for every hub — a passing run on 20 hubs is strong evidence the engine is correct, not proof for a specific untested row. These rows change to PASS at the next congruence re-run.
+
 ### Notable results worth examining
 
-**project 321 G3 148 vs 157.** Both versions of this hub use an unusually narrow NDS offset (32 mm) for their respective standards. The 157 version reaches the highest tension ratio in the 157 group (81.6%) but has the lowest lateral stiffness in the 157 group (63.0 N/mm) — because while the ratio is excellent, the narrow NDS offset means the NDS spoke angle is steep and the absolute stiffness contribution is reduced. This is a good illustration of why no single metric tells the full story.
+**project 321 G3 148 vs 157.** Both versions of this hub use an unusually narrow NDS offset (32 mm) for their respective standards. The 157 version reaches the highest tension ratio of any *conventionally dished* 157 here (81.6%) but among the lowest lateral stiffness in the 157 group (63.0 N/mm) — because while the ratio is excellent, the narrow NDS offset means the NDS spoke angle is steep and the absolute stiffness contribution is reduced. This is a good illustration of why no single metric tells the full story.
 
-**I9 Hydra Centerlock 157 SB.** The highest lateral stiffness in the dataset (101.8 N/mm) and one of the highest buckling margins (188.4 kgf), owing to a notably wide NDS offset (43 mm) that gives the NDS spokes excellent lateral bracing geometry.
+**I9 Hydra Centerlock 157 SB.** Among the highest lateral stiffness in the dataset (101.8 N/mm, second only to the Erase MTB IS 157x12 at 102.5) and one of the highest buckling margins (188.4 kgf), owing to a notably wide NDS offset (43 mm) that gives the NDS spokes excellent lateral bracing geometry.
 
-**Axle standard is not the only driver.** The 148 range (57.9–82.6 N/mm) and 157 range (63.0–102.5 N/mm) overlap. A well-specified 148 build with a high-quality hub and large-flanged hubs can outperform a poorly specified 157 build. What the 157 standard enables is a structural ceiling that is simply not available at 148 mm — the best 157 hubs reach about 25% higher lateral stiffness than the best 148 hubs in this dataset.
+**KOM Xeno Rear Boost 148 — the clearest tension-balance-versus-stiffness trade in the dataset.** This hub posts the best tension balance of any 148 in the catalogue by a wide margin (77.2%, against a 148 median near 65%) and simultaneously the lowest lateral stiffness of any hub here, either standard (53.6 N/mm). Both come from the same two geometry choices: a 46 mm flange PCD, the smallest in the dataset, and a flange spacing of 54 mm that sits the two flanges unusually close together. The small PCD shortens the lever the spokes act on and steepens their angle at the rim, which costs bracing stiffness; the narrow, comparatively even flange spacing is what keeps the two sides' tensions close. A builder reading only the tension-ratio column would rank this hub first among 148s, and a builder reading only the stiffness column would rank it last. Neither column is wrong, and this is the sharpest illustration in the catalogue of why the widget shows four metrics instead of a score.
+
+**Axle standard is not the only driver.** The 148 range (53.6–82.6 N/mm) and 157 range (50.8–102.5 N/mm) overlap, and the 157 range now fully contains the 148 range. A well-specified 148 build with a high-quality hub and large-flanged hubs can outperform a poorly specified 157 build. What the 157 standard enables is a structural ceiling that is simply not available at 148 mm — the best 157 hubs reach about 25% higher lateral stiffness than the best 148 hubs in this dataset.
 
 ---
 
