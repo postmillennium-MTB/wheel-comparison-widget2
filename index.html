@@ -115,6 +115,13 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
 
 /* ── Primary card (F_lat) — hero treatment ─── */
 .cmp-card.primary{padding:0;overflow:hidden;border:2px solid var(--ink);margin-bottom:14px}
+/* Detail cards (the four metric cards, buckling margin, no drama zone) sit
+   below the config/headline row rather than inside it, so they can use the
+   full .wrap width (up to 1320px) instead of being capped to the narrow
+   middle grid column of .layout -- that column only gets what's left over
+   after the two fixed 300px hub-config cards, which is where "wider than
+   that column" was coming from. */
+.detail-wrap{margin-top:14px}
 /* Lateral strength / radial strength / lateral stiffness / tension balance,
    as a 2x2 square instead of stacked in one column. Single column below the
    640px breakpoint the rest of the widget already uses for this kind of
@@ -491,6 +498,14 @@ built on those stiffnesses.</p>
 
   <div class="takeaway" id="takeaway">—</div>
 
+</div>
+</div>
+
+<!-- Detail cards live below the config/headline row, not inside cmp-col,
+     so they can span the full page width instead of being capped to the
+     narrow middle grid column between the two 300px hub-config cards. -->
+<div class="detail-wrap">
+
   <div class="metric-quad">
   <div class="cmp-card primary">
     <button class="sec-toggle" id="tog-flat" aria-expanded="false" aria-controls="body-flat" onclick="toggleCard('flat')">
@@ -594,7 +609,6 @@ built on those stiffnesses.</p>
     </div>
   </div>
 
-</div>
 </div>
 
 <p class="note">
