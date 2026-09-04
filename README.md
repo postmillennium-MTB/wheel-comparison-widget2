@@ -121,13 +121,13 @@ The most fundamental constraint on a dished rear wheel. Because the rim sits clo
 
 **What the number means.** A ratio of 66% means the NDS spokes carry 66 kgf for every 100 kgf on the DS. Wider axles (157 vs 148) push the flanges further apart and typically improve the ratio, because the NDS offset increases relative to the DS offset. Larger flange diameters can raise it further.
 
-**Editorial note on thresholds.** The widget displays the ratio without a pass/fail line. Dished MTB rear wheels in this dataset land between 61–96% under standard conditions, though that top figure needs context: the only entries above 82% are hubs that are barely dished to begin with (the Hope Pro5 150 converted to 157, at 95.8%), not well-balanced versions of conventional ones. The often-cited "80% target" appears in wheel building guides as a quality aspiration, not a structural requirement from Ford's analysis, and most production Boost hubs do not reach it. Labeling builds below 80% as "failing" would flag the majority of wheels in common use; this widget instead lets the numbers speak.
+**Editorial note on thresholds.** The widget displays the ratio without a pass/fail line. Dished MTB rear wheels in this dataset land between 56–96% under standard conditions, though that top figure needs context: the only entries above 82% are hubs that are barely dished to begin with (the Hope Pro5 150 converted to 157, at 95.8%), not well-balanced versions of conventional ones. The often-cited "80% target" appears in wheel building guides as a quality aspiration, not a structural requirement from Ford's analysis, and most production Boost hubs do not reach it. Labeling builds below 80% as "failing" would flag the majority of wheels in common use; this widget instead lets the numbers speak.
 
 ### Lateral stiffness K_lat (N/mm)
 
 How hard it is to push the rim sideways at the contact patch with a unit force. Higher is stiffer. Under the Mode Matrix method, the value accounts for both the rim's resistance to bending and torsion and the spoke bed's resistance to lateral displacement. The tension-softening effect — whereby pre-tension in the spokes actually reduces lateral stiffness slightly via hoop compression — is included.
 
-Across the 26 hubs in this dataset at standard build conditions (29 in, 32H, 2.0 mm spokes, 100 kgf DS tension, DT Swiss TK540 rim), K_lat ranges from **53.6 to 82.6 N/mm for 148** builds and **50.8 to 102.5 N/mm for 157** builds. The variation within each standard is as large as the difference between standards — meaning hub geometry and wheel size matter as much as the axle width.
+Across the 27 hubs in this dataset at standard build conditions (29 in, 32H, 2.0 mm spokes, 100 kgf DS tension, DT Swiss TK540 rim), K_lat ranges from **53.6 to 82.6 N/mm for 148** builds and **50.8 to 102.5 N/mm for 157** builds. The variation within each standard is as large as the difference between standards — meaning hub geometry and wheel size matter as much as the axle width.
 
 ### Lateral strength F_lat (kgf)
 
@@ -247,6 +247,7 @@ The numbers are recorded here so the research is not lost and nobody re-derives 
 | Hadley 148x12 | 148 | 62.2% | 75.2 | 4736 | 155.3 | PASS |
 | OneUp Rear Hub 148x12 | 148 | 60.7% | 77.9 | 4728 | 158.1 | not yet run |
 | KOM Xeno Rear Boost 148x12 | 148 | 77.2% | 53.6 | 4737 | 135.2 | not yet run |
+| DMR Zone 148 Boost Centerlock | 148 | 55.6% | 76.2 | 4737 | 154.7 | not yet run |
 | Onyx 150/157 | 157 | 66.6% | 95.2 | 4715 | 180.4 | PASS |
 | Onyx 150/157 Vesper | 157 | 65.8% | 93.7 | 4711 | 178.3 | PASS |
 | SPANK HEX J-TYPE R150/157 | 157 | 75.2% | 93.6 | 4726 | 180.9 | PASS |
@@ -274,7 +275,11 @@ The numbers are recorded here so the research is not lost and nobody re-derives 
 
 **KOM Xeno Rear Boost 148 — the clearest tension-balance-versus-stiffness trade in the dataset.** This hub posts the best tension balance of any 148 in the catalogue by a wide margin (77.2%, against a 148 median near 65%) and simultaneously the lowest lateral stiffness of any hub here, either standard (53.6 N/mm). Both come from the same two geometry choices: a 46 mm flange PCD, the smallest in the dataset, and a flange spacing of 54 mm that sits the two flanges unusually close together. The small PCD shortens the lever the spokes act on and steepens their angle at the rim, which costs bracing stiffness; the narrow, comparatively even flange spacing is what keeps the two sides' tensions close. A builder reading only the tension-ratio column would rank this hub first among 148s, and a builder reading only the stiffness column would rank it last. Neither column is wrong, and this is the sharpest illustration in the catalogue of why the widget shows four metrics instead of a score.
 
-**DMR Zone 157 — the KOM Xeno 148 in reverse.** The most heavily dished hub in the 157 group (61.3% tension balance, below every other 157 and below most of the 148s) and simultaneously one of the stiffest (91.2 N/mm, fourth of thirteen). Its geometry is the opposite of the KOM's: a 56 mm PCD with the flanges pushed wide apart and well off-centre (41.0 NDS against 25.0 DS). Wide, asymmetric flanges brace the rim well and dish it hard, and both follow from the same choice. Set beside the KOM Xeno 148 and the Hope 150 conversion, this completes the picture — across this catalogue, tension balance and lateral stiffness trade against each other far more often than they move together, whichever end of the range a hub sits at.
+**DMR Zone, both standards — the most dished hubs here, and what that does and does not buy.** The Zone 148 posts the lowest tension balance in the entire catalogue (55.6%) and the Zone 157 the lowest in its group (61.3%, below every other 157 and below 11 of the 13 148s). DMR runs the same idea at both widths: a 56 mm PCD with the flanges set wide and well off-centre — 38.0 NDS against 21.0 DS at 148, 41.0 against 25.0 at 157.
+
+What that buys is less than it might appear. Both land mid-pack for lateral stiffness, not at the top: the 148 is 6th of 13 (76.2 N/mm) and the 157 is 9th of 14 (91.2 N/mm). So the deep dish is not purchasing class-leading stiffness — the I9 Hydra Centerlock 148 is stiffer (82.6 N/mm) while carrying a far healthier 62.2% balance.
+
+The broader pattern in the 148 group is close to monotonic in the other direction. Ranked by stiffness, the top of the table runs 62–68% balance and the bottom runs 69–77%: project 321 (57.9 N/mm, 69.1%) and the KOM Xeno (53.6 N/mm, 77.2%) sit last on stiffness and first on balance. Across this catalogue the two metrics trade against each other far more often than they move together — which is the case for showing four numbers rather than one score.
 
 **Axle standard is not the only driver.** The 148 range (53.6–82.6 N/mm) and 157 range (50.8–102.5 N/mm) overlap, and the 157 range now fully contains the 148 range. A well-specified 148 build with a high-quality hub and large-flanged hubs can outperform a poorly specified 157 build. What the 157 standard enables is a structural ceiling that is simply not available at 148 mm — the best 157 hubs reach about 25% higher lateral stiffness than the best 148 hubs in this dataset.
 
