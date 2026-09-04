@@ -30,6 +30,8 @@ The intended audience is two groups who often want the same answer for different
 
 **Shareable link.** "Copy link" packs every current setting — both hubs, wheel sizes, spoke gauges, and any advanced rim/tension overrides — into the URL hash, so a copied link reproduces the exact comparison for whoever opens it.
 
+**DS tension is set per side, not shared.** It used to be one control for both wheels. That broke once wheel size became independently selectable per side (26–32"): buckling tension drops as a wheel gets larger, so one shared absolute tension was a different fraction of "how close to buckling" on each side whenever the two sizes differed — silently making the larger wheel look stronger or weaker depending on where that shared value happened to fall on its curve, for reasons that had nothing to do with the hubs being compared. Each side now defaults to 120 kgf, or 100 kgf at 32" specifically — a size where 120 kgf pushes most of this catalogue close enough to its own modeled buckling limit that the comparison stops being about hub geometry — and can be moved independently. Changing a side's wheel size updates its tension to that size's default automatically, unless you've set that side's tension by hand, in which case your choice is kept.
+
 ---
 
 ## Theory and source code
