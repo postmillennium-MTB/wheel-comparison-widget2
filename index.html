@@ -356,12 +356,6 @@ built on those stiffnesses.</p>
           <option value="8">8</option><option value="16">16</option>
           <option value="24" selected>24</option><option value="48">48</option>
         </select></div>
-      <div><div class="slbl">DS tension (kgf)</div>
-        <select class="ctl" id="g-tds" onchange="refresh()" aria-label="Drive-side spoke tension">
-          <option value="95">95</option><option value="100" selected>100</option>
-          <option value="105">105</option><option value="110">110</option>
-          <option value="115">115</option><option value="120">120</option><option value="125">125</option>
-        </select></div>
       <div><div class="slbl">Spoke count</div>
         <select class="ctl" id="g-ns" onchange="refresh()" aria-label="Spoke count">
           <option value="28">28H</option><option value="32" selected>32H</option><option value="36">36H</option>
@@ -374,7 +368,7 @@ built on those stiffnesses.</p>
       <div><div class="h">EA_rim</div><p>Rim hoop (axial) stiffness, used for the rim's in-plane response and the tension-softening terms. Typical alloy: 8–15 MN.</p></div>
       <div><div class="h">Modes N</div><p>Fourier modes in the Mode Matrix sum. Harmonics used to approximate the rim's deformed shape. Accuracy converges by N~16–24; higher settings add no meaningful precision.</p></div>
     </div>
-    <div class="adv-note">Rim defaults: DT Swiss TK540 (EI_lat 50, EI_rad 150, GJ 22 N·m², EA 11.5 MN). Both wheels always share the same rim, tension, and spoke count, so differences below come from hub geometry, wheel size, and spoke gauge only.</div>
+    <div class="adv-note">Rim defaults: DT Swiss TK540 (EI_lat 50, EI_rad 150, GJ 22 N·m², EA 11.5 MN). Both wheels always share the same rim and spoke count, so differences below come from hub geometry, wheel size, spoke gauge, and DS tension only. DS tension is set per wheel now, not shared — see the "DS tension" field on each card below. That's a deliberate change: a wheel size this tool lets you pick on one side but not the other (26–32″) doesn't buckle at the same tension, so one shared value silently penalized whichever size buckles sooner. Each side defaults sensibly for its own size and can be moved independently.</div>
   </div>
 </div>
 
@@ -390,6 +384,15 @@ built on those stiffnesses.</p>
         <button id="w148-275" aria-pressed="false" onclick="setWheel('148','27.5')">27.5″</button>
         <button id="w148-29" aria-pressed="true" onclick="setWheel('148','29')">29″</button>
         <button id="w148-32" aria-pressed="false" onclick="setWheel('148','32')">32″</button>
+      </div></div>
+    <div class="fld"><div class="slbl">DS tension (kgf)</div>
+      <select class="ctl" id="tds148" aria-label="148 drive-side spoke tension">
+        <option value="95">95</option><option value="100">100</option>
+        <option value="105">105</option><option value="110">110</option>
+        <option value="115">115</option><option value="120">120</option><option value="125">125</option>
+      </select>
+      <div style="font-size:10.5px;color:var(--faint);margin-top:3px;line-height:1.4">
+        Defaults to <b>100</b> at 32″ (lower buckling margin at that size), <b>120</b> otherwise. Change wheel size to see the default follow it, or set your own.
       </div></div>
     <div class="fld"><div class="slbl">Hub</div>
       <select class="ctl" id="hub148" onchange="refresh()" aria-label="148 hub"></select></div>
@@ -414,6 +417,15 @@ built on those stiffnesses.</p>
         <button id="w157-275" aria-pressed="false" onclick="setWheel('157','27.5')">27.5″</button>
         <button id="w157-29" aria-pressed="true" onclick="setWheel('157','29')">29″</button>
         <button id="w157-32" aria-pressed="false" onclick="setWheel('157','32')">32″</button>
+      </div></div>
+    <div class="fld"><div class="slbl">DS tension (kgf)</div>
+      <select class="ctl" id="tds157" aria-label="157 drive-side spoke tension">
+        <option value="95">95</option><option value="100">100</option>
+        <option value="105">105</option><option value="110">110</option>
+        <option value="115">115</option><option value="120">120</option><option value="125">125</option>
+      </select>
+      <div style="font-size:10.5px;color:var(--faint);margin-top:3px;line-height:1.4">
+        Defaults to <b>100</b> at 32″ (lower buckling margin at that size), <b>120</b> otherwise. Change wheel size to see the default follow it, or set your own.
       </div></div>
     <div class="fld"><div class="slbl">Hub</div>
       <select class="ctl" id="hub157" onchange="refresh()" aria-label="157 hub"></select></div>
@@ -845,7 +857,31 @@ const HUBS_157 = [
 const WHEEL_ERDS = { '26':534, '27.5':559, '29':600, '32':667 };
 const SPOKE_DIAS = ['1.5','1.6','1.7','1.8','1.9','2.0','2.1','2.2','2.3'];
 const DEFAULTS = { wheel148:'29', wheel157:'29', hub148:'h6', hub157:'h7' };
-const ST = Object.assign({}, DEFAULTS);
+
+// DS tension used to be one control shared by both sides. It no longer is:
+// this tool lets each side pick its own wheel size (26-32"), and buckling
+// tension drops as wheel size grows, so one shared absolute tension was a
+// different fraction of "how close to buckling" on each side whenever the
+// two sizes differed -- silently penalizing whichever side happened to be
+// on the bigger wheel. Each side now defaults its tension from its OWN
+// wheel size instead.
+//
+// 100kgf at 32" keeps most catalogue hubs under this tool's own "tight"
+// buckling-margin threshold (70%, see chip() below) at that size; 120kgf
+// elsewhere matches MTB-wheel-lab's default, the sibling tool built on the
+// same wheel-physics-core engine, so a hub pair compared on both tools reads
+// consistently unless you deliberately move a tension slider.
+function defaultTensionFor(wheelSize) { return wheelSize === '32' ? 100 : 120; }
+
+const DEFAULT_TDS148 = defaultTensionFor(DEFAULTS.wheel148);
+const DEFAULT_TDS157 = defaultTensionFor(DEFAULTS.wheel157);
+const ST = Object.assign({}, DEFAULTS, {
+  tds148: DEFAULT_TDS148, tds157: DEFAULT_TDS157,
+  // true once a side's tension has been set directly rather than by the
+  // size-based default -- so changing wheel size afterward doesn't clobber
+  // a deliberate choice. See setWheel() and onTensionChange().
+  tds148Touched: false, tds157Touched: false,
+});
 
 // ── UI ───────────────────────────────────────────────────────────────────────
 function toggleCard(id) {
@@ -895,7 +931,8 @@ function collectState() {
     gj:  document.getElementById('g-gj').value,
     ea:  document.getElementById('g-ea').value,
     nn:  document.getElementById('g-modes').value,
-    td:  document.getElementById('g-tds').value,
+    td1: ST.tds148,
+    td2: ST.tds157,
     ns:  document.getElementById('g-ns').value,
     th:  THEMES[themeIdx].id,
     adv: document.getElementById('adv-panel').classList.contains('open') ? 1 : 0,
@@ -934,8 +971,21 @@ function readURL() {
   setSel('spk148ds',  p.s1, okDia); setSel('spk148nds', p.s2, okDia);
   setSel('spk157ds',  p.s3, okDia); setSel('spk157nds', p.s4, okDia);
   setSel('g-eil', p.eil); setSel('g-eir', p.eir); setSel('g-gj', p.gj);
-  setSel('g-ea', p.ea);   setSel('g-modes', p.nn); setSel('g-tds', p.td);
+  setSel('g-ea', p.ea);   setSel('g-modes', p.nn);
   setSel('g-ns', p.ns);
+
+  // A shared link should reproduce exactly what its author saw, tension
+  // included -- so a value present in the URL counts as deliberately set,
+  // the same way a manual edit does, and won't be overwritten by a later
+  // wheel-size change on that side (see setWheel()).
+  if (p.td1 != null) {
+    ST.tds148 = +p.td1; ST.tds148Touched = true;
+    document.getElementById('tds148').value = ST.tds148;
+  }
+  if (p.td2 != null) {
+    ST.tds157 = +p.td2; ST.tds157Touched = true;
+    document.getElementById('tds157').value = ST.tds157;
+  }
 
   const ti = THEMES.findIndex(t => t.id === p.th);
   if (ti >= 0) themeIdx = ti;
@@ -979,6 +1029,20 @@ function buildControls() {
   document.getElementById('hub157').value = ST.hub157;
   document.getElementById('hub148').onchange = () => { ST.hub148 = document.getElementById('hub148').value; refresh(); };
   document.getElementById('hub157').onchange = () => { ST.hub157 = document.getElementById('hub157').value; refresh(); };
+
+  document.getElementById('tds148').value = ST.tds148;
+  document.getElementById('tds157').value = ST.tds157;
+  document.getElementById('tds148').onchange = () => onTensionChange('148');
+  document.getElementById('tds157').onchange = () => onTensionChange('157');
+}
+
+// A side's tension select was moved by hand -- record it as deliberate so a
+// later wheel-size change on that side won't silently override it.
+function onTensionChange(side) {
+  const v = +document.getElementById('tds' + side).value;
+  if (side === '148') { ST.tds148 = v; ST.tds148Touched = true; }
+  else                 { ST.tds157 = v; ST.tds157Touched = true; }
+  refresh();
 }
 
 function setWheel(side, w) {
@@ -986,19 +1050,34 @@ function setWheel(side, w) {
   ['26','27.5','29','32'].forEach(sz =>
     document.getElementById(`w${side}-${sz.replace('.','')}`)
       .setAttribute('aria-pressed', sz === w ? 'true' : 'false'));
+
+  // Follow the size-based tension default UNLESS this side's tension was
+  // set by hand -- a deliberate choice shouldn't be overwritten just
+  // because the wheel size changed.
+  const touched = side === '148' ? ST.tds148Touched : ST.tds157Touched;
+  if (!touched) {
+    const t = defaultTensionFor(w);
+    if (side === '148') ST.tds148 = t; else ST.tds157 = t;
+    document.getElementById('tds' + side).value = t;
+  }
+
   refresh();
 }
 
 function resetAll() {
-  Object.assign(ST, DEFAULTS);
+  Object.assign(ST, DEFAULTS, {
+    tds148: DEFAULT_TDS148, tds157: DEFAULT_TDS157,
+    tds148Touched: false, tds157Touched: false,
+  });
   setWheelSilent('148', ST.wheel148); setWheelSilent('157', ST.wheel157);
   document.getElementById('hub148').value = ST.hub148;
   document.getElementById('hub157').value = ST.hub157;
+  document.getElementById('tds148').value = ST.tds148;
+  document.getElementById('tds157').value = ST.tds157;
   ['spk148ds','spk148nds','spk157ds','spk157nds'].forEach(id => document.getElementById(id).value = '2.0');
   document.getElementById('g-eil').value = 50;  document.getElementById('g-eir').value = 150;
   document.getElementById('g-gj').value = 22;   document.getElementById('g-ea').value = 11.5;
   document.getElementById('g-modes').value = '24';
-  document.getElementById('g-tds').value = '100';
   document.getElementById('g-ns').value = '32';
   refresh();
 }
@@ -1030,7 +1109,6 @@ function randomCompare() {
   document.getElementById('g-gj').value  = 22;
   document.getElementById('g-ea').value  = 11.5;
   document.getElementById('g-modes').value = '24';
-  document.getElementById('g-tds').value   = '100';
   document.getElementById('g-ns').value    = '32';
 
   const sizes = ['26','27.5','29','32'];
@@ -1045,9 +1123,16 @@ function randomCompare() {
 
   ST.wheel148 = w; ST.wheel157 = w;
   ST.hub148 = h1;  ST.hub157 = h2;
+  // Both sides land on the same random size, so both get that size's
+  // default tension too -- a random roll should be a clean apples-to-apples
+  // draw, not carry over a tension you'd deliberately set earlier.
+  ST.tds148 = ST.tds157 = defaultTensionFor(w);
+  ST.tds148Touched = ST.tds157Touched = false;
   setWheelSilent('148', w); setWheelSilent('157', w);
   document.getElementById('hub148').value = h1;
   document.getElementById('hub157').value = h2;
+  document.getElementById('tds148').value = ST.tds148;
+  document.getElementById('tds157').value = ST.tds157;
 
   const hero = document.getElementById('hero');
   hero.classList.remove('flash');
@@ -1090,15 +1175,14 @@ function refresh() {
   const GJ  = +document.getElementById('g-gj').value;
   const EA  = +document.getElementById('g-ea').value * 1e6;
   const N   = +document.getElementById('g-modes').value;
-  const tDS = +document.getElementById('g-tds').value;
   const Ns  = +document.getElementById('g-ns').value;
 
   const m148 = calc(WHEEL_ERDS[ST.wheel148], hub148,
     +document.getElementById('spk148ds').value, +document.getElementById('spk148nds').value,
-    tDS, EIL, EIR, GJ, EA, Ns, N);
+    ST.tds148, EIL, EIR, GJ, EA, Ns, N);
   const m157 = calc(WHEEL_ERDS[ST.wheel157], hub157,
     +document.getElementById('spk157ds').value, +document.getElementById('spk157nds').value,
-    tDS, EIL, EIR, GJ, EA, Ns, N);
+    ST.tds157, EIL, EIR, GJ, EA, Ns, N);
 
   // side cards: tensions
   document.getElementById('t148-nds').textContent = fmt(m148.T_NDS, 1);
@@ -1228,9 +1312,12 @@ function buildHero(m148, m157, hub148, hub157) {
   const wtxt = ST.wheel148 === ST.wheel157
     ? ST.wheel148 + '″'
     : ST.wheel148 + '″ vs ' + ST.wheel157 + '″';
+  const ttxt = ST.tds148 === ST.tds157
+    ? ST.tds148 + ' kgf DS'
+    : ST.tds148 + ' vs ' + ST.tds157 + ' kgf DS';
   document.getElementById('hero-cond').textContent =
     `${wtxt} · ${document.getElementById('g-ns').value}H · ` +
-    `${document.getElementById('g-tds').value} kgf DS · same rim both sides`;
+    `${ttxt} · same rim both sides`;
 }
 
 /* Plain-English summary for a casual reader — leads with the F_lat hero metric,
