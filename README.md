@@ -46,6 +46,36 @@ The core reference is:
 
 > Ford, M.T. (2018). *A Theoretical Analysis of the Bicycle Wheel.* PhD thesis, Northwestern University. Available via: [github.com/dashdotrobot/bike-wheel-calc](https://github.com/dashdotrobot/bike-wheel-calc)
 
+### Where this widget's copy of the engine comes from
+
+This widget is a single **HTML** file — the whole thing (markup, styling,
+and the physics math itself) ships as one page with no server behind it.
+The math it runs is **JS** (JavaScript — the programming language a web
+page runs inside the visitor's own browser). But the math wasn't written
+from scratch in JavaScript: it's a port of Ford's original Python, and
+keeping that port honest is a separate repo's job, not this one's.
+
+**[wheel-physics-core](https://github.com/postmillennium-MTB/wheel-physics-core)**
+holds both halves side by side: Ford's original `bike-wheel-calc` library,
+copied over unmodified and still in Python, and a JS port of it written to
+match. Every time that JS port changes, an automated check called **CI**
+(Continuous Integration — a script that runs on its own the moment code is
+pushed, rather than only when someone remembers to run it by hand)
+recomputes the same hub geometries both ways — once through the real
+Python, once through the JS — and fails loudly the moment they disagree.
+That check is what "validated" means throughout this document: not
+eyeballed once, but re-proven automatically on every single change to the
+engine, forever, not just at the two dated snapshots below.
+
+This widget's own `<script id="engine">` block (in `index.html`) is a
+synced copy of that already-checked JS file. The Python itself never runs
+when someone opens this page — only the pre-checked JavaScript does; the
+Python's only job is sitting in wheel-physics-core as the thing the JS gets
+checked against, ahead of time, before a copy of it ever ships here.
+`MTB-wheel-lab` (PMR's other wheel tool) pulls the exact same JS from the
+exact same source, which is what keeps the two tools' numbers from quietly
+drifting apart the way they once had.
+
 ### Exact library functions reproduced
 
 The four computed metrics correspond to specific functions in the Ford library:
@@ -268,6 +298,15 @@ Both wheels always share the same rim defaults. This is intentional: it isolates
 
 ### Approach
 
+**As of the engine sync noted in "Where this widget's copy of the engine
+comes from" above, this section is history, not the live process.** The
+two dated runs immediately below were real, and their numbers stand — but
+at the time, checking the port meant manually extracting the engine from
+this repo's own `index.html` and running it against the Python library by
+hand, here, in this repo. That local, by-hand process has since been
+retired in favor of an automated one that runs in wheel-physics-core
+instead — see "Re-running the validation" below for what replaced it.
+
 The widget's physics engine is a direct JavaScript port of Ford's Python library. To confirm the port is correct, the engine was extracted from the shipped `index.html` and run against the Python library across the full 20-hub catalogue, using the same inputs, and the outputs were compared numerically.
 
 ### Results
@@ -286,14 +325,16 @@ The strength metrics (F_lat, F_rad) are **not** compared against the library, be
 
 ### Re-running the validation
 
-If you modify the engine and want to re-run the congruence check, you need Python 3, Node.js, and the `bikewheelcalc` library installed from source:
-
-```bash
-git clone https://github.com/dashdotrobot/bike-wheel-calc.git
-pip install ./bike-wheel-calc
-```
-
-The validation logic is the `congruence.py` script from the v1 repository's validation folder, updated to read hub data from the shipped `index.html` rather than a separate file. The key point is that the script should always extract the engine from the deployed `index.html` — not from a separate copy — so that validation is always testing exactly what users are running.
+This repo no longer carries its own copy of that check. If you want to
+modify the engine's math, do it in
+**[wheel-physics-core](https://github.com/postmillennium-MTB/wheel-physics-core)**,
+not here — that repo's `validation/` folder has the up-to-date
+instructions (Python 3 + Node.js; Ford's library is vendored there
+directly, so there's no separate install step), and its CI runs the check
+automatically on every push, so a passing result isn't something anyone
+has to remember to go check by hand — it's already been checked before the
+change is even merged. Once it passes there, sync the validated engine
+into this widget's `<script id="engine">` block.
 
 ---
 
