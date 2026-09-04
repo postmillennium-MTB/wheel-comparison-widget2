@@ -53,6 +53,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
    laptop width) so this doesn't introduce horizontal scroll there. */
 .wrap{max-width:1320px;margin:0 auto}
 h1{font-size:29px;font-weight:750;letter-spacing:-.015em;line-height:1.15}
+.pct-icon{width:.85em;height:.85em;vertical-align:-.05em;display:inline-block}
 .tagline{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.14em;
   text-transform:uppercase;color:var(--b-text);margin:3px 0 0}
 .sub{font-size:12.5px;color:var(--muted);margin:2px 0 14px;max-width:62ch}
@@ -343,7 +344,7 @@ html[data-theme="mgb"] .hero{
 <div class="page-head">
   <div class="title-block">
     <h1>Rear Wheel Comparison: 148 vs 157</h1>
-    <p class="tagline">Symmetry equals strength</p>
+    <p class="tagline">Symmetry <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin:0 1px"><line x1="5" x2="19" y1="9" y2="9"/><line x1="5" x2="19" y1="15" y2="15"/></svg> strength</p>
   </div>
   <div class="head-actions">
     <button class="act-btn" id="theme-btn" onclick="cycleTheme()"
@@ -423,7 +424,7 @@ built on those stiffnesses.</p>
       <div><div class="slbl">Spoke ⌀ NDS (mm)</div>
         <select class="ctl" id="spk148nds" onchange="refresh()" aria-label="148 non-drive-side spoke diameter"></select></div>
     </div>
-    <div class="tens"><span class="ml">NDS tension at 100% DS</span>
+    <div class="tens"><span class="ml">NDS tension at 100<svg class="pct-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg> DS</span>
       <span><span class="mv" id="t148-nds">—</span><span class="ms">kgf</span></span></div>
     <div class="tens" style="border:none;padding-top:4px;margin-top:0"><span class="ml">Average radial tension</span>
       <span><span class="mv" id="t148-avg">—</span><span class="ms">kgf</span></span></div>
@@ -456,7 +457,7 @@ built on those stiffnesses.</p>
       <div><div class="slbl">Spoke ⌀ NDS (mm)</div>
         <select class="ctl" id="spk157nds" onchange="refresh()" aria-label="157 non-drive-side spoke diameter"></select></div>
     </div>
-    <div class="tens"><span class="ml">NDS tension at 100% DS</span>
+    <div class="tens"><span class="ml">NDS tension at 100<svg class="pct-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg> DS</span>
       <span><span class="mv" id="t157-nds">—</span><span class="ms">kgf</span></span></div>
     <div class="tens" style="border:none;padding-top:4px;margin-top:0"><span class="ml">Average radial tension</span>
       <span><span class="mv" id="t157-avg">—</span><span class="ms">kgf</span></span></div>
@@ -575,7 +576,7 @@ built on those stiffnesses.</p>
       </div>
       <div class="tug" aria-hidden="true"><div class="half l"><div class="ha" id="bar-ratio-a"></div></div><div class="half"><div class="hb" id="bar-ratio-b"></div></div></div>
       <div class="tug-lbl"><span>148</span><span>157</span></div>
-      <div class="verdict" id="cmp-ratio-stmt">—<span class="ctx">Dished MTB rear wheels typically land between 55–75%. Shown for context, not as a pass/fail line.</span></div>
+      <div class="verdict" id="cmp-ratio-stmt">—<span class="ctx">Dished MTB rear wheels typically land between 55–75<svg class="pct-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>. Shown for context, not as a pass/fail line.</span></div>
     </div>
   </div>
   </div>
@@ -595,7 +596,7 @@ built on those stiffnesses.</p>
           <tr><td class="vb">157</td><td id="tc157-avg">—</td><td id="tc157-ds">—</td><td id="tc157-use">—</td></tr>
         </tbody>
       </table>
-      <div class="verdict" style="margin-top:12px" id="cmp-tc-stmt">—<span class="ctx">"Used" = current average tension ÷ critical tension. The ✓ below 70% is this widget's chosen comfort margin, not a threshold from Ford.</span></div>
+      <div class="verdict" style="margin-top:12px" id="cmp-tc-stmt">—<span class="ctx">"Used" = current average tension ÷ critical tension. The ✓ below 70<svg class="pct-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg> is this widget's chosen comfort margin, not a threshold from Ford.</span></div>
     </div>
   </div>
   <div class="cmp-card secondary calm">
@@ -1177,6 +1178,14 @@ function randomCompare() {
 }
 
 const fmt = (v, d) => v.toFixed(d);
+// Percent-sign icon (lucide "percent"), reused everywhere a computed value
+// is displayed with a % suffix. A string, not a DOM node, because every
+// call site below builds its target via innerHTML already or is switched
+// to innerHTML here for this -- none of the interpolated values are
+// user-supplied (all are internal fmt()/toFixed() numbers or fixed
+// English words), so this carries the same trust level as the innerHTML
+// calls already in this file (buildHero, buildTakeaway, chip()).
+const PCT_ICON = '<svg class="pct-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>';
 
 /* Verdict for a metric where bigger is better for the given adjective.
    ALWAYS names the actual winner with the positive adjective — correct in
@@ -1185,7 +1194,7 @@ function verdict(v148, v157, adjective) {
   const d = Math.abs(v157 - v148) / Math.min(v148, v157) * 100;
   if (d < 0.05) return 'Effectively equal';
   const winner = v157 > v148 ? '157' : '148';
-  return `${winner} build is ${d.toFixed(1)}% ${adjective}`;
+  return `${winner} build is ${d.toFixed(1)}${PCT_ICON} ${adjective}`;
 }
 
 /* Center-out bars: each side scaled to the larger value (winner fills its half). */
@@ -1228,8 +1237,8 @@ function refresh() {
   document.getElementById('cmp-flat148').textContent = fmt(m148.F_lat, 1);
   document.getElementById('cmp-flat157').textContent = fmt(m157.F_lat, 1);
   tug('flat', m148.F_lat, m157.F_lat);
-  document.getElementById('cmp-flat-stmt').textContent = verdict(m148.F_lat, m157.F_lat, 'stronger');
-  document.getElementById('sum-flat').textContent = verdict(m148.F_lat, m157.F_lat, 'stronger');
+  document.getElementById('cmp-flat-stmt').innerHTML = verdict(m148.F_lat, m157.F_lat, 'stronger');
+  document.getElementById('sum-flat').innerHTML = verdict(m148.F_lat, m157.F_lat, 'stronger');
   document.getElementById('flat-gov').textContent =
     `${m148.latGov} spokes govern the 148 build, ${m157.latGov} the 157`;
 
@@ -1237,8 +1246,8 @@ function refresh() {
   document.getElementById('cmp-frad148').textContent = fmt(m148.F_rad, 0);
   document.getElementById('cmp-frad157').textContent = fmt(m157.F_rad, 0);
   tug('frad', m148.F_rad, m157.F_rad);
-  document.getElementById('cmp-frad-stmt').textContent = verdict(m148.F_rad, m157.F_rad, 'stronger');
-  document.getElementById('sum-frad').textContent = verdict(m148.F_rad, m157.F_rad, 'stronger');
+  document.getElementById('cmp-frad-stmt').innerHTML = verdict(m148.F_rad, m157.F_rad, 'stronger');
+  document.getElementById('sum-frad').innerHTML = verdict(m148.F_rad, m157.F_rad, 'stronger');
   document.getElementById('frad-gov').textContent =
     `${m148.radGov} spokes govern the 148 build, ${m157.radGov} the 157`;
 
@@ -1246,12 +1255,12 @@ function refresh() {
   document.getElementById('cmp-klat148').textContent = fmt(m148.K_lat, 1);
   document.getElementById('cmp-klat157').textContent = fmt(m157.K_lat, 1);
   tug('klat', m148.K_lat, m157.K_lat);
-  document.getElementById('cmp-klat-stmt').textContent = verdict(m148.K_lat, m157.K_lat, 'stiffer');
-  document.getElementById('sum-klat').textContent = verdict(m148.K_lat, m157.K_lat, 'stiffer');
+  document.getElementById('cmp-klat-stmt').innerHTML = verdict(m148.K_lat, m157.K_lat, 'stiffer');
+  document.getElementById('sum-klat').innerHTML = verdict(m148.K_lat, m157.K_lat, 'stiffer');
 
   // ratio
-  document.getElementById('cmp-ratio148').textContent = fmt(m148.ratio, 1) + '%';
-  document.getElementById('cmp-ratio157').textContent = fmt(m157.ratio, 1) + '%';
+  document.getElementById('cmp-ratio148').innerHTML = fmt(m148.ratio, 1) + PCT_ICON;
+  document.getElementById('cmp-ratio157').innerHTML = fmt(m157.ratio, 1) + PCT_ICON;
   tug('ratio', m148.ratio, m157.ratio);
   const rStmt = Math.abs(m157.ratio - m148.ratio) < 0.05
     ? 'Effectively equal'
@@ -1264,8 +1273,8 @@ function refresh() {
   document.getElementById('tc157-avg').textContent = fmt(m157.T_c, 0);
   document.getElementById('tc148-ds').textContent  = fmt(m148.T_c_DS, 0);
   document.getElementById('tc157-ds').textContent  = fmt(m157.T_c_DS, 0);
-  document.getElementById('tc148-use').innerHTML = fmt(m148.T_safety, 0) + '% ' + chip(m148.T_safety);
-  document.getElementById('tc157-use').innerHTML = fmt(m157.T_safety, 0) + '% ' + chip(m157.T_safety);
+  document.getElementById('tc148-use').innerHTML = fmt(m148.T_safety, 0) + PCT_ICON + ' ' + chip(m148.T_safety);
+  document.getElementById('tc157-use').innerHTML = fmt(m157.T_safety, 0) + PCT_ICON + ' ' + chip(m157.T_safety);
   const sEqual = Math.abs(m157.T_safety - m148.T_safety) < 0.05;
   const tcStmt = sEqual
     ? 'Effectively equal margin'
@@ -1289,7 +1298,7 @@ const reducedMotion = () =>
 function animateHeroNum(el, to) {
   const from = (heroLast === null) ? 0 : heroLast;
   heroLast = to;
-  const paint = v => el.innerHTML = v.toFixed(1) + '<span class="pct">%</span>';
+  const paint = v => el.innerHTML = v.toFixed(1) + '<span class="pct">' + PCT_ICON + '</span>';
   if (heroAnim) cancelAnimationFrame(heroAnim);
   if (reducedMotion() || Math.abs(to - from) < 0.05) { paint(to); return; }
   const t0 = performance.now(), dur = 500;
