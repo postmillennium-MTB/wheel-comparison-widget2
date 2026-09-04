@@ -127,7 +127,7 @@ The most fundamental constraint on a dished rear wheel. Because the rim sits clo
 
 How hard it is to push the rim sideways at the contact patch with a unit force. Higher is stiffer. Under the Mode Matrix method, the value accounts for both the rim's resistance to bending and torsion and the spoke bed's resistance to lateral displacement. The tension-softening effect — whereby pre-tension in the spokes actually reduces lateral stiffness slightly via hoop compression — is included.
 
-Across the 27 hubs in this dataset at standard build conditions (29 in, 32H, 2.0 mm spokes, 100 kgf DS tension, DT Swiss TK540 rim), K_lat ranges from **53.6 to 82.6 N/mm for 148** builds and **50.8 to 102.5 N/mm for 157** builds. The variation within each standard is as large as the difference between standards — meaning hub geometry and wheel size matter as much as the axle width.
+Across the 29 hubs in this dataset at standard build conditions (29 in, 32H, 2.0 mm spokes, 100 kgf DS tension, DT Swiss TK540 rim), K_lat ranges from **53.6 to 82.6 N/mm for 148** builds and **50.8 to 102.5 N/mm for 157** builds. The variation within each standard is as large as the difference between standards — meaning hub geometry and wheel size matter as much as the axle width.
 
 ### Lateral strength F_lat (kgf)
 
@@ -180,11 +180,19 @@ Manufacturer documents the entries in this catalogue were read from directly. Li
 |---|---|---|
 | KOM, *2023v8.0 Hub Spoke Offset, Pitch Circle Diameter and Spoke Seat Offset for KOM Xeno Hubs* | Both KOM Xeno entries | [PDF](https://a57737a1-faee-44f3-9d3e-369eef96078a.filesusr.com/ugd/f3b2d6_b44b975756194f24bea35c5b5da6b68a.pdf?index=true) |
 | Hope Technology, *Pro5 PCD — J-Bend, 2025* | Both Hope Pro5 entries, and the 2026-09 correction below | [PDF](https://www.hopetech.com/webtop/modules/_repository/1/documents/Pro5_PCD_J_Bend_2025.pdf) |
+| DT Swiss, 350 hub data via the DT spoke calculator | Both DT Swiss 350 entries | [spokes-calculator.dtswiss.com](https://spokes-calculator.dtswiss.com) |
+| DMR Bikes, Zone rear hub product pages | Both DMR Zone entries | [157 Super Boost](https://dmrbikes.com/products/dmr-zone-super-boost-rear-hub) |
 | OneUp Components, rear hub product pages | OneUp 148 entry / OneUp 157 entry | [148x12](https://www.oneupcomponents.com/products/rear-hub) · [157x12](https://www.oneupcomponents.com/products/rear-hub-157x12) |
 
 The KOM link is a direct file URL from KOM's site and carries a generated filename, so it is the kind of link that rots; the document is identified above by its full title and version (2023v8.0) so it stays findable if the URL moves. Entries predating this table were compiled from manufacturer specifications without the source file being recorded at the time — a gap worth closing as those hubs are next revisited.
 
 No measurements in this dataset were taken with calipers by the widget author. Hub geometry is inherently difficult to measure and varies slightly between production batches. If you have caliper measurements from a specific hub and they differ from the values here, the measured values should be considered more reliable. The widget accepts any geometry values via the advanced panel if you want to compare directly.
+
+**Addition (2026-09), DT Swiss.** The two DT Swiss 350 entries come from DT's own spoke calculator, which is where DT publishes this data — there is no downloadable spec sheet for it. Left maps to the non-drive side and right to the drive side, and DT's data carries its own confirmation of that: alongside the two flange offsets it gives a "mid-flange offset" of −6.6 mm toward the left for the 157. The midpoint between flanges computes to (41.1 − 27.9) / 2 = 6.60 mm toward the left from the stored values, matching DT's figure. That only works if the offsets are measured from hub centre, which is what this model needs, so the mapping is confirmed by the source rather than assumed from it.
+
+**Both entries are the 6-bolt variant, and the name says so for a reason.** DT's Center Lock 350 has different flange diameters from the 6-bolt at the same axle width — the same trap that produced the Hope Pro5 error recorded below, where the right axle width was read off the wrong row. An earlier attempt to source these figures from search results returned exactly that failure, pairing the 148's flange offsets with the 157's flange diameters. Any future DT addition needs the right disc interface as well as the right width.
+
+**Why this pair matters beyond its numbers.** Until these were added, every hub in this catalogue was a premium aftermarket or boutique product. The DT Swiss 350 is the highest-volume hub in mountain biking and is what a large share of readers are actually riding. Its presence makes the ranges below less a description of what specialist hubs do and more a description of the field.
 
 **Addition (2026-09), KOM.** The two KOM Xeno rear hubs were taken from KOM's own technical document *"2023v8.0 Hub Spoke Offset, Pitch Circle Diameter and Spoke Seat Offset for KOM Xeno Hubs"* ([PDF](https://a57737a1-faee-44f3-9d3e-369eef96078a.filesusr.com/ugd/f3b2d6_b44b975756194f24bea35c5b5da6b68a.pdf?index=true)), which lists "Spoke PCD Left & Right", "Flange Offset Left" and "Flange Offset Right" per model. Left maps to the non-drive side and right to the drive side; the document's own front-hub rows confirm that reading, since they place the left flange *closer* to centre (23.5 mm vs 34.0 mm), which is only correct if left is the disc side. KOM publishes identical geometry for the 28-hole and 32-hole versions of each model, so one catalogue entry covers both — spoke count is a separate control in the widget and is not baked into the hub entry.
 
@@ -248,6 +256,7 @@ The numbers are recorded here so the research is not lost and nobody re-derives 
 | OneUp Rear Hub 148x12 | 148 | 60.7% | 77.9 | 4728 | 158.1 | not yet run |
 | KOM Xeno Rear Boost 148x12 | 148 | 77.2% | 53.6 | 4737 | 135.2 | not yet run |
 | DMR Zone 148 Boost Centerlock | 148 | 55.6% | 76.2 | 4737 | 154.7 | not yet run |
+| DT Swiss 350 148 6-bolt | 148 | 63.7% | 74.4 | 4736 | 154.8 | not yet run |
 | Onyx 150/157 | 157 | 66.6% | 95.2 | 4715 | 180.4 | PASS |
 | Onyx 150/157 Vesper | 157 | 65.8% | 93.7 | 4711 | 178.3 | PASS |
 | SPANK HEX J-TYPE R150/157 | 157 | 75.2% | 93.6 | 4726 | 180.9 | PASS |
@@ -262,6 +271,7 @@ The numbers are recorded here so the research is not lost and nobody re-derives 
 | KOM Xeno Rear Super Boost 157 | 157 | 80.2% | 74.4 | 4723 | 159.3 | not yet run |
 | Hope Pro5 150 6 bolt (157 conv) | 157 | 95.8% | 50.8 | 4750 | 137.6 | not yet run |
 | DMR Zone 157 SB Centerlock | 157 | 61.3% | 91.2 | 4725 | 174.1 | not yet run |
+| DT Swiss 350 157 6-bolt | 157 | 67.9% | 96.0 | 4720 | 181.8 | not yet run |
 
 "PASS" means the widget value matched the `bike-wheel-calc` Python library to < 10⁻¹² % (floating-point noise).
 
@@ -274,6 +284,8 @@ The numbers are recorded here so the research is not lost and nobody re-derives 
 **I9 Hydra Centerlock 157 SB.** Among the highest lateral stiffness in the dataset (101.8 N/mm, second only to the Erase MTB IS 157x12 at 102.5) and one of the highest buckling margins (188.4 kgf), owing to a notably wide NDS offset (43 mm) that gives the NDS spokes excellent lateral bracing geometry.
 
 **KOM Xeno Rear Boost 148 — the clearest tension-balance-versus-stiffness trade in the dataset.** This hub posts the best tension balance of any 148 in the catalogue by a wide margin (77.2%, against a 148 median near 65%) and simultaneously the lowest lateral stiffness of any hub here, either standard (53.6 N/mm). Both come from the same two geometry choices: a 46 mm flange PCD, the smallest in the dataset, and a flange spacing of 54 mm that sits the two flanges unusually close together. The small PCD shortens the lever the spokes act on and steepens their angle at the rim, which costs bracing stiffness; the narrow, comparatively even flange spacing is what keeps the two sides' tensions close. A builder reading only the tension-ratio column would rank this hub first among 148s, and a builder reading only the stiffness column would rank it last. Neither column is wrong, and this is the sharpest illustration in the catalogue of why the widget shows four metrics instead of a score.
+
+**DT Swiss 350 — a bigger flange on the side that needs it.** Almost every hub here uses a drive-side flange as large as or larger than the non-drive side: 16 of the 27 entries preceding this pair had the larger flange on the drive side, 9 ran them equal, and only OneUp went the other way. DT joins OneUp as the exception, and does it at both widths — 58 mm non-drive against 52 mm drive at 148, 60 against 50.5 at 157. A larger non-drive flange lengthens the lever those spokes pull on, which is the side a dished rear wheel has least to work with. The 157 lands at 96.0 N/mm on a 67.9% balance, a stronger combination than most of the group, without resorting to either the deep dish of the DMR or the near-undished geometry of the endcap-converted Hope.
 
 **DMR Zone, both standards — the most dished hubs here, and what that does and does not buy.** The Zone 148 posts the lowest tension balance in the entire catalogue (55.6%) and the Zone 157 the lowest in its group (61.3%, below every other 157 and below 11 of the 13 148s). DMR runs the same idea at both widths: a 56 mm PCD with the flanges set wide and well off-centre — 38.0 NDS against 21.0 DS at 148, 41.0 against 25.0 at 157.
 
