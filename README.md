@@ -26,7 +26,7 @@ The intended audience is two groups who often want the same answer for different
 
 **Compare two at random.** Rerolls if it happens to land on the exact setup already on screen. The resulting comparison updates the shareable link like any manual change, so an interesting random pairing can be copied and sent as-is.
 
-**Secondary cards.** Radial strength, lateral stiffness, and tension balance are expanded by default. **Buckling margin is collapsed by default** — it's the metric readers reach for least often, so it starts out of the way and opens on tap.
+**Secondary cards.** Lateral strength, radial strength, lateral stiffness, and tension balance are all expanded by default. **Buckling margin is collapsed by default** — it's the metric readers reach for least often, so it starts out of the way and opens on tap.
 
 **Shareable link.** "Copy link" packs every current setting — both hubs, wheel sizes, spoke gauges, and any advanced rim/tension overrides — into the URL hash, so a copied link reproduces the exact comparison for whoever opens it.
 
