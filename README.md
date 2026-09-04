@@ -123,6 +123,20 @@ The most fundamental constraint on a dished rear wheel. Because the rim sits clo
 
 **Editorial note on thresholds.** The widget displays the ratio without a pass/fail line. Dished MTB rear wheels in this dataset land between 56–82% under standard conditions. The often-cited "80% target" appears in wheel building guides as a quality aspiration, not a structural requirement from Ford's analysis, and most production Boost hubs do not reach it. Labeling builds below 80% as "failing" would flag the majority of wheels in common use; this widget instead lets the numbers speak.
 
+### Does the ratio change with wheel size (27.5" vs 29")?
+
+Yes, but only very slightly — wheel size is a minor, second-order effect on this particular metric. Running the actual engine across all four wheel sizes on a few different hubs:
+
+| Hub | 26" | 27.5" | 29" | 32" | spread |
+|---|---|---|---|---|---|
+| CK 157 SB Centerlock | 71.85% | 71.82% | 71.77% | 71.72% | 0.14 pp |
+| Project 321 G3 157 SB | 81.68% | 81.66% | 81.63% | 81.58% | 0.11 pp |
+| DMR Zone 148 | 55.64% | 55.61% | 55.57% | 55.51% | 0.14 pp |
+
+So going from 27.5" to 29" moves the ratio by roughly 0.05 percentage points — essentially nothing next to the tens-of-points spread you see just from switching hubs. The mechanism is real (larger wheel radius → both spoke bracing angles shrink slightly, and they don't shrink at exactly the same rate when the two flanges differ in offset or PCD, so the ratio drifts a hair), but it's swamped by hub geometry.
+
+Worth noting: wheel size matters much more for the other three metrics — K_lat, F_lat, buckling tension — because those depend on absolute spoke length and rim stiffness, not just the angle ratio. The README's line about "hub geometry and wheel size matter as much as axle width" is specifically about K_lat, not tension balance — it doesn't apply here with the same force.
+
 ### Lateral stiffness K_lat (N/mm)
 
 How hard it is to push the rim sideways at the contact patch with a unit force. Higher is stiffer. Under the Mode Matrix method, the value accounts for both the rim's resistance to bending and torsion and the spoke bed's resistance to lateral displacement. The tension-softening effect — whereby pre-tension in the spokes actually reduces lateral stiffness slightly via hoop compression — is included.
