@@ -110,6 +110,50 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
   .cmp-col{order:2}
 }
 
+/* ── Simplified mode ─────────────────────────────────────────────────────────
+   Strips the page back to two wheels, two hub pickers and the one number, for
+   readers who want the answer rather than the workings. Nothing leaves the
+   DOM: every hidden control stays wired and keeps feeding the engine, so
+   switching back restores the full view with the state untouched.
+
+   The wheel drawing is simplified-mode-only. It earns its place here because
+   with the numbers stripped away it is the only thing left explaining *why*
+   one side wins -- see wheelFace() for what each part of it means. */
+.wheel-face,.simple-val{display:none}
+body.simple .wheel-face{display:block;width:100%;max-width:250px;aspect-ratio:1;
+  margin:2px auto 4px}
+/* The drawing is built entirely from currentColor, so each side inherits its
+   own series color the same way every other element on that card does. */
+.side-a .wheel-face{color:var(--a)}
+.side-b .wheel-face{color:var(--b)}
+/* Flex so the number can be ordered below the hub picker; source order puts it
+   directly under the drawing, which is where it belongs when the picker is
+   showing but not when it is the last thing on the card. */
+body.simple .side-card{display:flex;flex-direction:column}
+body.simple .simple-val{display:block;order:2;text-align:center;margin-top:12px}
+.simple-val .sv-num{display:block;font-family:var(--mono);font-variant-numeric:tabular-nums;
+  font-size:27px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.side-a .simple-val .sv-num{color:var(--a-text)}
+.side-b .simple-val .sv-num{color:var(--b-text)}
+.simple-val small{display:block;font-size:10px;font-weight:600;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--faint);margin-top:5px}
+body.simple .sub,
+body.simple #global-card,
+body.simple .simple-hide,
+body.simple .side-card .tens,
+body.simple .hero-bars,
+body.simple #takeaway,
+body.simple .detail-wrap,
+body.simple .note{display:none}
+body.simple .side-card .fld{margin-bottom:0}
+/* The hub picker is the only control left on the card, so it needs no label. */
+body.simple .side-card .fld .slbl{display:none}
+body.simple .side-card select.ctl{text-align:center;text-align-last:center}
+/* The wheels want more room than the 300px config columns full mode uses. */
+@media(min-width:960px){
+  body.simple .layout{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr) minmax(0,1fr)}
+}
+
 /* comparison cards — center-out "tug of war" bars */
 .cmp-card{background:var(--card);border:1px solid var(--line);border-radius:12px;
   padding:16px;margin-bottom:10px}
@@ -223,8 +267,16 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
   display:inline-flex;align-items:center}
 .pmr-link:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-text)}
 
-/* header action row: theme toggle + copy link */
-.head-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+/* header action row: simplified toggle + theme + copy link.
+   Wraps rather than pushing the page sideways: four buttons do not fit beside
+   the title on a phone, and flex-shrink:0 with no wrap turned that into a
+   horizontally scrolling page. */
+.head-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;
+  flex-wrap:wrap;min-width:0}
+@media(max-width:560px){
+  .page-head{flex-direction:column;align-items:stretch}
+  .head-actions{justify-content:flex-start}
+}
 .act-btn{font-size:12px;font-weight:600;color:var(--ink);background:#fff;
   border:1px solid var(--line);border-radius:8px;padding:6px 11px;min-height:32px;
   display:inline-flex;align-items:center;gap:6px}
@@ -232,6 +284,14 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
 .act-btn .dot{width:10px;height:10px;border-radius:999px;flex-shrink:0}
 .act-btn .dot.a{background:var(--a)} .act-btn .dot.b{background:var(--b)}
 .act-btn.copied{border-color:var(--ok);color:var(--ok)}
+.simp-btn .sw{width:28px;height:16px;border-radius:999px;background:var(--line);
+  position:relative;flex-shrink:0;transition:background .18s}
+.simp-btn .sw::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;
+  border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);
+  transition:transform .18s}
+.simp-btn[aria-pressed="true"]{border-color:var(--ink)}
+.simp-btn[aria-pressed="true"] .sw{background:var(--ink)}
+.simp-btn[aria-pressed="true"] .sw::after{transform:translateX(12px)}
 
 /* one-line plain takeaway above the primary card */
 .takeaway{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--ink);
@@ -347,6 +407,9 @@ html[data-theme="mgb"] .hero{
     <p class="tagline">Symmetry <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin:0 1px"><line x1="5" x2="19" y1="9" y2="9"/><line x1="5" x2="19" y1="15" y2="15"/></svg> strength</p>
   </div>
   <div class="head-actions">
+    <button class="act-btn simp-btn" id="simp-btn" aria-pressed="false"
+      onclick="toggleSimple()" aria-label="Toggle simplified mode"><span class="sw"
+      aria-hidden="true"></span>Simplified</button>
     <button class="act-btn" id="theme-btn" onclick="cycleTheme()"
       aria-label="Switch color scheme"><span class="dot a"></span><span class="dot b"></span><span id="theme-name">DMC-12</span></button>
     <button class="act-btn" id="copy-btn" onclick="copyLink()"
@@ -361,7 +424,7 @@ floating-point precision. Strength figures are first-spoke-slack thresholds
 built on those stiffnesses.</p>
 
 <!-- Global build settings -->
-<div class="card" style="margin-bottom:12px">
+<div class="card" id="global-card" style="margin-bottom:12px">
   <div class="topbar">
     <button class="adv-toggle" id="adv-btn" aria-expanded="false" aria-controls="adv-panel"
       onclick="toggleAdv()"><span class="arrow">▶</span> Build &amp; rim settings (shared by both wheels)</button>
@@ -400,14 +463,16 @@ built on those stiffnesses.</p>
   <!-- 148 -->
   <div class="card side-card side-a">
     <div class="side-head"><span class="std-name">148x12</span><span class="std-nick" title="Boost is a marketing nickname from Trek, circa 2014/2015.">Boost axle</span></div>
-    <div class="fld"><div class="slbl">Wheel size</div>
+    <div class="wheel-face" id="face148" aria-hidden="true"></div>
+    <div class="simple-val"><span class="sv-num" id="sv148">—</span><small>kgf to first slack spoke</small></div>
+    <div class="fld simple-hide"><div class="slbl">Wheel size</div>
       <div class="seg" id="seg148" role="group" aria-label="148 wheel size">
         <button id="w148-26" aria-pressed="false" onclick="setWheel('148','26')">26″</button>
         <button id="w148-275" aria-pressed="false" onclick="setWheel('148','27.5')">27.5″</button>
         <button id="w148-29" aria-pressed="true" onclick="setWheel('148','29')">29″</button>
         <button id="w148-32" aria-pressed="false" onclick="setWheel('148','32')">32″</button>
       </div></div>
-    <div class="fld"><div class="slbl">DS tension (kgf)</div>
+    <div class="fld simple-hide"><div class="slbl">DS tension (kgf)</div>
       <select class="ctl" id="tds148" aria-label="148 drive-side spoke tension">
         <option value="95">95</option><option value="100">100</option>
         <option value="105">105</option><option value="110">110</option>
@@ -418,7 +483,7 @@ built on those stiffnesses.</p>
       </div></div>
     <div class="fld"><div class="slbl">Hub</div>
       <select class="ctl" id="hub148" onchange="refresh()" aria-label="148 hub"></select></div>
-    <div class="fld two">
+    <div class="fld two simple-hide">
       <div><div class="slbl">Spoke ⌀ DS (mm)</div>
         <select class="ctl" id="spk148ds" onchange="refresh()" aria-label="148 drive-side spoke diameter"></select></div>
       <div><div class="slbl">Spoke ⌀ NDS (mm)</div>
@@ -433,14 +498,16 @@ built on those stiffnesses.</p>
   <!-- 157 -->
   <div class="card side-card side-b">
     <div class="side-head"><span class="std-name">157x12</span><span class="std-nick" title="Super Boost is a marketing nickname from Pivot, circa 2016.">Super Boost axle</span></div>
-    <div class="fld"><div class="slbl">Wheel size</div>
+    <div class="wheel-face" id="face157" aria-hidden="true"></div>
+    <div class="simple-val"><span class="sv-num" id="sv157">—</span><small>kgf to first slack spoke</small></div>
+    <div class="fld simple-hide"><div class="slbl">Wheel size</div>
       <div class="seg" id="seg157" role="group" aria-label="157 wheel size">
         <button id="w157-26" aria-pressed="false" onclick="setWheel('157','26')">26″</button>
         <button id="w157-275" aria-pressed="false" onclick="setWheel('157','27.5')">27.5″</button>
         <button id="w157-29" aria-pressed="true" onclick="setWheel('157','29')">29″</button>
         <button id="w157-32" aria-pressed="false" onclick="setWheel('157','32')">32″</button>
       </div></div>
-    <div class="fld"><div class="slbl">DS tension (kgf)</div>
+    <div class="fld simple-hide"><div class="slbl">DS tension (kgf)</div>
       <select class="ctl" id="tds157" aria-label="157 drive-side spoke tension">
         <option value="95">95</option><option value="100">100</option>
         <option value="105">105</option><option value="110">110</option>
@@ -451,7 +518,7 @@ built on those stiffnesses.</p>
       </div></div>
     <div class="fld"><div class="slbl">Hub</div>
       <select class="ctl" id="hub157" onchange="refresh()" aria-label="157 hub"></select></div>
-    <div class="fld two">
+    <div class="fld two simple-hide">
       <div><div class="slbl">Spoke ⌀ DS (mm)</div>
         <select class="ctl" id="spk157ds" onchange="refresh()" aria-label="157 drive-side spoke diameter"></select></div>
       <div><div class="slbl">Spoke ⌀ NDS (mm)</div>
@@ -927,6 +994,120 @@ function toggleCard(id) {
   body.hidden = open;
 }
 
+/* ── Simplified mode ─────────────────────────────────────────────────────────
+   A body class does the hiding (see the CSS block of the same name); this half
+   just keeps the button, the URL and the drawings in sync with it. */
+function setSimple(on) {
+  document.body.classList.toggle('simple', on);
+  document.getElementById('simp-btn').setAttribute('aria-pressed', on ? 'true' : 'false');
+}
+function toggleSimple() {
+  setSimple(!document.body.classList.contains('simple'));
+  refresh();           // draws the two wheels the first time the mode is opened
+}
+
+/* wheelFace(g) -> SVG markup for a head-on wheel, drawn so that the geometry
+   which actually sets the strength is the part you can see. In simplified mode
+   the detail cards are gone, so this drawing is carrying the explanation.
+
+   A true head-on view cannot show hub width at all -- flange spread and dish
+   are axial, straight down the line of sight. So the hub barrel is drawn as if
+   the hub were turned a few degrees towards you, and it carries the axial
+   story while the spokes and flange circles stay concentric with the wheel.
+   (Sliding those sideways as well was tried and turns the 3-cross star into
+   noise.) Four channels, each pointing the same way as the physics:
+
+     flange spread (nds + ds) -> length of the hub barrel
+     dish (nds vs ds)         -> how far the barrel sits off the centre tick
+     flange PCD               -> radius of the circle each side laces to
+     wheel size (ERD)         -> rim radius, at a fixed mm-per-pixel, so the
+                                 same hub in a smaller wheel reads as a bigger
+                                 hub relative to its rim -- which is exactly
+                                 why the smaller wheel comes out stiffer
+
+   plus tension balance -> spoke weight and opacity on the non-drive side, so a
+   badly dished wheel reads thin and pale on that half.
+
+   Hub features are magnified against the rim: at true scale a 60 mm flange
+   inside a 600 mm ERD rim is a 9 px dot. Both wheels use the same
+   magnification, so the proportions between them stay honest.
+
+   Worth stating plainly, because the drawing invites the opposite reading:
+   symmetry alone does not make a wheel strong. The catalogue's most symmetric
+   148 (KOM Xeno, 77% balance) is also its softest laterally, because it buys
+   that symmetry with a narrow 54 mm spread and a 46 mm PCD. Spread and PCD set
+   the strength; symmetry decides how much of it survives. The drawing shows
+   that correctly -- KOM reads as a short barrel with small circles. */
+function wheelFace(g) {
+  const size  = 200;
+  const N     = g.spokes || 32;
+  const cross = 3;
+  const AXIAL_MAG = 3.0;               // axial offsets, x true scale
+  const PCD_MAG   = 1.7;               // flange circles, x true scale
+
+  const C    = size / 2;
+  const mm   = size * 0.435 / 300;     // px per mm, fixed across wheel sizes
+  const Rout = g.erd * 0.5 * mm;
+  const Rin  = Rout - size * 0.038;
+
+  const fade = 0.40 + 0.60 * g.ratio;  // non-drive side, by tension balance
+  const f = [
+    { r: g.pds  * 0.5 * mm * PCD_MAG, w: 1.05,        op: 0.85        },
+    { r: g.pnds * 0.5 * mm * PCD_MAG, w: 1.05 * fade, op: 0.85 * fade },
+  ];
+
+  const span = cross * 720 / N;        // degrees of rim each spoke spans
+  const per  = N / 2;
+  const pt = (a, r) => {
+    const t = (a - 90) * Math.PI / 180;
+    return (C + r * Math.cos(t)).toFixed(1) + ' ' + (C + r * Math.sin(t)).toFixed(1);
+  };
+
+  let spokes = '';
+  for (let i = 0; i < 2; i++) {
+    let d = '';
+    for (let j = 0; j < per; j++) {
+      const a0 = j * (360 / per) + i * (180 / per);
+      d += 'M' + pt(a0, f[i].r) + 'L' + pt(a0 + (j % 2 ? span : -span), Rin);
+    }
+    spokes += `<path d="${d}" stroke="currentColor" stroke-width="${f[i].w.toFixed(2)}"` +
+      ` opacity="${f[i].op.toFixed(2)}" fill="none" stroke-linecap="round"/>`;
+  }
+  const flanges = f.map(fl =>
+    `<circle cx="${C}" cy="${C}" r="${fl.r.toFixed(1)}" fill="none" stroke="currentColor"` +
+    ` stroke-width="1.4" opacity="${fl.op.toFixed(2)}"/>`).join('');
+
+  const xN = C - g.nds * mm * AXIAL_MAG, xD = C + g.ds * mm * AXIAL_MAG;
+  const bh = size * 0.052;
+  const barrel = `<rect x="${xN.toFixed(1)}" y="${(C - bh / 2).toFixed(1)}"` +
+    ` width="${(xD - xN).toFixed(1)}" height="${bh.toFixed(1)}"` +
+    ` rx="${(bh / 2).toFixed(1)}" fill="currentColor"/>`;
+  // Centre tick, drawn last so it stays legible on top of the barrel. Without
+  // it there is nothing to read the barrel's offset against.
+  const tick = `<line x1="${C}" y1="${(C - bh * 1.15).toFixed(1)}" x2="${C}"` +
+    ` y2="${(C + bh * 1.15).toFixed(1)}" stroke="var(--card)" stroke-width="1.6"` +
+    ` opacity="0.9"/>`;
+
+  return `<svg viewBox="0 0 ${size} ${size}" width="100%" height="100%" role="img"` +
+    ` aria-label="${g.label}"><circle cx="${C}" cy="${C}"` +
+    ` r="${((Rout + Rin) / 2).toFixed(1)}" fill="none" stroke="currentColor"` +
+    ` stroke-width="${(Rout - Rin).toFixed(1)}"/>` +
+    spokes + flanges + barrel + tick + '</svg>';
+}
+
+/* Draws one side's wheel and its headline number. Called from refresh() only
+   while simplified mode is on -- there is nothing to see otherwise, and the
+   SVG rebuild is wasted work on every control change in full mode. */
+function drawFace(std, hub, erd, m, Ns) {
+  document.getElementById('face' + std).innerHTML = wheelFace({
+    nds: hub.nds, ds: hub.ds, pds: hub.pds, pnds: hub.pnds,
+    erd: erd, spokes: Ns, ratio: m.ratio / 100,
+    label: `${hub.name}: ${hub.nds} mm non-drive and ${hub.ds} mm drive-side ` +
+           `flange offset, ${fmt(m.ratio, 0)} percent tension balance`,
+  });
+  document.getElementById('sv' + std).textContent = fmt(m.F_lat, 1);
+}
+
 function toggleAdv() {
   const btn = document.getElementById('adv-btn');
   const open = document.getElementById('adv-panel').classList.toggle('open');
@@ -971,6 +1152,7 @@ function collectState() {
     ns:  document.getElementById('g-ns').value,
     th:  THEMES[themeIdx].id,
     adv: document.getElementById('adv-panel').classList.contains('open') ? 1 : 0,
+    sm:  document.body.classList.contains('simple') ? 1 : 0,
   };
 }
 function writeURL() {
@@ -1025,6 +1207,7 @@ function readURL() {
   const ti = THEMES.findIndex(t => t.id === p.th);
   if (ti >= 0) themeIdx = ti;
   if (p.adv === '1') document.getElementById('adv-panel').classList.add('open');
+  setSimple(p.sm === '1');
 }
 function copyLink() {
   writeURL();
@@ -1284,6 +1467,13 @@ function refresh() {
 
   buildHero(m148, m157, hub148, hub157);
   buildTakeaway(m148, m157, hub148, hub157);
+
+  // Simplified mode's two drawings. Everything above still ran, so flipping
+  // the mode back off shows a fully up-to-date full view with no extra work.
+  if (document.body.classList.contains('simple')) {
+    drawFace('148', hub148, WHEEL_ERDS[ST.wheel148], m148, Ns);
+    drawFace('157', hub157, WHEEL_ERDS[ST.wheel157], m157, Ns);
+  }
   writeURL();
 }
 
@@ -1361,6 +1551,7 @@ function buildHero(m148, m157, hub148, hub157) {
   document.getElementById('hero-cond').textContent =
     `${wtxt} · ${document.getElementById('g-ns').value}H · ` +
     `${ttxt} · same rim both sides`;
+
 }
 
 /* Plain-English summary for a casual reader — leads with the F_lat hero metric,
@@ -1398,6 +1589,8 @@ document.getElementById('hub148').value = ST.hub148;
 document.getElementById('hub157').value = ST.hub157;
 document.getElementById('adv-btn').setAttribute('aria-expanded',
   document.getElementById('adv-panel').classList.contains('open'));
+document.getElementById('simp-btn').setAttribute('aria-pressed',
+  document.body.classList.contains('simple'));
 refresh();
 </script>
 </body>

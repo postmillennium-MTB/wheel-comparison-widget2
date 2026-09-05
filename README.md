@@ -24,6 +24,21 @@ The intended audience is two groups who often want the same answer for different
 
 **Card headers.** Each side's config card leads with the numeric axle standard ("148x12" / "157x12") set large and centered, with the marketing nickname ("Boost axle" / "Super Boost axle") in smaller type beneath it. The nickname carries a hover tooltip with its trademark trivia — "Boost is a marketing nickname from Trek, circa 2014/2015" and "Super Boost is a marketing nickname from Pivot, circa 2016" — so the jargon stays in the UI but is explained on demand rather than assumed.
 
+**Simplified mode.** The toggle at the top right strips the page back to two wheel drawings, two hub pickers, and the one number, for readers who want the answer rather than the workings. It hides the shared build settings, both sides' wheel-size / DS-tension / spoke-gauge controls, the per-side tension readouts, all six detail cards, the bottom-line paragraph, and the method note. What it keeps is the headline verdict and its condition strip (`29" · 32H · 120 kgf DS · same rim both sides`), so the number stays self-explanatory even with the controls it was computed from out of view. Nothing leaves the DOM — every hidden control stays wired and keeps feeding the engine, so switching back shows a fully current full view. The mode rides in the shareable link as `sm=1`, so a simplified comparison can be sent as one.
+
+**The wheel drawing** (simplified mode only) is geometry, not decoration. A true head-on view cannot show hub width at all — flange spread and dish are axial, straight down the line of sight — so the hub barrel is drawn as if the hub were turned a few degrees toward you, and it carries the axial story while the spokes and flange circles stay concentric with the wheel. Four channels, each pointing the same direction as the physics:
+
+| What you see | What it is | Reads as stronger when |
+| --- | --- | --- |
+| Length of the hub barrel | total flange width (NDS + DS) | longer |
+| Barrel's offset from the centre tick | dish | closer to centred |
+| Radius of the inner circles | flange PCD, each side | larger |
+| Size of the rim | the real ERD for that side's wheel size | smaller, since the same hub is then proportionally bigger relative to its rim |
+
+Non-drive-side spokes also thin and fade with the tension ratio. Hub features are magnified against the rim — at true scale a 60 mm flange inside a 600 mm ERD rim is a 9 px dot — but both wheels use the same magnification, so the proportions between them stay honest.
+
+One thing the drawing invites readers to over-conclude, and which the catalogue does not support: symmetry alone does not make a wheel strong. The most symmetric 148 in the list (KOM Xeno Rear Boost, 77.2% balance) is also the softest laterally (K_lat 43.0), because it buys that symmetry with a narrow 54.0 mm flange spread and a 46 mm PCD — against DMR Zone's 55.6% balance and K_lat 68.9. Flange spread and PCD set how much lateral stiffness is available; symmetry decides how much of it survives to the non-drive side. The drawing renders that correctly — KOM Xeno reads as a short barrel with small circles — but the tagline "symmetry = strength" is a slogan, not the model.
+
 **Compare two at random.** Rerolls if it happens to land on the exact setup already on screen. The resulting comparison updates the shareable link like any manual change, so an interesting random pairing can be copied and sent as-is.
 
 **Secondary cards.** Lateral strength, radial strength, lateral stiffness, and tension balance are all expanded by default. **Buckling margin is collapsed by default** — it's the metric readers reach for least often, so it starts out of the way and opens on tap.
