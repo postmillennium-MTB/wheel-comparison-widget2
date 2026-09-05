@@ -152,6 +152,13 @@ body.simple .simple-stage{display:grid;grid-template-columns:1fr;gap:20px;
   padding:8px 16px;background:var(--card);border:none;color:var(--muted);cursor:pointer}
 .s-dets button+button{border-left:1px solid var(--line)}
 .s-dets button[aria-pressed="true"]{background:var(--win);color:#fff}
+/* The two buttons above choose which side you are LOOKING at; this one changes
+   what that side IS. Without it the only route to a 148-vs-148 comparison was
+   noticing the optgroups in the hub list, which nobody does. */
+.s-swap{display:block;font:inherit;font-size:12px;font-weight:600;color:var(--muted);
+  background:none;border:none;padding:0;margin:0 0 12px;cursor:pointer;
+  text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
+.s-swap:hover,.s-swap:focus-visible{color:var(--win-text)}
 .s-num{font-family:var(--mono);font-variant-numeric:tabular-nums;
   font-size:clamp(46px,12vw,64px);line-height:.94;font-weight:700;letter-spacing:-.04em;
   color:var(--win-text);margin-top:14px}
@@ -489,6 +496,7 @@ built on those stiffnesses.</p>
       <button type="button" data-s="148" aria-pressed="true">148x12</button>
       <button type="button" data-s="157" aria-pressed="false">157x12</button>
     </div>
+    <button type="button" class="s-swap" id="s-swap">&#8644; Switch this side</button>
     <select class="ctl" id="s-hub" aria-label="Hub"></select>
     <div class="s-num" id="s-num">&mdash;<span class="u">kgf</span></div>
     <div class="s-lbl">to first slack spoke</div>
@@ -1174,6 +1182,10 @@ function drawSimple(m148, m157, hub148, hub157, Ns) {
   var sel = document.getElementById('s-hub');
   sel.innerHTML = hubOptions();
   sel.value = meHub.id;
+  // Names where the click lands, so it needs no explaining.
+  var meStd = isA ? stdA() : stdB();
+  document.getElementById('s-swap').innerHTML =
+    '\u21c4 Switch this side to ' + NICK[meStd === '148' ? '157' : '148'].name;
 
   var css = function (n) {
     return getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -1364,6 +1376,8 @@ function makeWheel(canvas) {
     var b = e.target.closest('button');
     if (b) setSimpleSide(b.dataset.s);
   });
+  var swap = document.getElementById('s-swap');
+  if (swap) swap.addEventListener('click', function () { cycleStd(ST.simpleSide); });
   var sel = document.getElementById('s-hub');
   if (sel) sel.addEventListener('change', function () {
     // Writes back to the same state the full view's own hub picker uses, so
