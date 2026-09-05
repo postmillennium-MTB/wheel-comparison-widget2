@@ -84,8 +84,13 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
    its trademark trivia — dotted underline + help cursor are the only hint
    it's hoverable, since a title attribute alone gives no visual affordance. */
 .side-head{margin-bottom:12px;text-align:center}
-.side-head .std-name{display:block;font-size:32px;font-weight:800;
+.side-head .std-name{display:block;width:100%;background:none;border:1.5px dashed transparent;border-radius:9px;padding:2px 6px;cursor:pointer;font-family:inherit;font-size:32px;font-weight:800;
   letter-spacing:-.01em;line-height:1.15}
+/* The standard is a control, not a caption: either side can hold either
+   standard, which is what makes a 148-vs-148 comparison possible. */
+.side-a .std-name:hover,.side-a .std-name:focus-visible{border-color:var(--a);background:var(--a-soft)}
+.side-b .std-name:hover,.side-b .std-name:focus-visible{border-color:var(--b);background:var(--b-soft)}
+.std-name::after{content:" ⇄";font-size:.5em;vertical-align:.28em;opacity:.35;font-weight:600}
 .side-a .std-name{color:var(--a-text)}
 .side-b .std-name{color:var(--b-text)}
 .side-head .std-nick{display:inline-block;font-size:14px;color:var(--muted);
@@ -497,7 +502,9 @@ built on those stiffnesses.</p>
 
   <!-- 148 -->
   <div class="card side-card side-a">
-    <div class="side-head"><span class="std-name">148x12</span><span class="std-nick" title="Boost is a marketing nickname from Trek, circa 2014/2015.">Boost axle</span></div>
+    <div class="side-head"><button type="button" class="std-name" id="std148"
+      onclick="cycleStd('148')" aria-label="Axle standard — click to switch this side"
+      >148x12</button><span class="std-nick" id="nick148" title="Boost is a marketing nickname from Trek, circa 2014/2015.">Boost axle</span></div>
     <div class="fld simple-hide"><div class="slbl">Wheel size</div>
       <div class="seg" id="seg148" role="group" aria-label="148 wheel size">
         <button id="w148-26" aria-pressed="false" onclick="setWheel('148','26')">26″</button>
@@ -530,7 +537,9 @@ built on those stiffnesses.</p>
 
   <!-- 157 -->
   <div class="card side-card side-b">
-    <div class="side-head"><span class="std-name">157x12</span><span class="std-nick" title="Super Boost is a marketing nickname from Pivot, circa 2016.">Super Boost axle</span></div>
+    <div class="side-head"><button type="button" class="std-name" id="std157"
+      onclick="cycleStd('157')" aria-label="Axle standard — click to switch this side"
+      >157x12</button><span class="std-nick" id="nick157" title="Super Boost is a marketing nickname from Pivot, circa 2016.">Super Boost axle</span></div>
     <div class="fld simple-hide"><div class="slbl">Wheel size</div>
       <div class="seg" id="seg157" role="group" aria-label="157 wheel size">
         <button id="w157-26" aria-pressed="false" onclick="setWheel('157','26')">26″</button>
@@ -582,12 +591,12 @@ built on those stiffnesses.</p>
     <div class="hero-sub" id="hero-sub">—</div>
     <div class="hero-bars">
       <div class="hero-row a">
-        <span class="lbl">148</span>
+        <span class="lbl" id="hero-lbl-a">148</span>
         <span class="track"><span class="fill" id="hero-fill-a" style="width:0"></span></span>
         <span class="val" id="hero-val-a">—</span>
       </div>
       <div class="hero-row b">
-        <span class="lbl">157</span>
+        <span class="lbl" id="hero-lbl-b">157</span>
         <span class="track"><span class="fill" id="hero-fill-b" style="width:0"></span></span>
         <span class="val" id="hero-val-b">—</span>
       </div>
@@ -987,6 +996,32 @@ const HUBS_157 = [
   { id:'h29', name:'DT Swiss 350 157 6-bolt',        nds:41.1, ds:27.9,  pds:50.5, pnds:60.0 },
   { id:'h31', name:'e*thirteen Sidekick Pro 157 SB', nds:42.5, ds:25.5,  pds:60.0, pnds:60.0 },
 ];
+/* Each side of the comparison holds a hub, and its axle standard is DERIVED
+   from which catalogue that hub came from rather than stored alongside it.
+   One source of truth, so the two can never disagree -- and it is what lets a
+   side hold a 148 hub while the other does too, which is the whole point of
+   being able to compare 148 against 148.
+
+   Note on naming: the 148/157 in element ids and in ST.hub148 / ST.hub157 is
+   historical. Those now identify the two comparison SLOTS (amber and blue),
+   not the standards they hold. Either slot can hold either standard. */
+function stdOf(hubId) {
+  return HUBS_148.some(function (h) { return h.id === hubId; }) ? '148' : '157';
+}
+function hubsFor(std) { return std === '148' ? HUBS_148 : HUBS_157; }
+function hubById(id) {
+  return HUBS_148.find(function (h) { return h.id === id; }) ||
+         HUBS_157.find(function (h) { return h.id === id; });
+}
+function stdA() { return stdOf(ST.hub148); }
+function stdB() { return stdOf(ST.hub157); }
+const NICK = {
+  '148': { name: '148x12', nick: 'Boost axle',
+           tip: 'Boost is a marketing nickname from Trek, circa 2014/2015.' },
+  '157': { name: '157x12', nick: 'Super Boost axle',
+           tip: 'Super Boost is a marketing nickname from Pivot, circa 2016.' },
+};
+
 const WHEEL_ERDS = { '26':534, '27.5':559, '29':600, '32':667 };
 const SPOKE_DIAS = ['1.5','1.6','1.7','1.8','1.9','2.0','2.1','2.2','2.3'];
 const DEFAULTS = { wheel148:'29', wheel157:'29', hub148:'h6', hub157:'h7' };
@@ -1033,6 +1068,7 @@ function toggleCard(id) {
 function setSimple(on) {
   document.body.classList.toggle('simple', on);
   document.getElementById('simp-btn').setAttribute('aria-pressed', on ? 'true' : 'false');
+  if (SWHEEL) { if (on) SWHEEL.play(); else SWHEEL.pause(); }
 }
 function toggleSimple() {
   var on = !document.body.classList.contains('simple');
@@ -1077,6 +1113,13 @@ function setSimpleSide(v) {
    offsets, so the readouts stay honest. */
 var TWEEN_MS = 380, VIS_SPREAD = 1.8, LACE_CROSS = 3;
 var MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
+/* The wheel turns continuously. Slow enough to read as a machine idling
+   rather than something demanding attention: one revolution every 14 s.
+   Held off entirely under prefers-reduced-motion -- a permanent animation is
+   precisely what that setting exists to stop. */
+var SPIN_RATE = Math.PI * 2 / 14;                  // radians per second
+var SPIN_ON = !(window.matchMedia &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
 function reduceMotion() {
   return window.matchMedia &&
@@ -1126,12 +1169,11 @@ function drawSimple(m148, m157, hub148, hub157, Ns) {
   for (var i = 0; i < dets.length; i++) {
     dets[i].setAttribute('aria-pressed', dets[i].dataset.s === side ? 'true' : 'false');
   }
+  // The whole catalogue, grouped by standard: picking across the groups is
+  // what switches this side's standard, and is how 148-vs-148 is set up here.
   var sel = document.getElementById('s-hub');
-  var list = isA ? HUBS_148 : HUBS_157;
-  sel.innerHTML = list.map(function (h) {
-    return '<option value="' + h.id + '"' + (h.id === meHub.id ? ' selected' : '') +
-      '>' + h.name + '</option>';
-  }).join('');
+  sel.innerHTML = hubOptions();
+  sel.value = meHub.id;
 
   var css = function (n) {
     return getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -1149,18 +1191,24 @@ function drawSimple(m148, m157, hub148, hub157, Ns) {
   sPrevFlat = me.F_lat;
 
   var d = (other.F_lat - me.F_lat) / me.F_lat * 100;
-  var oName = isA ? '157x12' : '148x12';
+  // Naming the other side by standard is useless when both sides share one.
+  var oName = stdA() === stdB() ? oHub.name : NICK[isA ? stdB() : stdA()].name;
   document.getElementById('s-vs').innerHTML = Math.abs(d) < 1
     ? 'Within a hair of the <b>' + oName + '</b> build (' + fmt(other.F_lat, 1) + ' kgf).'
-    : 'The <b>' + oName + '</b> build (' + oHub.name + ') takes <b>' +
-      Math.abs(d).toFixed(0) + '% ' + (d > 0 ? 'more' : 'less') + '</b> — ' +
-      fmt(other.F_lat, 1) + ' kgf.';
+    // oName is already the hub name when both sides share a standard, so the
+    // parenthetical would just repeat it.
+    : 'The <b>' + oName + '</b> build' + (oName === oHub.name ? '' : ' (' + oHub.name + ')') +
+      ' takes <b>' + Math.abs(d).toFixed(0) + '% ' + (d > 0 ? 'more' : 'less') +
+      '</b> — ' + fmt(other.F_lat, 1) + ' kgf.';
 }
 
 function makeWheel(canvas) {
   if (!canvas || !canvas.getContext) return null;
   var ctx = canvas.getContext('2d');
-  var W = 0, H = 0, yaw = 0.62, g = null, raf = 0;
+  var W = 0, H = 0, yaw = 0.62, g = null;
+  // One rAF loop drives the spin and the geometry tween together. Two loops
+  // both calling draw() would double the paint rate and let them tear.
+  var spin = 0, tween = null, raf = 0, lastT = 0, awake = false;
 
   function fit() {
     var r = canvas.getBoundingClientRect();
@@ -1210,7 +1258,7 @@ function makeWheel(canvas) {
     var lace = LACE_CROSS * 720 / g.spokes * Math.PI / 180;
 
     for (var i = 0; i < g.spokes; i++) {                 // spokes under the rim
-      var a = i / g.spokes * Math.PI * 2, drive = (i % 2 === 0);
+      var a = i / g.spokes * Math.PI * 2 + spin, drive = (i % 2 === 0);
       var fr = drive ? frD : frN, sgn = drive ? lace : -lace;
       stroke([proj(fr * Math.cos(a), fr * Math.sin(a), drive ? ds : -nds),
               proj(g.R * Math.cos(a + sgn), g.R * Math.sin(a + sgn), 0)],
@@ -1238,23 +1286,55 @@ function makeWheel(canvas) {
     }
   }
 
+  /* The bracing-angle annotation stays at 12 o'clock while the spokes turn
+     under it. It is a section indicator, not a particular spoke -- it marks
+     where the angle is measured, so pinning it keeps the number readable
+     instead of carrying it around the rim. */
+
+  function step(now) {
+    raf = 0;
+    var dt = lastT ? Math.min(0.05, (now - lastT) / 1000) : 0;   // clamp: a
+    lastT = now;                                  // backgrounded tab returns
+                                                  // a huge delta on first frame
+    if (SPIN_ON) spin = (spin + SPIN_RATE * dt) % (Math.PI * 2);
+    if (tween) {
+      var t = Math.min(1, (now - tween.t0) / TWEEN_MS);
+      var e = 1 - Math.pow(1 - t, 3);                            // easeOutCubic
+      g = t < 1 ? lerpGeo(tween.from, tween.to, e) : tween.to;
+      if (tween.onFrame) tween.onFrame(e);
+      if (t >= 1) tween = null;
+    }
+    draw();
+    if (awake && (SPIN_ON || tween)) raf = requestAnimationFrame(step);
+    else { raf = 0; lastT = 0; }
+  }
+  function wake() {
+    if (raf || !awake || (!SPIN_ON && !tween)) return;
+    lastT = 0;
+    raf = requestAnimationFrame(step);
+  }
+  /* Nothing spins while the mode is closed, the stage is off screen, or the
+     tab is hidden -- a perpetual rAF loop behind a hidden element is just a
+     battery drain. */
+  function play() { awake = true; wake(); }
+  function pause() {
+    awake = false;
+    if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    lastT = 0;
+  }
+
   /* set(geo, animate, onFrame): onFrame gets the eased progress, so the
      readouts can run off the same clock as the drawing and land together. */
   function set(geo, animate, onFrame) {
-    if (raf) { cancelAnimationFrame(raf); raf = 0; }
     if (!animate || !g || reduceMotion()) {
-      g = geo; draw(); if (onFrame) onFrame(1);
+      tween = null; g = geo; draw();
+      if (onFrame) onFrame(1);
+      wake();
       return;
     }
-    var from = g, t0 = Date.now();
-    (function step() {
-      var t = Math.min(1, (Date.now() - t0) / TWEEN_MS);
-      var e = 1 - Math.pow(1 - t, 3);                    // easeOutCubic
-      g = t < 1 ? lerpGeo(from, geo, e) : geo;
-      draw();
-      if (onFrame) onFrame(e);
-      raf = t < 1 ? requestAnimationFrame(step) : 0;
-    }());
+    tween = { from: g, to: geo, t0: (window.performance || Date).now(),
+              onFrame: onFrame };
+    wake();
   }
 
   // ── drag = camera ─────────────────────────────────────────────
@@ -1274,7 +1354,8 @@ function makeWheel(canvas) {
   canvas.addEventListener('touchend', up);
   window.addEventListener('resize', function () { fit(); draw(); });
 
-  return { set: set, redraw: draw, theta: function () { return g ? theta(g) : 0; } };
+  return { set: set, redraw: draw, play: play, pause: pause,
+           theta: function () { return g ? theta(g) : 0; } };
 }
 
 (function () {
@@ -1287,11 +1368,40 @@ function makeWheel(canvas) {
   if (sel) sel.addEventListener('change', function () {
     // Writes back to the same state the full view's own hub picker uses, so
     // the two never disagree and switching modes keeps your choice.
-    if (ST.simpleSide === '148') { ST.hub148 = sel.value; document.getElementById('hub148').value = sel.value; }
-    else                         { ST.hub157 = sel.value; document.getElementById('hub157').value = sel.value; }
+    var slot = ST.simpleSide === '148' ? 'hub148' : 'hub157';
+    ST[slot] = sel.value;
+    document.getElementById(slot).value = sel.value;
     refresh();
   });
 }());
+
+/* Switch one side's axle standard. The hub goes to the same position in the
+   other catalogue where there is one, so a switch lands on a comparable hub
+   rather than always snapping back to the top of the list. */
+function cycleStd(slot) {
+  var isA = slot === '148';
+  var cur = isA ? ST.hub148 : ST.hub157;
+  var from = hubsFor(stdOf(cur)), to = hubsFor(stdOf(cur) === '148' ? '157' : '148');
+  var i = from.findIndex(function (h) { return h.id === cur; });
+  var next = (to[i] || to[0]).id;
+  if (isA) ST.hub148 = next; else ST.hub157 = next;
+  document.getElementById(isA ? 'hub148' : 'hub157').value = next;
+  refresh();
+}
+
+/* Keeps every label that names a standard in step with the hub each slot is
+   actually holding -- the headers, their marketing nicknames, and simplified
+   mode's two buttons. */
+function syncStdLabels() {
+  [['148', stdA()], ['157', stdB()]].forEach(function (pair) {
+    var slot = pair[0], n = NICK[pair[1]];
+    document.getElementById('std' + slot).textContent = n.name;
+    var nick = document.getElementById('nick' + slot);
+    nick.textContent = n.nick; nick.title = n.tip;
+    var det = document.querySelector('#s-dets button[data-s="' + slot + '"]');
+    if (det) det.textContent = n.name;
+  });
+}
 
 function toggleAdv() {
   const btn = document.getElementById('adv-btn');
@@ -1390,7 +1500,8 @@ function readURL() {
     const [k, v] = pair.split('=');
     if (k) p[k] = decodeURIComponent(v || '');
   });
-  const validHub = (arr, id) => arr.some(x => x.id === id);
+  // Either slot may hold either standard, so a hub id is valid for both.
+  const validHub = (arr, id) => !!hubById(id);
   const okWheel = w => ['26','27.5','29','32'].includes(w);
   const okDia   = d => SPOKE_DIAS.includes(d);
 
@@ -1452,11 +1563,22 @@ function copyLink() {
   }
 }
 
+function hubOptions() {
+  return ['148', '157'].map(function (std) {
+    return '<optgroup label="' + NICK[std].name + '">' +
+      hubsFor(std).map(function (h) {
+        return '<option value="' + h.id + '">' + h.name + '</option>';
+      }).join('') + '</optgroup>';
+  }).join('');
+}
+
 function buildControls() {
-  document.getElementById('hub148').innerHTML =
-    HUBS_148.map(h => `<option value="${h.id}">${h.name}</option>`).join('');
-  document.getElementById('hub157').innerHTML =
-    HUBS_157.map(h => `<option value="${h.id}">${h.name}</option>`).join('');
+  /* Both slots offer the whole catalogue, grouped by standard. Picking a hub
+     from the other group is what switches that side's standard -- which is
+     how a wheelbuilder thinks about it anyway: you choose a hub, and its
+     standard follows. */
+  document.getElementById('hub148').innerHTML = hubOptions();
+  document.getElementById('hub157').innerHTML = hubOptions();
   ['spk148ds','spk148nds','spk157ds','spk157nds'].forEach(id => {
     document.getElementById(id).innerHTML =
       SPOKE_DIAS.map(d => `<option value="${d}"${d==='2.0'?' selected':''}>${d}</option>`).join('');
@@ -1591,11 +1713,19 @@ const PCT_ICON = '<svg class="pct-icon" xmlns="http://www.w3.org/2000/svg" viewB
 /* Verdict for a metric where bigger is better for the given adjective.
    ALWAYS names the actual winner with the positive adjective — correct in
    both directions. Δ% is relative to the lower value. */
+/* Names the winning side. Normally that is its axle standard, but either
+   side can now hold either standard, so when both are the same the standard
+   identifies nothing -- fall back to naming the hub. */
+function winnerName(aWins) {
+  if (stdA() === stdB()) {
+    return hubById(aWins ? ST.hub148 : ST.hub157).name;
+  }
+  return aWins ? stdA() : stdB();
+}
 function verdict(v148, v157, adjective) {
   const d = Math.abs(v157 - v148) / Math.min(v148, v157) * 100;
   if (d < 0.05) return 'Effectively equal';
-  const winner = v157 > v148 ? '157' : '148';
-  return `${winner} build is ${d.toFixed(1)}${PCT_ICON} ${adjective}`;
+  return `${winnerName(v148 > v157)} build is ${d.toFixed(1)}${PCT_ICON} ${adjective}`;
 }
 
 /* Center-out bars: each side scaled to the larger value (winner fills its half). */
@@ -1612,8 +1742,8 @@ function chip(usedPct) {
 }
 
 function refresh() {
-  const hub148 = HUBS_148.find(h => h.id === ST.hub148);
-  const hub157 = HUBS_157.find(h => h.id === ST.hub157);
+  const hub148 = hubById(ST.hub148);
+  const hub157 = hubById(ST.hub157);
   const EIL = +document.getElementById('g-eil').value;
   const EIR = +document.getElementById('g-eir').value;
   const GJ  = +document.getElementById('g-gj').value;
@@ -1641,7 +1771,7 @@ function refresh() {
   document.getElementById('cmp-flat-stmt').innerHTML = verdict(m148.F_lat, m157.F_lat, 'stronger');
   document.getElementById('sum-flat').innerHTML = verdict(m148.F_lat, m157.F_lat, 'stronger');
   document.getElementById('flat-gov').textContent =
-    `${m148.latGov} spokes govern the 148 build, ${m157.latGov} the 157`;
+    `${m148.latGov} spokes govern the ${stdA()} build, ${m157.latGov} the ${stdB()}`;
 
   // F_rad
   document.getElementById('cmp-frad148').textContent = fmt(m148.F_rad, 0);
@@ -1650,7 +1780,7 @@ function refresh() {
   document.getElementById('cmp-frad-stmt').innerHTML = verdict(m148.F_rad, m157.F_rad, 'stronger');
   document.getElementById('sum-frad').innerHTML = verdict(m148.F_rad, m157.F_rad, 'stronger');
   document.getElementById('frad-gov').textContent =
-    `${m148.radGov} spokes govern the 148 build, ${m157.radGov} the 157`;
+    `${m148.radGov} spokes govern the ${stdA()} build, ${m157.radGov} the ${stdB()}`;
 
   // K_lat
   document.getElementById('cmp-klat148').textContent = fmt(m148.K_lat, 1);
@@ -1683,6 +1813,7 @@ function refresh() {
   document.getElementById('cmp-tc-stmt').firstChild.textContent = tcStmt;
   document.getElementById('sum-tc').textContent = tcStmt;
 
+  syncStdLabels();
   buildHero(m148, m157, hub148, hub157);
   buildTakeaway(m148, m157, hub148, hub157);
 
@@ -1733,7 +1864,8 @@ function buildHero(m148, m157, hub148, hub157) {
     numEl.classList.add('word');
     numEl.textContent = 'EVEN';
     document.getElementById('hero-word').textContent = 'dead heat';
-    document.getElementById('hero-badge').textContent = '148x12 = 157x12';
+    document.getElementById('hero-badge').textContent =
+      stdA() === stdB() ? 'Dead heat' : NICK[stdA()].name + ' = ' + NICK[stdB()].name;
     document.getElementById('hero-sub').innerHTML =
       `<b>${hub148.name}</b> and <b>${hub157.name}</b> take the same sideways load ` +
       `before the first spoke goes slack. Pick on something other than strength.`;
@@ -1742,16 +1874,22 @@ function buildHero(m148, m157, hub148, hub157) {
     animateHeroNum(numEl, d);
     document.getElementById('hero-word').textContent = 'stronger';
     document.getElementById('hero-badge').textContent =
-      winIs157 ? '157x12 wheel wins' : '148x12 wheel wins';
+      (stdA() === stdB() ? winnerName(!winIs157) : NICK[winIs157 ? stdB() : stdA()].name)
+        + ' wheel wins';
     const winName  = winIs157 ? hub157.name : hub148.name;
     const loseName = winIs157 ? hub148.name : hub157.name;
-    const loseStd  = winIs157 ? '148' : '157';
+    const same     = stdA() === stdB();
+    const loseStd  = winIs157 ? stdA() : stdB();
     document.getElementById('hero-sub').innerHTML =
-      `<b>${winName}</b> takes that much more sideways force than the ${loseStd} ` +
-      `build (<b>${loseName}</b>) before its first spoke goes slack.`;
+      `<b>${winName}</b> takes that much more sideways force than ` +
+      (same ? `<b>${loseName}</b>` : `the ${loseStd} build (<b>${loseName}</b>)`) +
+      ` before its first spoke goes slack.`;
   }
 
-  // side-by-side bars, both scaled to the larger value
+  // side-by-side bars, both scaled to the larger value. The labels name the
+  // standard each slot is holding, which is not always the one it started on.
+  document.getElementById('hero-lbl-a').textContent = stdA();
+  document.getElementById('hero-lbl-b').textContent = stdB();
   const mx = Math.max(m148.F_lat, m157.F_lat) || 1;
   document.getElementById('hero-fill-a').style.width = (m148.F_lat / mx * 100).toFixed(1) + '%';
   document.getElementById('hero-fill-b').style.width = (m157.F_lat / mx * 100).toFixed(1) + '%';
@@ -1784,20 +1922,23 @@ function buildTakeaway(m148, m157, hub148, hub157) {
   const el = document.getElementById('takeaway');
   const n1 = hub148.name, n2 = hub157.name;
   if (d < 1) {
-    el.innerHTML = `<b>Bottom line:</b> with these two builds, the 148 (${n1}) and the ` +
-      `157 (${n2}) are within a hair of each other — you'd take about the same ` +
+    el.innerHTML = `<b>Bottom line:</b> with these two builds, the ${stdA()} (${n1}) and the ` +
+      `${stdB()} (${n2}) are within a hair of each other — you'd take about the same ` +
       `sideways hit before a spoke starts to go slack. The choice comes down to ` +
       `other factors, not strength.`;
     return;
   }
   const winIs157 = m157.F_lat > m148.F_lat;
   const winName  = winIs157 ? n2 : n1;
-  const winStd   = winIs157 ? '157' : '148';
+  // With both sides on the same standard the standard names nothing, so the
+  // sentence leads with the hub instead.
+  const same     = stdA() === stdB();
+  const winStd   = same ? (winIs157 ? n2 : n1) : (winIs157 ? stdB() : stdA());
   const winCls   = winIs157 ? 'win-b' : 'win-a';
   // qualitative, so the exact figure stays in one place: the hero above
   const qual = d < 3 ? 'slightly' : d < 8 ? 'modestly' : d < 15 ? 'clearly' : 'substantially';
-  el.innerHTML = `<b>Bottom line:</b> the <span class="${winCls}"><b>${winStd}</b> build ` +
-    `(${winName})</span> takes a <b>${qual} higher</b> sideways load before a ` +
+  el.innerHTML = `<b>Bottom line:</b> the <span class="${winCls}"><b>${winStd}</b> build` +
+    `${same ? '' : ` (${winName})`}</span> takes a <b>${qual} higher</b> sideways load before a ` +
     `spoke starts to go slack — the point where a wheel begins to lose its trueness. ` +
     `That's the headline difference; open the cards below for stiffness, vertical hits, and buckling margin.`;
 }
@@ -1814,12 +1955,30 @@ document.getElementById('adv-btn').setAttribute('aria-expanded',
 document.getElementById('simp-btn').setAttribute('aria-pressed',
   document.body.classList.contains('simple'));
 SWHEEL = makeWheel(document.getElementById('s-canvas'));
+/* Keep the spin honest about when it is worth running: only while simplified
+   mode is open, the tab is frontmost, and the stage is actually on screen. */
+(function () {
+  var stage = document.getElementById('s-stage'), onScreen = true;
+  function sync() {
+    if (!SWHEEL) return;
+    if (document.body.classList.contains('simple') && onScreen && !document.hidden) SWHEEL.play();
+    else SWHEEL.pause();
+  }
+  if (window.IntersectionObserver) {
+    new IntersectionObserver(function (es) {
+      onScreen = es[0].isIntersecting; sync();
+    }, { threshold: 0.05 }).observe(stage);
+  }
+  document.addEventListener('visibilitychange', sync);
+  window.SPIN_SYNC = sync;                 // setSimple() calls play/pause directly
+}());
 refresh();
 // The canvas has no size until its stage is displayed, so a link that opens
 // straight into simplified mode needs one more pass once layout has run.
 if (document.body.classList.contains('simple')) {
   requestAnimationFrame(function () { sPrevFlat = null; refresh(); });
 }
+if (window.SPIN_SYNC) window.SPIN_SYNC();
 </script>
 </body>
 </html>
