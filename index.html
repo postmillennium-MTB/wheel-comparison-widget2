@@ -1202,16 +1202,24 @@ function drawSimple(m148, m157, hub148, hub157, Ns) {
   });
   sPrevFlat = me.F_lat;
 
-  var d = (other.F_lat - me.F_lat) / me.F_lat * 100;
-  // Naming the other side by standard is useless when both sides share one.
-  var oName = stdA() === stdB() ? oHub.name : NICK[isA ? stdB() : stdA()].name;
-  document.getElementById('s-vs').innerHTML = Math.abs(d) < 1
-    ? 'Within a hair of the <b>' + oName + '</b> build (' + fmt(other.F_lat, 1) + ' kgf).'
-    // oName is already the hub name when both sides share a standard, so the
-    // parenthetical would just repeat it.
-    : 'The <b>' + oName + '</b> build' + (oName === oHub.name ? '' : ' (' + oHub.name + ')') +
-      ' takes <b>' + Math.abs(d).toFixed(0) + '% ' + (d > 0 ? 'more' : 'less') +
-      '</b> — ' + fmt(other.F_lat, 1) + ' kgf.';
+  /* Names both wheels and always leads with the stronger one, so the sentence
+     reads in a single direction. The old wording described the other side
+     relative to the one on screen ("takes 12% more"), which left the reader
+     working out which way "more" and "less" pointed and which wheel was
+     which. Naming both also makes the same/different-standard cases identical
+     -- hub names distinguish the sides whatever standards they hold. */
+  var meWins = me.F_lat >= other.F_lat;
+  var hi = meWins ? meHub : oHub, lo = meWins ? oHub : meHub;
+  var hiV = Math.max(me.F_lat, other.F_lat), loV = Math.min(me.F_lat, other.F_lat);
+  var d = loV ? (hiV - loV) / loV * 100 : 0;
+  document.getElementById('s-vs').innerHTML =
+    meHub.id === oHub.id
+    ? 'Both sides are the same wheel — <b>' + meHub.name + '</b>.'
+    : d < 1
+    ? 'The <b>' + meHub.name + '</b> and the <b>' + oHub.name +
+      '</b> are within a hair of each other laterally.'
+    : 'The <b>' + hi.name + '</b> build is <b>' + d.toFixed(0) + PCT_ICON +
+      '</b> more laterally strong than the <b>' + lo.name + '</b> wheel.';
 }
 
 function makeWheel(canvas) {
