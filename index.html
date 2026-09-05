@@ -1341,6 +1341,7 @@ function collectState() {
   };
 }
 function writeURL() {
+  if (hashIsAlias) return;
   const s = collectState();
   const hash = Object.keys(s).map(k => k + '=' + encodeURIComponent(s[k])).join('&');
   try {
@@ -1352,9 +1353,38 @@ function writeURL() {
     // contexts, which is fine since they're not production deployments.
   }
 }
+/* Entry alias. writeURL() produces a long key=value blob that reproduces one
+   exact comparison; this is the other kind of link -- a short hash that just
+   names a mode and leaves everything else at its defaults. "#simple" is the
+   one worth having: it is what goes in a link, a QR code, or an iframe src
+   when all you want is for the tool to open simplified.
+
+   Recognised both at load and on hashchange, so typing it onto the end of an
+   already-open page works too. history.replaceState (what writeURL uses) does
+   not fire hashchange, so there is no feedback loop between the two. */
+function applyHashAlias(h) {
+  if (!/^#?simple$/i.test(h || '')) return false;
+  sPrevFlat = null;        // opening the mode presents a picture, not an animation
+  setSimple(true);
+  return true;
+}
+
+/* A visitor who arrived on "#simple" keeps that URL until they change
+   something. Expanding it into the full state blob the moment the page painted
+   would quietly replace the link they were handed with a 200-character one. */
+let hashIsAlias = false;
+['pointerdown', 'keydown', 'change'].forEach(t =>
+  document.addEventListener(t, () => { hashIsAlias = false; },
+    { once: true, capture: true }));
+
+window.addEventListener('hashchange', () => {
+  if (applyHashAlias(location.hash)) { hashIsAlias = true; refresh(); }
+});
+
 function readURL() {
   const h = location.hash.replace(/^#/, '');
   if (!h) return;
+  if (applyHashAlias(h)) { hashIsAlias = true; return; }
   const p = {};
   h.split('&').forEach(pair => {
     const [k, v] = pair.split('=');
