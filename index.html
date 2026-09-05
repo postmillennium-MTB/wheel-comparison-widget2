@@ -111,48 +111,60 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
 }
 
 /* ── Simplified mode ─────────────────────────────────────────────────────────
-   Strips the page back to two wheels, two hub pickers and the one number, for
+   Strips the page back to one wheel, one hub picker and one number, for
    readers who want the answer rather than the workings. Nothing leaves the
    DOM: every hidden control stays wired and keeps feeding the engine, so
    switching back restores the full view with the state untouched.
 
-   The wheel drawing is simplified-mode-only. It earns its place here because
-   with the numbers stripped away it is the only thing left explaining *why*
-   one side wins -- see wheelFace() for what each part of it means. */
-.wheel-face,.simple-val{display:none}
-body.simple .wheel-face{display:block;width:100%;max-width:250px;aspect-ratio:1;
-  margin:2px auto 4px}
-/* The drawing is built entirely from currentColor, so each side inherits its
-   own series color the same way every other element on that card does. */
-.side-a .wheel-face{color:var(--a)}
-.side-b .wheel-face{color:var(--b)}
-/* Flex so the number can be ordered below the hub picker; source order puts it
-   directly under the drawing, which is where it belongs when the picker is
-   showing but not when it is the last thing on the card. */
-body.simple .side-card{display:flex;flex-direction:column}
-body.simple .simple-val{display:block;order:2;text-align:center;margin-top:12px}
-.simple-val .sv-num{display:block;font-family:var(--mono);font-variant-numeric:tabular-nums;
-  font-size:27px;font-weight:700;letter-spacing:-.03em;line-height:1}
-.side-a .simple-val .sv-num{color:var(--a-text)}
-.side-b .simple-val .sv-num{color:var(--b-text)}
-.simple-val small{display:block;font-size:10px;font-weight:600;letter-spacing:.13em;
-  text-transform:uppercase;color:var(--faint);margin-top:5px}
+   One wheel rather than two, deliberately. Two wheels side by side at honest
+   scale look identical -- the difference between a 148 and a 157 build is
+   about one degree of bracing angle on a 600 mm wheel -- so the picture would
+   argue against the 20-30% number printed underneath it. Switching one wheel
+   between the two puts the same change on the channel the eye is actually
+   sensitive to: motion. See makeWheel() for the drawing and the tween. */
+.simple-stage{display:none}
+body.simple .simple-stage{display:grid;grid-template-columns:1fr;gap:20px;
+  background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;
+  box-shadow:0 10px 30px -24px rgba(0,0,0,.6)}
+@media(min-width:760px){
+  /* Capped and centred rather than spanning the full 1320px wrap: with only a
+     wheel and four readouts on it, the stage reads as a plate, not a page. */
+  body.simple .simple-stage{grid-template-columns:minmax(0,.9fr) minmax(0,1fr);
+    gap:30px;align-items:center;padding:26px;max-width:1000px;margin:0 auto}
+}
+.simple-stage[data-side="148"]{--win:var(--a);--win-text:var(--a-text)}
+.simple-stage[data-side="157"]{--win:var(--b);--win-text:var(--b-text)}
+.ws-box{position:relative;width:100%;max-width:400px;margin:0 auto;aspect-ratio:1;
+  touch-action:pan-y}
+.ws-box canvas{width:100%;height:100%;display:block;cursor:ew-resize}
+.ws-hint{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--faint);text-align:center;margin:6px 0 0}
+.s-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--faint);font-weight:600}
+.s-dets{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;
+  margin:9px 0 12px}
+.s-dets button{font:inherit;font-size:15px;font-weight:750;letter-spacing:-.01em;
+  padding:8px 16px;background:var(--card);border:none;color:var(--muted);cursor:pointer}
+.s-dets button+button{border-left:1px solid var(--line)}
+.s-dets button[aria-pressed="true"]{background:var(--win);color:#fff}
+.s-num{font-family:var(--mono);font-variant-numeric:tabular-nums;
+  font-size:clamp(46px,12vw,64px);line-height:.94;font-weight:700;letter-spacing:-.04em;
+  color:var(--win-text);margin-top:14px}
+.s-num .u{font-size:.28em;font-weight:650;letter-spacing:.08em;margin-left:6px;
+  color:var(--faint)}
+.s-lbl{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--faint);margin-top:6px}
+.s-vs{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;
+  color:var(--muted);line-height:1.5}
+.s-vs b{color:var(--ink);font-weight:700}
+.s-cond{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:var(--faint);
+  margin-top:12px;padding-top:10px;border-top:1px solid var(--line);line-height:1.5}
 body.simple .sub,
 body.simple #global-card,
-body.simple .simple-hide,
-body.simple .side-card .tens,
-body.simple .hero-bars,
+body.simple .layout,
 body.simple #takeaway,
 body.simple .detail-wrap,
 body.simple .note{display:none}
-body.simple .side-card .fld{margin-bottom:0}
-/* The hub picker is the only control left on the card, so it needs no label. */
-body.simple .side-card .fld .slbl{display:none}
-body.simple .side-card select.ctl{text-align:center;text-align-last:center}
-/* The wheels want more room than the 300px config columns full mode uses. */
-@media(min-width:960px){
-  body.simple .layout{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr) minmax(0,1fr)}
-}
 
 /* comparison cards — center-out "tug of war" bars */
 .cmp-card{background:var(--card);border:1px solid var(--line);border-radius:12px;
@@ -457,14 +469,35 @@ built on those stiffnesses.</p>
   </div>
 </div>
 
+<!-- Simplified mode's stage. Hidden in full mode; see the "Simplified mode"
+     CSS block and makeWheel() for what drives it. -->
+<div class="simple-stage" id="s-stage" data-side="148" role="group"
+     aria-label="Simplified comparison">
+  <div>
+    <div class="ws-box"><canvas id="s-canvas"
+      aria-label="Wireframe rear wheel drawn from the selected hub's real flange geometry. Drag sideways to orbit it and bring the spoke bracing angle into view."></canvas></div>
+    <p class="ws-hint">Drag the wheel sideways to orbit it</p>
+  </div>
+  <div>
+    <div class="s-eyebrow">Rear wheel &middot; lateral strength</div>
+    <div class="s-dets" id="s-dets" role="group" aria-label="Axle standard">
+      <button type="button" data-s="148" aria-pressed="true">148x12</button>
+      <button type="button" data-s="157" aria-pressed="false">157x12</button>
+    </div>
+    <select class="ctl" id="s-hub" aria-label="Hub"></select>
+    <div class="s-num" id="s-num">&mdash;<span class="u">kgf</span></div>
+    <div class="s-lbl">to first slack spoke</div>
+    <div class="s-vs" id="s-vs">&mdash;</div>
+    <div class="s-cond" id="s-cond">&mdash;</div>
+  </div>
+</div>
+
 <div class="layout">
 <div class="config-grid">
 
   <!-- 148 -->
   <div class="card side-card side-a">
     <div class="side-head"><span class="std-name">148x12</span><span class="std-nick" title="Boost is a marketing nickname from Trek, circa 2014/2015.">Boost axle</span></div>
-    <div class="wheel-face" id="face148" aria-hidden="true"></div>
-    <div class="simple-val"><span class="sv-num" id="sv148">—</span><small>kgf to first slack spoke</small></div>
     <div class="fld simple-hide"><div class="slbl">Wheel size</div>
       <div class="seg" id="seg148" role="group" aria-label="148 wheel size">
         <button id="w148-26" aria-pressed="false" onclick="setWheel('148','26')">26″</button>
@@ -498,8 +531,6 @@ built on those stiffnesses.</p>
   <!-- 157 -->
   <div class="card side-card side-b">
     <div class="side-head"><span class="std-name">157x12</span><span class="std-nick" title="Super Boost is a marketing nickname from Pivot, circa 2016.">Super Boost axle</span></div>
-    <div class="wheel-face" id="face157" aria-hidden="true"></div>
-    <div class="simple-val"><span class="sv-num" id="sv157">—</span><small>kgf to first slack spoke</small></div>
     <div class="fld simple-hide"><div class="slbl">Wheel size</div>
       <div class="seg" id="seg157" role="group" aria-label="157 wheel size">
         <button id="w157-26" aria-pressed="false" onclick="setWheel('157','26')">26″</button>
@@ -983,6 +1014,8 @@ const ST = Object.assign({}, DEFAULTS, {
   // size-based default -- so changing wheel size afterward doesn't clobber
   // a deliberate choice. See setWheel() and onTensionChange().
   tds148Touched: false, tds157Touched: false,
+  // Simplified mode shows one wheel; this is the standard it is showing.
+  simpleSide: '148',
 });
 
 // ── UI ───────────────────────────────────────────────────────────────────────
@@ -1002,111 +1035,263 @@ function setSimple(on) {
   document.getElementById('simp-btn').setAttribute('aria-pressed', on ? 'true' : 'false');
 }
 function toggleSimple() {
-  setSimple(!document.body.classList.contains('simple'));
-  refresh();           // draws the two wheels the first time the mode is opened
+  var on = !document.body.classList.contains('simple');
+  setSimple(on);
+  // Opening the mode should present a finished picture, not animate into one;
+  // only a switch the reader makes inside it is worth tweening.
+  if (on) sPrevFlat = null;
+  refresh();
+  writeURL();
 }
 
-/* wheelFace(g) -> SVG markup for a head-on wheel, drawn so that the geometry
-   which actually sets the strength is the part you can see. In simplified mode
-   the detail cards are gone, so this drawing is carrying the explanation.
+/* Switch which standard the single wheel is showing. */
+function setSimpleSide(v) {
+  if (v !== '148' && v !== '157') return;
+  if (v === ST.simpleSide) return;
+  ST.simpleSide = v;
+  refresh();
+}
 
-   A true head-on view cannot show hub width at all -- flange spread and dish
-   are axial, straight down the line of sight. So the hub barrel is drawn as if
-   the hub were turned a few degrees towards you, and it carries the axial
-   story while the spokes and flange circles stay concentric with the wheel.
-   (Sliding those sideways as well was tried and turns the 3-cross star into
-   noise.) Four channels, each pointing the same way as the physics:
+/* The wheel, ported from the PMR homepage's PLATE I and fed real hub geometry.
+   A wireframe wheel on a canvas with no library: N spokes, two flanges and a
+   rim, rotated by a plain 3x3 and projected. It reads as a patent figure that
+   happens to be running.
 
-     flange spread (nds + ds) -> length of the hub barrel
-     dish (nds vs ds)         -> how far the barrel sits off the centre tick
-     flange PCD               -> radius of the circle each side laces to
-     wheel size (ERD)         -> rim radius, at a fixed mm-per-pixel, so the
-                                 same hub in a smaller wheel reads as a bigger
-                                 hub relative to its rim -- which is exactly
-                                 why the smaller wheel comes out stiffer
+   What differs from the homepage version is the model behind it. The homepage
+   has no hub catalogue, so it derives both flange offsets from one spacing
+   number (a fixed NDS ratio and a single PCD). This tool has the real thing:
+   each hub carries its own nds, ds, pds and pnds, so those drive the drawing
+   directly, the two flanges get their own radii, and the rim radius is the
+   real ERD/2 -- so changing wheel size changes the picture the way it changes
+   the physics.
 
-   plus tension balance -> spoke weight and opacity on the non-drive side, so a
-   badly dished wheel reads thin and pale on that half.
+   The drag differs too. On the homepage, drag spreads the hub, because spacing
+   is the free variable there. Here spacing is set by the hub you picked, so
+   dragging it would contradict the number on screen; drag orbits the camera
+   instead. That is the gesture worth having anyway -- a bracing angle is
+   invisible head-on, and turning the wheel is what brings it into view.
 
-   Hub features are magnified against the rim: at true scale a 60 mm flange
-   inside a 600 mm ERD rim is a 9 px dot. Both wheels use the same
-   magnification, so the proportions between them stay honest.
+   VIS_SPREAD is a drawing exaggeration carried over from the homepage: the
+   flanges are pushed further apart on screen than true scale would put them,
+   so the geometry is legible at this size. Every quoted angle uses the true
+   offsets, so the readouts stay honest. */
+var TWEEN_MS = 380, VIS_SPREAD = 1.8, LACE_CROSS = 3;
+var MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 
-   Worth stating plainly, because the drawing invites the opposite reading:
-   symmetry alone does not make a wheel strong. The catalogue's most symmetric
-   148 (KOM Xeno, 77% balance) is also its softest laterally, because it buys
-   that symmetry with a narrow 54 mm spread and a 46 mm PCD. Spread and PCD set
-   the strength; symmetry decides how much of it survives. The drawing shows
-   that correctly -- KOM reads as a short barrel with small circles. */
-function wheelFace(g) {
-  const size  = 200;
-  const N     = g.spokes || 32;
-  const cross = 3;
-  const AXIAL_MAG = 3.0;               // axial offsets, x true scale
-  const PCD_MAG   = 1.7;               // flange circles, x true scale
+function reduceMotion() {
+  return window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+function lerp(a, b, t) { return a + (b - a) * t; }
+/* Colors tween too, so switching standards reads as one motion rather than a
+   geometry slide with a color pop at the front of it. */
+function hexRGB(c) {
+  var m = /^#?([0-9a-f]{6})$/i.exec((c || '').trim());
+  if (!m) return null;
+  var n = parseInt(m[1], 16);
+  return [n >> 16 & 255, n >> 8 & 255, n & 255];
+}
+function lerpColor(from, to, t) {
+  var A = hexRGB(from), B = hexRGB(to);
+  if (!A || !B) return to;
+  return 'rgb(' + Math.round(lerp(A[0], B[0], t)) + ',' +
+                  Math.round(lerp(A[1], B[1], t)) + ',' +
+                  Math.round(lerp(A[2], B[2], t)) + ')';
+}
+var GEO_NUM = ['R', 'nds', 'ds', 'pds', 'pnds'];
+function lerpGeo(from, to, t) {
+  var o = {}, i;
+  for (i = 0; i < GEO_NUM.length; i++) o[GEO_NUM[i]] = lerp(from[GEO_NUM[i]], to[GEO_NUM[i]], t);
+  o.spokes = to.spokes;                      // discrete: there is no half spoke
+  o.accent = lerpColor(from.accent, to.accent, t);
+  o.ink    = lerpColor(from.ink,    to.ink,    t);
+  return o;
+}
 
-  const C    = size / 2;
-  const mm   = size * 0.435 / 300;     // px per mm, fixed across wheel sizes
-  const Rout = g.erd * 0.5 * mm;
-  const Rin  = Rout - size * 0.038;
+var SWHEEL = null, sPrevFlat = null;
 
-  const fade = 0.40 + 0.60 * g.ratio;  // non-drive side, by tension balance
-  const f = [
-    { r: g.pds  * 0.5 * mm * PCD_MAG, w: 1.05,        op: 0.85        },
-    { r: g.pnds * 0.5 * mm * PCD_MAG, w: 1.05 * fade, op: 0.85 * fade },
-  ];
+/* Renders simplified mode's stage: the wheel for whichever standard is
+   selected, its number, and what the other standard would give. The tween's
+   progress drives the number and the bracing angle as well as the drawing, so
+   a switch lands as one motion instead of the number jumping on ahead. */
+function drawSimple(m148, m157, hub148, hub157, Ns) {
+  var side = ST.simpleSide, isA = side === '148';
+  var me    = isA ? m148   : m157,   other  = isA ? m157   : m148;
+  var meHub = isA ? hub148 : hub157, oHub   = isA ? hub157 : hub148;
+  var erd = WHEEL_ERDS[isA ? ST.wheel148 : ST.wheel157];
+  var stage = document.getElementById('s-stage');
+  stage.dataset.side = side;
 
-  const span = cross * 720 / N;        // degrees of rim each spoke spans
-  const per  = N / 2;
-  const pt = (a, r) => {
-    const t = (a - 90) * Math.PI / 180;
-    return (C + r * Math.cos(t)).toFixed(1) + ' ' + (C + r * Math.sin(t)).toFixed(1);
-  };
-
-  let spokes = '';
-  for (let i = 0; i < 2; i++) {
-    let d = '';
-    for (let j = 0; j < per; j++) {
-      const a0 = j * (360 / per) + i * (180 / per);
-      d += 'M' + pt(a0, f[i].r) + 'L' + pt(a0 + (j % 2 ? span : -span), Rin);
-    }
-    spokes += `<path d="${d}" stroke="currentColor" stroke-width="${f[i].w.toFixed(2)}"` +
-      ` opacity="${f[i].op.toFixed(2)}" fill="none" stroke-linecap="round"/>`;
+  var dets = document.getElementById('s-dets').children;
+  for (var i = 0; i < dets.length; i++) {
+    dets[i].setAttribute('aria-pressed', dets[i].dataset.s === side ? 'true' : 'false');
   }
-  const flanges = f.map(fl =>
-    `<circle cx="${C}" cy="${C}" r="${fl.r.toFixed(1)}" fill="none" stroke="currentColor"` +
-    ` stroke-width="1.4" opacity="${fl.op.toFixed(2)}"/>`).join('');
+  var sel = document.getElementById('s-hub');
+  var list = isA ? HUBS_148 : HUBS_157;
+  sel.innerHTML = list.map(function (h) {
+    return '<option value="' + h.id + '"' + (h.id === meHub.id ? ' selected' : '') +
+      '>' + h.name + '</option>';
+  }).join('');
 
-  const xN = C - g.nds * mm * AXIAL_MAG, xD = C + g.ds * mm * AXIAL_MAG;
-  const bh = size * 0.052;
-  const barrel = `<rect x="${xN.toFixed(1)}" y="${(C - bh / 2).toFixed(1)}"` +
-    ` width="${(xD - xN).toFixed(1)}" height="${bh.toFixed(1)}"` +
-    ` rx="${(bh / 2).toFixed(1)}" fill="currentColor"/>`;
-  // Centre tick, drawn last so it stays legible on top of the barrel. Without
-  // it there is nothing to read the barrel's offset against.
-  const tick = `<line x1="${C}" y1="${(C - bh * 1.15).toFixed(1)}" x2="${C}"` +
-    ` y2="${(C + bh * 1.15).toFixed(1)}" stroke="var(--card)" stroke-width="1.6"` +
-    ` opacity="0.9"/>`;
-
-  return `<svg viewBox="0 0 ${size} ${size}" width="100%" height="100%" role="img"` +
-    ` aria-label="${g.label}"><circle cx="${C}" cy="${C}"` +
-    ` r="${((Rout + Rin) / 2).toFixed(1)}" fill="none" stroke="currentColor"` +
-    ` stroke-width="${(Rout - Rin).toFixed(1)}"/>` +
-    spokes + flanges + barrel + tick + '</svg>';
-}
-
-/* Draws one side's wheel and its headline number. Called from refresh() only
-   while simplified mode is on -- there is nothing to see otherwise, and the
-   SVG rebuild is wasted work on every control change in full mode. */
-function drawFace(std, hub, erd, m, Ns) {
-  document.getElementById('face' + std).innerHTML = wheelFace({
-    nds: hub.nds, ds: hub.ds, pds: hub.pds, pnds: hub.pnds,
-    erd: erd, spokes: Ns, ratio: m.ratio / 100,
-    label: `${hub.name}: ${hub.nds} mm non-drive and ${hub.ds} mm drive-side ` +
-           `flange offset, ${fmt(m.ratio, 0)} percent tension balance`,
+  var css = function (n) {
+    return getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  };
+  var from = sPrevFlat === null ? me.F_lat : sPrevFlat;
+  SWHEEL.set({
+    R: erd / 2, nds: meHub.nds, ds: meHub.ds, pds: meHub.pds, pnds: meHub.pnds,
+    spokes: Ns, accent: css(isA ? '--a' : '--b'), ink: css('--ink'),
+  }, sPrevFlat !== null, function (e) {
+    document.getElementById('s-num').innerHTML =
+      fmt(from + (me.F_lat - from) * e, 1) + '<span class="u">kgf</span>';
+    document.getElementById('s-cond').textContent =
+      condText() + ' · ' + SWHEEL.theta().toFixed(2) + '° drive-side bracing';
   });
-  document.getElementById('sv' + std).textContent = fmt(m.F_lat, 1);
+  sPrevFlat = me.F_lat;
+
+  var d = (other.F_lat - me.F_lat) / me.F_lat * 100;
+  var oName = isA ? '157x12' : '148x12';
+  document.getElementById('s-vs').innerHTML = Math.abs(d) < 1
+    ? 'Within a hair of the <b>' + oName + '</b> build (' + fmt(other.F_lat, 1) + ' kgf).'
+    : 'The <b>' + oName + '</b> build (' + oHub.name + ') takes <b>' +
+      Math.abs(d).toFixed(0) + '% ' + (d > 0 ? 'more' : 'less') + '</b> — ' +
+      fmt(other.F_lat, 1) + ' kgf.';
 }
+
+function makeWheel(canvas) {
+  if (!canvas || !canvas.getContext) return null;
+  var ctx = canvas.getContext('2d');
+  var W = 0, H = 0, yaw = 0.62, g = null, raf = 0;
+
+  function fit() {
+    var r = canvas.getBoundingClientRect();
+    if (!r.width) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width  = Math.round(r.width  * dpr);
+    canvas.height = Math.round(r.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    W = r.width; H = r.height;
+  }
+  /* Rotate about Y (the yaw that brings the lateral offset into view), add a
+     small fixed pitch so the wheel never reads as a flat disc, then project. */
+  function proj(x, y, z) {
+    var cy = Math.cos(yaw), sy = Math.sin(yaw);
+    var x1 = x * cy + z * sy, z1 = -x * sy + z * cy;
+    var cp = Math.cos(0.16), sp = Math.sin(0.16);
+    var y2 = y * cp - z1 * sp, z2 = y * sp + z1 * cp;
+    var D = 1500, f = D / (D + z2), sc = Math.min(W, H) * 0.42 / g.R;
+    return [W / 2 + x1 * f * sc, H / 2 - y2 * f * sc];
+  }
+  function ring(radius, z, n) {
+    var pts = [], i, a;
+    for (i = 0; i <= n; i++) {
+      a = i / n * Math.PI * 2;
+      pts.push(proj(radius * Math.cos(a), radius * Math.sin(a), z));
+    }
+    return pts;
+  }
+  function stroke(pts, color, width, alpha) {
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.strokeStyle = color; ctx.lineWidth = width;
+    ctx.globalAlpha = alpha === undefined ? 1 : alpha;
+    ctx.stroke(); ctx.globalAlpha = 1;
+  }
+  function theta(gg) {
+    return Math.atan(gg.ds / (gg.R - gg.pds / 2)) * 180 / Math.PI;
+  }
+  function draw() {
+    if (!g) return;
+    if (!W) fit();
+    if (!W) return;
+    ctx.clearRect(0, 0, W, H);
+    var ds = g.ds * VIS_SPREAD, nds = g.nds * VIS_SPREAD;
+    var frD = g.pds / 2, frN = g.pnds / 2;
+    var lace = LACE_CROSS * 720 / g.spokes * Math.PI / 180;
+
+    for (var i = 0; i < g.spokes; i++) {                 // spokes under the rim
+      var a = i / g.spokes * Math.PI * 2, drive = (i % 2 === 0);
+      var fr = drive ? frD : frN, sgn = drive ? lace : -lace;
+      stroke([proj(fr * Math.cos(a), fr * Math.sin(a), drive ? ds : -nds),
+              proj(g.R * Math.cos(a + sgn), g.R * Math.sin(a + sgn), 0)],
+             drive ? g.accent : g.ink, 1, drive ? 0.62 : 0.26);
+    }
+    stroke(ring(g.R, 0, 72), g.ink, 2, 0.9);             // rim
+    stroke(ring(frD,  ds, 28), g.accent, 1.4, 0.85);     // drive-side flange
+    stroke(ring(frN, -nds, 28), g.ink,   1.4, 0.5);      // non-drive flange
+    stroke([proj(0, 0, ds), proj(0, 0, -nds)], g.ink, 3, 0.4);  // hub shell
+
+    /* The angle only means anything once the wheel has turned enough to show
+       it, so the annotation fades in with the yaw. */
+    var reveal = Math.max(0, Math.min(1, (yaw - 0.25) / 0.4));
+    if (reveal > 0.01) {
+      var f0 = proj(0, frD, ds), r0 = proj(0, g.R, 0), v0 = proj(0, g.R, ds);
+      ctx.setLineDash([3, 4]);
+      stroke([f0, v0], g.accent, 1, reveal * 0.55);
+      ctx.setLineDash([]);
+      stroke([f0, r0], g.accent, 2.2, reveal);
+      ctx.fillStyle = g.accent;
+      ctx.font = '700 13px ' + MONO;
+      ctx.globalAlpha = reveal;
+      ctx.fillText(theta(g).toFixed(2) + '°', f0[0] + 10, f0[1] - 8);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  /* set(geo, animate, onFrame): onFrame gets the eased progress, so the
+     readouts can run off the same clock as the drawing and land together. */
+  function set(geo, animate, onFrame) {
+    if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    if (!animate || !g || reduceMotion()) {
+      g = geo; draw(); if (onFrame) onFrame(1);
+      return;
+    }
+    var from = g, t0 = Date.now();
+    (function step() {
+      var t = Math.min(1, (Date.now() - t0) / TWEEN_MS);
+      var e = 1 - Math.pow(1 - t, 3);                    // easeOutCubic
+      g = t < 1 ? lerpGeo(from, geo, e) : geo;
+      draw();
+      if (onFrame) onFrame(e);
+      raf = t < 1 ? requestAnimationFrame(step) : 0;
+    }());
+  }
+
+  // ── drag = camera ─────────────────────────────────────────────
+  var dragging = false, lastX = 0;
+  function down(x) { dragging = true; lastX = x; }
+  function move(x) {
+    if (!dragging) return;
+    yaw = Math.max(0, Math.min(1.5, yaw + (x - lastX) * 0.006));
+    lastX = x; draw();
+  }
+  function up() { dragging = false; }
+  canvas.addEventListener('mousedown', function (e) { e.preventDefault(); down(e.clientX); });
+  window.addEventListener('mousemove', function (e) { move(e.clientX); });
+  window.addEventListener('mouseup', up);
+  canvas.addEventListener('touchstart', function (e) { down(e.touches[0].clientX); }, { passive: true });
+  canvas.addEventListener('touchmove',  function (e) { move(e.touches[0].clientX);  }, { passive: true });
+  canvas.addEventListener('touchend', up);
+  window.addEventListener('resize', function () { fit(); draw(); });
+
+  return { set: set, redraw: draw, theta: function () { return g ? theta(g) : 0; } };
+}
+
+(function () {
+  var dets = document.getElementById('s-dets');
+  if (dets) dets.addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (b) setSimpleSide(b.dataset.s);
+  });
+  var sel = document.getElementById('s-hub');
+  if (sel) sel.addEventListener('change', function () {
+    // Writes back to the same state the full view's own hub picker uses, so
+    // the two never disagree and switching modes keeps your choice.
+    if (ST.simpleSide === '148') { ST.hub148 = sel.value; document.getElementById('hub148').value = sel.value; }
+    else                         { ST.hub157 = sel.value; document.getElementById('hub157').value = sel.value; }
+    refresh();
+  });
+}());
 
 function toggleAdv() {
   const btn = document.getElementById('adv-btn');
@@ -1152,7 +1337,7 @@ function collectState() {
     ns:  document.getElementById('g-ns').value,
     th:  THEMES[themeIdx].id,
     adv: document.getElementById('adv-panel').classList.contains('open') ? 1 : 0,
-    sm:  document.body.classList.contains('simple') ? 1 : 0,
+    sm:  document.body.classList.contains('simple') ? ST.simpleSide : 0,
   };
 }
 function writeURL() {
@@ -1207,7 +1392,10 @@ function readURL() {
   const ti = THEMES.findIndex(t => t.id === p.th);
   if (ti >= 0) themeIdx = ti;
   if (p.adv === '1') document.getElementById('adv-panel').classList.add('open');
-  setSimple(p.sm === '1');
+  // sm names the standard the single wheel was showing; '1' is accepted so
+  // links made before the mode went to one wheel still open.
+  if (p.sm === '148' || p.sm === '157') { ST.simpleSide = p.sm; setSimple(true); }
+  else setSimple(p.sm === '1');
 }
 function copyLink() {
   writeURL();
@@ -1471,8 +1659,7 @@ function refresh() {
   // Simplified mode's two drawings. Everything above still ran, so flipping
   // the mode back off shows a fully up-to-date full view with no extra work.
   if (document.body.classList.contains('simple')) {
-    drawFace('148', hub148, WHEEL_ERDS[ST.wheel148], m148, Ns);
-    drawFace('157', hub157, WHEEL_ERDS[ST.wheel157], m157, Ns);
+    drawSimple(m148, m157, hub148, hub157, Ns);
   }
   writeURL();
 }
@@ -1541,17 +1728,22 @@ function buildHero(m148, m157, hub148, hub157) {
   document.getElementById('hero-val-a').textContent = fmt(m148.F_lat, 1) + ' kgf';
   document.getElementById('hero-val-b').textContent = fmt(m157.F_lat, 1) + ' kgf';
 
-  // the conditions this result was produced under — makes a screenshot self-contained
+  document.getElementById('hero-cond').textContent = condText();
+
+}
+
+/* The conditions a result was produced under, so a screenshot of just the
+   headline -- or of simplified mode's stage -- is self-contained. Shared by
+   the hero and by simplified mode, which is why it lives on its own. */
+function condText() {
   const wtxt = ST.wheel148 === ST.wheel157
     ? ST.wheel148 + '″'
     : ST.wheel148 + '″ vs ' + ST.wheel157 + '″';
   const ttxt = ST.tds148 === ST.tds157
     ? ST.tds148 + ' kgf DS'
     : ST.tds148 + ' vs ' + ST.tds157 + ' kgf DS';
-  document.getElementById('hero-cond').textContent =
-    `${wtxt} · ${document.getElementById('g-ns').value}H · ` +
+  return `${wtxt} · ${document.getElementById('g-ns').value}H · ` +
     `${ttxt} · same rim both sides`;
-
 }
 
 /* Plain-English summary for a casual reader — leads with the F_lat hero metric,
@@ -1591,7 +1783,13 @@ document.getElementById('adv-btn').setAttribute('aria-expanded',
   document.getElementById('adv-panel').classList.contains('open'));
 document.getElementById('simp-btn').setAttribute('aria-pressed',
   document.body.classList.contains('simple'));
+SWHEEL = makeWheel(document.getElementById('s-canvas'));
 refresh();
+// The canvas has no size until its stage is displayed, so a link that opens
+// straight into simplified mode needs one more pass once layout has run.
+if (document.body.classList.contains('simple')) {
+  requestAnimationFrame(function () { sPrevFlat = null; refresh(); });
+}
 </script>
 </body>
 </html>
