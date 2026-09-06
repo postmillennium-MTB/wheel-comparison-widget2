@@ -54,6 +54,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 .wrap{max-width:1320px;margin:0 auto}
 h1{font-size:29px;font-weight:750;letter-spacing:-.015em;line-height:1.15}
 .pct-icon{width:.85em;height:.85em;vertical-align:-.05em;display:inline-block}
+/* A figure and its percent icon read as one token, so keep them on one line --
+   on a phone the prose lines are narrow enough to split "28" from its sign. */
+.pct-num{white-space:nowrap}
 .tagline{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.14em;
   text-transform:uppercase;color:var(--b-text);margin:3px 0 0}
 .sub{font-size:12.5px;color:var(--muted);margin:2px 0 14px;max-width:62ch}
@@ -159,6 +162,13 @@ body.simple .simple-stage{display:grid;grid-template-columns:1fr;gap:20px;
   background:none;border:none;padding:0;margin:0 0 12px;cursor:pointer;
   text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
 .s-swap:hover,.s-swap:focus-visible{color:var(--win-text)}
+/* Shown only when simplified was applied by the width rule rather than chosen.
+   A first-time visitor on a phone would otherwise see a wheel, a number and a
+   sentence, and reasonably conclude that is the whole tool. */
+.s-more{display:block;font:inherit;font-size:12px;font-weight:600;color:var(--muted);
+  background:none;border:none;padding:0;margin:12px 0 0;cursor:pointer;text-align:left;
+  text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
+.s-more:hover,.s-more:focus-visible{color:var(--win-text)}
 .s-num{font-family:var(--mono);font-variant-numeric:tabular-nums;
   font-size:clamp(46px,12vw,64px);line-height:.94;font-weight:700;letter-spacing:-.04em;
   color:var(--win-text);margin-top:14px}
@@ -502,6 +512,8 @@ built on those stiffnesses.</p>
     <div class="s-lbl">to first slack spoke</div>
     <div class="s-vs" id="s-vs">&mdash;</div>
     <div class="s-cond" id="s-cond">&mdash;</div>
+    <button type="button" class="s-more" id="s-more" hidden>Show the full
+      breakdown &mdash; stiffness, vertical hits and buckling margin &rarr;</button>
   </div>
 </div>
 
@@ -1059,6 +1071,9 @@ const ST = Object.assign({}, DEFAULTS, {
   tds148Touched: false, tds157Touched: false,
   // Simplified mode shows one wheel; this is the standard it is showing.
   simpleSide: '148',
+  // true only while simplified mode was applied by the width rule at boot
+  // rather than chosen -- the only case that needs the way out spelled out.
+  autoSimple: false,
 });
 
 // ── UI ───────────────────────────────────────────────────────────────────────
@@ -1077,9 +1092,14 @@ function setSimple(on) {
   document.body.classList.toggle('simple', on);
   document.getElementById('simp-btn').setAttribute('aria-pressed', on ? 'true' : 'false');
   if (SWHEEL) { if (on) SWHEEL.play(); else SWHEEL.pause(); }
+  // The hint only ever applies inside the mode. Its parent is display:none out
+  // here so this is not visible either way, but a stale flag is a trap.
+  var more = document.getElementById('s-more');
+  if (more) more.hidden = !(on && ST.autoSimple);
 }
 function toggleSimple() {
   var on = !document.body.classList.contains('simple');
+  ST.autoSimple = false;     // touching the toggle makes the choice theirs
   setSimple(on);
   // Opening the mode should present a finished picture, not animate into one;
   // only a switch the reader makes inside it is worth tweening.
@@ -1125,6 +1145,22 @@ var MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
    rather than something demanding attention: one revolution every 14 s.
    Held off entirely under prefers-reduced-motion -- a permanent animation is
    precisely what that setting exists to stop. */
+/* On a bare visit, open in whichever mode suits the space. Below this width
+   the full layout is one very long column and simplified is the better first
+   impression; above it there is room for the whole thing.
+
+   Width, not device class, on purpose. "Is this a phone" is not answerable in
+   a browser -- an iPhone in landscape and an iPad in portrait are the same
+   number of pixels -- but "is there room for the full layout" is exactly the
+   question that matters, and it also catches a laptop with a half-width
+   window. 700px puts every phone in portrait into simplified and leaves
+   tablets and up on the full view. The PMR page frames this tool at
+   width:100%, so the number here is the real viewport either way.
+
+   Only ever on a bare visit: any URL carrying state reproduces what its
+   sender saw, so a shared full-mode link opens full on a phone. */
+var AUTO_SIMPLE_PX = 700;
+
 var SPIN_RATE = Math.PI * 2 / 14;                  // radians per second
 var SPIN_ON = !(window.matchMedia &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -1172,6 +1208,7 @@ function drawSimple(m148, m157, hub148, hub157, Ns) {
   var erd = WHEEL_ERDS[isA ? ST.wheel148 : ST.wheel157];
   var stage = document.getElementById('s-stage');
   stage.dataset.side = side;
+  document.getElementById('s-more').hidden = !ST.autoSimple;
 
   var dets = document.getElementById('s-dets').children;
   for (var i = 0; i < dets.length; i++) {
@@ -1218,8 +1255,8 @@ function drawSimple(m148, m157, hub148, hub157, Ns) {
     : d < 1
     ? 'The <b>' + meHub.name + '</b> and the <b>' + oHub.name +
       '</b> are within a hair of each other laterally.'
-    : 'The <b>' + hi.name + '</b> build is <b>' + d.toFixed(0) + PCT_ICON +
-      '</b> more laterally strong than the <b>' + lo.name + '</b> wheel.';
+    : 'The <b>' + hi.name + '</b> build is <b class="pct-num">' + d.toFixed(0) +
+      PCT_ICON + '</b> more laterally strong than the <b>' + lo.name + '</b> wheel.';
 }
 
 function makeWheel(canvas) {
@@ -1384,6 +1421,8 @@ function makeWheel(canvas) {
     var b = e.target.closest('button');
     if (b) setSimpleSide(b.dataset.s);
   });
+  var more = document.getElementById('s-more');
+  if (more) more.addEventListener('click', function () { toggleSimple(); });
   var swap = document.getElementById('s-swap');
   if (swap) swap.addEventListener('click', function () { cycleStd(ST.simpleSide); });
   var sel = document.getElementById('s-hub');
@@ -1473,7 +1512,7 @@ function collectState() {
   };
 }
 function writeURL() {
-  if (hashIsAlias) return;
+  if (urlPristine) return;
   const s = collectState();
   const hash = Object.keys(s).map(k => k + '=' + encodeURIComponent(s[k])).join('&');
   try {
@@ -1501,22 +1540,25 @@ function applyHashAlias(h) {
   return true;
 }
 
-/* A visitor who arrived on "#simple" keeps that URL until they change
-   something. Expanding it into the full state blob the moment the page painted
-   would quietly replace the link they were handed with a 200-character one. */
-let hashIsAlias = false;
+/* True while the URL still belongs to whoever wrote it rather than to this
+   visitor: they arrived on "#simple", or on a bare address whose mode was
+   chosen for them by the width rule below. Either way the address bar is not
+   theirs to overwrite until they act -- expanding it into the full state blob
+   on first paint would quietly replace the link they were handed, or stamp a
+   decision they never made into one they might copy. */
+let urlPristine = false;
 ['pointerdown', 'keydown', 'change'].forEach(t =>
-  document.addEventListener(t, () => { hashIsAlias = false; },
+  document.addEventListener(t, () => { urlPristine = false; },
     { once: true, capture: true }));
 
 window.addEventListener('hashchange', () => {
-  if (applyHashAlias(location.hash)) { hashIsAlias = true; refresh(); }
+  if (applyHashAlias(location.hash)) { urlPristine = true; refresh(); }
 });
 
 function readURL() {
   const h = location.hash.replace(/^#/, '');
   if (!h) return;
-  if (applyHashAlias(h)) { hashIsAlias = true; return; }
+  if (applyHashAlias(h)) { urlPristine = true; return; }
   const p = {};
   h.split('&').forEach(pair => {
     const [k, v] = pair.split('=');
@@ -1747,7 +1789,8 @@ function winnerName(aWins) {
 function verdict(v148, v157, adjective) {
   const d = Math.abs(v157 - v148) / Math.min(v148, v157) * 100;
   if (d < 0.05) return 'Effectively equal';
-  return `${winnerName(v148 > v157)} build is ${d.toFixed(1)}${PCT_ICON} ${adjective}`;
+  return `${winnerName(v148 > v157)} build is ` +
+    `<span class="pct-num">${d.toFixed(1)}${PCT_ICON}</span> ${adjective}`;
 }
 
 /* Center-out bars: each side scaled to the larger value (winner fills its half). */
@@ -1812,8 +1855,10 @@ function refresh() {
   document.getElementById('sum-klat').innerHTML = verdict(m148.K_lat, m157.K_lat, 'stiffer');
 
   // ratio
-  document.getElementById('cmp-ratio148').innerHTML = fmt(m148.ratio, 1) + PCT_ICON;
-  document.getElementById('cmp-ratio157').innerHTML = fmt(m157.ratio, 1) + PCT_ICON;
+  document.getElementById('cmp-ratio148').innerHTML =
+    '<span class="pct-num">' + fmt(m148.ratio, 1) + PCT_ICON + '</span>';
+  document.getElementById('cmp-ratio157').innerHTML =
+    '<span class="pct-num">' + fmt(m157.ratio, 1) + PCT_ICON + '</span>';
   tug('ratio', m148.ratio, m157.ratio);
   const rStmt = Math.abs(m157.ratio - m148.ratio) < 0.05
     ? 'Effectively equal'
@@ -1826,8 +1871,10 @@ function refresh() {
   document.getElementById('tc157-avg').textContent = fmt(m157.T_c, 0);
   document.getElementById('tc148-ds').textContent  = fmt(m148.T_c_DS, 0);
   document.getElementById('tc157-ds').textContent  = fmt(m157.T_c_DS, 0);
-  document.getElementById('tc148-use').innerHTML = fmt(m148.T_safety, 0) + PCT_ICON + ' ' + chip(m148.T_safety);
-  document.getElementById('tc157-use').innerHTML = fmt(m157.T_safety, 0) + PCT_ICON + ' ' + chip(m157.T_safety);
+  document.getElementById('tc148-use').innerHTML =
+    '<span class="pct-num">' + fmt(m148.T_safety, 0) + PCT_ICON + '</span> ' + chip(m148.T_safety);
+  document.getElementById('tc157-use').innerHTML =
+    '<span class="pct-num">' + fmt(m157.T_safety, 0) + PCT_ICON + '</span> ' + chip(m157.T_safety);
   const sEqual = Math.abs(m157.T_safety - m148.T_safety) < 0.05;
   const tcStmt = sEqual
     ? 'Effectively equal margin'
@@ -1974,6 +2021,11 @@ document.getElementById('hub148').value = ST.hub148;
 document.getElementById('hub157').value = ST.hub157;
 document.getElementById('adv-btn').setAttribute('aria-expanded',
   document.getElementById('adv-panel').classList.contains('open'));
+if (!location.hash && window.innerWidth < AUTO_SIMPLE_PX) {
+  ST.autoSimple = true;      // chosen for them, not by them -- see the hint
+  urlPristine = true;
+  setSimple(true);
+}
 document.getElementById('simp-btn').setAttribute('aria-pressed',
   document.body.classList.contains('simple'));
 SWHEEL = makeWheel(document.getElementById('s-canvas'));
