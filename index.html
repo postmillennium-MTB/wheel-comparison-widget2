@@ -169,18 +169,39 @@ body.simple .simple-stage{display:grid;grid-template-columns:1fr;gap:20px;
   background:none;border:none;padding:0;margin:12px 0 0;cursor:pointer;text-align:left;
   text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
 .s-more:hover,.s-more:focus-visible{color:var(--win-text)}
+/* Both wheels' kgf, side by side and each attributed to its own hub. A lone
+   number ("25.1kgf to first slack spoke") invites the reader to ask "more
+   than what?" -- it only means something next to the wheel it's being
+   measured against, so the other hub's figure and name are printed at the
+   same time, not left for the prose line below to explain. The "me" figure
+   (whichever wheel is on the turntable) stays the large tweened one since
+   it is what the drag/switch controls act on; the other hub's figure is
+   static -- it does not need to animate to make the comparison legible. */
+.s-num-pair{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-top:14px}
 .s-num{font-family:var(--mono);font-variant-numeric:tabular-nums;
   font-size:clamp(46px,12vw,64px);line-height:.94;font-weight:700;letter-spacing:-.04em;
-  color:var(--win-text);margin-top:14px}
+  color:var(--win-text)}
 .s-num .u{font-size:.28em;font-weight:650;letter-spacing:.08em;margin-left:6px;
   color:var(--faint)}
+.s-num-other{font-size:clamp(24px,6vw,32px);color:var(--muted)}
+.s-num-who{font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--faint);
+  margin-top:4px;max-width:22ch;line-height:1.3}
 .s-lbl{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
   color:var(--faint);margin-top:6px}
-.s-vs{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;
-  color:var(--muted);line-height:1.5}
-.s-vs b{color:var(--ink);font-weight:700}
+/* The tool's headline verdict in simplified mode -- full mode has the hero
+   card for this job, but simplified mode strips that card out entirely (see
+   the "Simplified mode" note above), so this sentence is the only place the
+   result actually lands. Sized and weighted to read as the answer, not as a
+   caption under the kgf figures. */
+.s-vs{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);
+  font-size:clamp(18px,4.6vw,22px);font-weight:600;color:var(--ink);line-height:1.35}
+.s-vs b{color:var(--ink);font-weight:800}
 .s-cond{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:var(--faint);
   margin-top:12px;padding-top:10px;border-top:1px solid var(--line);line-height:1.5}
+/* Credit for the physics this tool runs on -- see the README's "Theory and
+   source code" section for the full citation. Kept short and un-emphasized
+   on purpose: it belongs on the page, not competing with the result. */
+.s-credit{font-size:10.5px;color:var(--faint);margin-top:14px;line-height:1.5}
 body.simple .sub,
 body.simple #global-card,
 body.simple .layout,
@@ -508,12 +529,19 @@ built on those stiffnesses.</p>
     </div>
     <button type="button" class="s-swap" id="s-swap">&#8644; Switch this side</button>
     <select class="ctl" id="s-hub" aria-label="Hub"></select>
-    <div class="s-num" id="s-num">&mdash;<span class="u">kgf</span></div>
+    <div class="s-num-pair">
+      <div><div class="s-num" id="s-num">&mdash;<span class="u">kgf</span></div>
+        <div class="s-num-who" id="s-num-who">&mdash;</div></div>
+      <div><div class="s-num s-num-other" id="s-num-other">&mdash;<span class="u">kgf</span></div>
+        <div class="s-num-who" id="s-num-other-who">&mdash;</div></div>
+    </div>
     <div class="s-lbl">to first slack spoke</div>
     <div class="s-vs" id="s-vs">&mdash;</div>
     <div class="s-cond" id="s-cond">&mdash;</div>
     <button type="button" class="s-more" id="s-more" hidden>Show the full
       breakdown &mdash; stiffness, vertical hits and buckling margin &rarr;</button>
+    <div class="s-credit">This project could not have been possible without the
+      work of Mechanical Engineer Matt Ford.</div>
   </div>
 </div>
 
@@ -1197,6 +1225,17 @@ function lerpGeo(from, to, t) {
 
 var SWHEEL = null, sPrevFlat = null;
 
+/* Drive-side bracing angle for a hub that isn't the one currently on the
+   turntable. Mirrors makeWheel()'s own internal theta(gg) exactly (same
+   formula, same units) -- that copy is closured inside the wheel factory to
+   drive the on-canvas annotation, so it can't be called for a hub that
+   isn't loaded into the wheel. A single angle read on its own ("5.77°
+   drive-side bracing") doesn't say whether that's steep or shallow; printing
+   the other build's angle alongside it is what makes the number legible. */
+function bracingAngle(R, ds, pds) {
+  return Math.atan(ds / (R - pds / 2)) * 180 / Math.PI;
+}
+
 /* Renders simplified mode's stage: the wheel for whichever standard is
    selected, its number, and what the other standard would give. The tween's
    progress drives the number and the bracing angle as well as the drawing, so
@@ -1206,6 +1245,7 @@ function drawSimple(m148, m157, hub148, hub157, Ns) {
   var me    = isA ? m148   : m157,   other  = isA ? m157   : m148;
   var meHub = isA ? hub148 : hub157, oHub   = isA ? hub157 : hub148;
   var erd = WHEEL_ERDS[isA ? ST.wheel148 : ST.wheel157];
+  var oErd = WHEEL_ERDS[isA ? ST.wheel157 : ST.wheel148];
   var stage = document.getElementById('s-stage');
   stage.dataset.side = side;
   document.getElementById('s-more').hidden = !ST.autoSimple;
@@ -1227,6 +1267,20 @@ function drawSimple(m148, m157, hub148, hub157, Ns) {
   var css = function (n) {
     return getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   };
+  // The other build's figure and bracing angle don't ride the tween -- they
+  // aren't the wheel on the turntable, so nothing animates them -- but they
+  // still need naming, or "25.1kgf" reads as a number with nothing to be
+  // more or less than. See bracingAngle() above for why this can't reuse
+  // SWHEEL.theta(), which only ever knows the wheel currently loaded into it.
+  // Computed before SWHEEL.set() below because its onFrame callback can fire
+  // synchronously (a first render, or reduced motion) -- these need to exist
+  // before that happens, not after.
+  var otherTheta = bracingAngle(oErd / 2, oHub.ds, oHub.pds);
+  document.getElementById('s-num-who').textContent = meHub.name;
+  document.getElementById('s-num-other').innerHTML =
+    fmt(other.F_lat, 1) + '<span class="u">kgf</span>';
+  document.getElementById('s-num-other-who').textContent = oHub.name;
+
   var from = sPrevFlat === null ? me.F_lat : sPrevFlat;
   SWHEEL.set({
     R: erd / 2, nds: meHub.nds, ds: meHub.ds, pds: meHub.pds, pnds: meHub.pnds,
@@ -1234,8 +1288,9 @@ function drawSimple(m148, m157, hub148, hub157, Ns) {
   }, sPrevFlat !== null, function (e) {
     document.getElementById('s-num').innerHTML =
       fmt(from + (me.F_lat - from) * e, 1) + '<span class="u">kgf</span>';
-    document.getElementById('s-cond').textContent =
-      condText() + ' · ' + SWHEEL.theta().toFixed(2) + '° drive-side bracing';
+    document.getElementById('s-cond').textContent = condText() + ' · ' +
+      SWHEEL.theta().toFixed(2) + '° drive-side bracing (' + meHub.name + ') vs ' +
+      otherTheta.toFixed(2) + '° (' + oHub.name + ')';
   });
   sPrevFlat = me.F_lat;
 
