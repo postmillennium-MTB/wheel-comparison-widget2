@@ -86,6 +86,14 @@ Any URL carrying state overrides the rule outright — a shared full-mode link o
 
 ---
 
+### Look: panels, texture and themes
+
+**DMC-12 (the default).** Brushed stainless and neon, with the panels made to read as panels. The page ground is `#d9dde6`, a cool steel with a whisper of violet; the panels stay white, so panel against page is 1.36:1, up from 1.08:1 when the ground was a near-white `#f7f5f8` and a faint pink hairline was the only edge. Three further changes carry the rest. Panels and controls get real outlines: a panel outline (`--edge`, 1.9:1 against the page) and a stronger control outline (`--edge-strong`, 3.6:1 against white, the 3:1 WCAG 1.4.11 asks of the boundary of a control; selects, number fields and buttons were 1.3:1 before). Panels get a soft lift shadow (`--lift`). And the small gray text that carries most of the labels is darker: `--faint` goes from `#8a93a0` (3.1:1 on white, under the 4.5:1 AA line for 11px type) to `#636c7a` (5.3:1), `--muted` from `#5b6573` to `#4a5462`. Amber, blue, the status colors and the pink accent are unchanged: the side colors carry meaning and the contrast change must not touch them.
+
+**Carpet texture.** The weave behind the panels is US Design Patent 25,495 (Crowe, 1896, "Carpet", expired and in the public domain), the same alpha mask the MTB Patent Atlas header uses (`images/pmr-carpet-1896-mask.png`, byte-identical to that repo's file; provenance in `images/pmr-carpet-1896-SOURCE.md`). Because the mask is ink-opaque and paper-transparent, the color is just a background color: the Atlas fills it white at 8% over a dark header, and here it is the neon accent at 23% over steel. It is a fixed layer beneath the page content (`body::before`, z-index 0 under `.wrap` at 1), so it shows only in the gaps around the panels and never behind text on a panel. Two guards: a theme turns it on by setting `--carpet-mask` and `--carpet-display`, and a theme that does not (MGB) has no such layer at all and renders exactly as it did before; and under `forced-colors` it is dropped. Text that sits directly on the page, over the weave, uses its own tokens (`--on-ground-muted`, `--on-ground-accent`, `--on-ground-link`), a notch darker than the in-panel ones, so it stays above 4.5:1 even where the ink is at full strength (4.76:1 and 4.83:1). The tint and strength are `--carpet-color` and `--carpet-alpha`; above about 27% alpha even the darker text drops under 4.5:1.
+
+**MGB** is unchanged. Its block resets the new tokens to the plain look. This matters because the DMC-12 block is also on `:root`, so a theme that omits a token falls through to DMC-12 rather than to a neutral default: any new theme must restate every token, not just the colors it wants to change.
+
 ## Theory and source code
 
 ### The Ford (2018) Mode Matrix method
@@ -468,6 +476,8 @@ into this widget's `<script id="engine">` block.
 | `index.html` | The complete widget — all HTML, CSS, and JavaScript in a single file. The physics engine is in the `<script id="engine">` tag. |
 | `validation_baseline_v4_2026-06-11.csv` | Congruence test results: widget vs `bike-wheel-calc` library, all 20 hubs, four metrics each. All rows PASS. |
 | `validation_baseline_v4_2026-08-20.csv` | Re-run of the same congruence check, ~2 months later, after UI-only changes. All rows PASS, matching the June baseline to floating-point precision — confirms no engine drift. |
+| `images/pmr-carpet-1896-mask.png` | The carpet-weave mask for the DMC-12 page texture: US Design Patent 25,495 (Crowe, 1896, public domain), the same file the MTB Patent Atlas header uses. Loaded only by themes that turn the texture on. |
+| `images/pmr-carpet-1896-SOURCE.md` | Provenance of the mask: patent number, public-domain basis, and how the asset was made. |
 | `README.md` | This document. |
 
 ---
@@ -477,6 +487,8 @@ into this widget's `<script id="engine">` block.
 The physics engine is a port of Matt Ford's `bike-wheel-calc`, which is licensed under the MIT License. The original library and its documentation are available at [github.com/dashdotrobot/bike-wheel-calc](https://github.com/dashdotrobot/bike-wheel-calc).
 
 Widget UI, hub data compilation, strength metric formulas, and this README: © PostMillennium MTB / RedFoxRun, 2026.
+
+The carpet texture behind the panels is US Design Patent 25,495 (E. A. Crowe, 1896), expired and in the public domain; see `images/pmr-carpet-1896-SOURCE.md`.
 
 ---
 

@@ -12,22 +12,59 @@
    Side colors (--a/--b) are the Okabe–Ito colorblind-safe pair, unchanged
    across themes — they carry meaning (148 vs 157) so they stay fixed.
    --accent is purely decorative "theme chrome": tagline, focus rings, link
-   hovers, header glow. It never appears on anything that encodes a result. */
+   hovers, header glow, carpet weave. It never appears on anything that encodes
+   a result.
+
+   Adding a theme: the DMC-12 block below is also on :root, so anything a theme
+   leaves out falls through to DMC-12. Restate every token (see the MGB block,
+   which resets the surface-role and carpet tokens to the plain look). */
 :root{
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  /* Surface roles a theme can restyle without touching component CSS. The
+     defaults reproduce the original single-hairline look, so a theme only has
+     to set the ones it wants to change.
+       --edge          outline of a panel (card, metric card, takeaway)
+       --edge-strong   outline of a control (select, input, button); WCAG 1.4.11
+                       asks 3:1 for the boundary of a control
+       --well          inset surface inside a panel (bar tracks, selected row)
+       --lift          panel elevation (a box-shadow)
+       --ground-image  optional image painted over --paper behind the page
+       --on-ground-*   text that sits directly on the page, not on a panel */
+  --edge:var(--line); --edge-strong:var(--line); --well:var(--paper); --lift:none;
+  --ground-image:none;
+  --on-ground:var(--ink); --on-ground-muted:var(--muted);
+  --on-ground-accent:var(--b-text); --on-ground-link:var(--b-text);
+  /* Carpet texture (see "Carpet texture" below). Off unless a theme sets --carpet-mask. */
+  --carpet-display:none; --carpet-mask:none; --carpet-color:transparent; --carpet-alpha:0; --carpet-size:260px;
 }
 /* ── DMC-12 (default) — brushed stainless + Miami-sunset neon. The DeLorean
-   reads cool and metallic, so the ground stays a hint of violet-white steel;
-   the neon pink accent carries the 80s synthwave signature in the chrome
-   (tagline, glow, link hovers) without touching the amber/blue comparison. */
+   reads cool and metallic, so the ground is a steel with a whisper of violet,
+   dark enough that the white panels read as panels (panel vs page 1.36:1, up
+   from 1.08:1). Panel and control outlines, a soft lift shadow and darker small
+   text bring the rest to WCAG AA. The neon pink accent carries the 80s
+   synthwave signature in the chrome (tagline, glow, link hovers) and tints the
+   carpet weave behind the panels, without touching the amber/blue comparison. */
 :root, html[data-theme="dmc12"]{
-  --ink:#1c2530; --muted:#5b6573; --faint:#8a93a0;
-  --paper:#f7f5f8; --card:#ffffff; --line:rgba(120,40,90,.14);
+  --ink:#1c2530; --muted:#4a5462; --faint:#636c7a;   /* was #5b6573 / #8a93a0: small labels were 3.1:1 on white, now 5.3:1 */
+  --paper:#d9dde6; --card:#ffffff; --line:rgba(52,62,96,.16);
+  --edge:#9aa1b4;           /* panel outline: 1.9:1 against the page */
+  --edge-strong:#7f879d;    /* control outline: 3.6:1 against white (WCAG 1.4.11 asks 3:1) */
+  --well:#eceff5;           /* inset tracks and the selected table row, lighter than the page */
+  --lift:0 1px 0 rgba(255,255,255,.8) inset, 0 1px 2px rgba(24,32,56,.20), 0 12px 24px -16px rgba(24,32,56,.55);
   --a:#e69f00; --a-text:#8a5800; --a-soft:#faf3e3;   /* 148 — amber  */
   --b:#0072b2; --b-text:#005684; --b-soft:#e8f2f9;   /* 157 — blue   */
   --ok:#1b7a53; --warn:#9a5b00; --over:#b3261e;
   --accent:#ff2d78; --accent-text:#c2185b; --accent-soft:#ffe2ee;
   --accent-glow:rgba(255,45,120,.38);
+  /* Text that sits directly on the page, over the weave: a notch darker than
+     --muted and --b-text so it stays above 4.5:1 even on a pixel where the pink
+     ink is at full strength (4.76:1 and 4.83:1 there). */
+  --on-ground-muted:#434d5b; --on-ground-accent:#005078; --on-ground-link:#005078;
+  /* Carpet weave: the neon accent at 23%, tiled at 260px. Same mask as the Patent
+     Atlas header. More alpha means more texture, but above about 27% even the
+     darker on-ground text drops under 4.5:1 on the ink. */
+  --carpet-display:block; --carpet-mask:url('images/pmr-carpet-1896-mask.png');
+  --carpet-color:var(--accent); --carpet-alpha:.23;
 }
 /* ── MGB — deepened British Racing Green cabin: ivory-cream paper and card
    (evoking cream leather and ivory gauges), a richer BRG accent used for
@@ -41,37 +78,61 @@ html[data-theme="mgb"]{
   --ok:#0a5c37; --warn:#8a5500; --over:#a52a1e;
   --accent:#04492c; --accent-text:#033a23; --accent-soft:#dfe9e1;
   --accent-glow:rgba(4,73,44,.28);
+  /* Plain look: panels outlined by --line alone, no lift, no carpet. These reset
+     the DMC-12 surface roles that :root would otherwise leak into this theme. */
+  --edge:var(--line); --edge-strong:var(--line); --well:var(--paper); --lift:none;
+  --on-ground:var(--ink); --on-ground-muted:var(--muted);
+  --on-ground-accent:var(--b-text); --on-ground-link:var(--b-text);
+  --carpet-display:none; --carpet-mask:none; --carpet-color:transparent; --carpet-alpha:0;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
-  font-size:15px;line-height:1.5;color:var(--ink);background:var(--paper);padding:14px}
+  font-size:15px;line-height:1.5;color:var(--ink);background:var(--ground-image) var(--paper);padding:14px}
 /* 1320px rather than the old 1100px: the two hub-config columns are a
    fixed 300px each (see .layout below), so the page's max-width is the
    only lever that gives the comparison column -- and the four metric
    cards inside it -- more room. Kept under 1366px (a very common
    laptop width) so this doesn't introduce horizontal scroll there. */
-.wrap{max-width:1320px;margin:0 auto}
-h1{font-size:29px;font-weight:750;letter-spacing:-.015em;line-height:1.15}
+.wrap{max-width:1320px;margin:0 auto;position:relative;z-index:1}
+/* ── Carpet texture ───────────────────────────────────────────────────────────
+   The same alpha mask the Patent Atlas header uses: US Design Patent 25,495
+   (Crowe, 1896, "Carpet", expired and public domain; see that repo's
+   images/pmr-carpet-1896-SOURCE.md). The mask is ink-opaque and paper-
+   transparent, so --carpet-color tints it and --carpet-alpha sets how loud it
+   is. A theme turns it on by setting --carpet-mask, so a theme without it never
+   downloads the image. Off by default (--carpet-display:none), where the layer does
+   not exist at all, so a theme without it renders exactly as it did before. A fixed
+   layer would otherwise force the browser to composite the page, which is enough
+   to change text anti-aliasing.
+   It is a fixed layer at z-index 0 under .wrap (z-index 1), so it shows only in
+   the gaps around the panels and never behind text on a panel. */
+body::before{content:"";display:var(--carpet-display);position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-color:var(--carpet-color);opacity:var(--carpet-alpha);
+  -webkit-mask-image:var(--carpet-mask);mask-image:var(--carpet-mask);
+  -webkit-mask-repeat:repeat;mask-repeat:repeat;
+  -webkit-mask-size:var(--carpet-size) auto;mask-size:var(--carpet-size) auto}
+@media(forced-colors:active){body::before{display:none}}
+h1{font-size:29px;font-weight:750;letter-spacing:-.015em;line-height:1.15;color:var(--on-ground)}
 .pct-icon{width:.85em;height:.85em;vertical-align:-.05em;display:inline-block}
 /* A figure and its percent icon read as one token, so keep them on one line --
    on a phone the prose lines are narrow enough to split "28" from its sign. */
 .pct-num{white-space:nowrap}
 .tagline{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--b-text);margin:3px 0 0}
-.sub{font-size:12.5px;color:var(--muted);margin:2px 0 14px;max-width:62ch}
+  text-transform:uppercase;color:var(--on-ground-accent);margin:3px 0 0}
+.sub{font-size:12.5px;color:var(--on-ground-muted);margin:2px 0 14px;max-width:62ch}
 button{cursor:pointer;font-family:inherit;color:var(--ink)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* labels + controls */
 .slbl{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;
   font-weight:600;margin-bottom:5px}
-select.ctl{font-family:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);
+select.ctl{font-family:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--edge-strong);
   border-radius:8px;background:#fff;color:var(--ink);width:100%;cursor:pointer}
-input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px solid var(--line);
+input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px solid var(--edge-strong);
   border-radius:8px;background:#fff;color:var(--ink);width:100%;text-align:right}
 .seg{display:flex;gap:5px;flex-wrap:wrap}
-.seg button{flex:1;min-height:40px;font-size:13.5px;padding:7px 4px;border:1px solid var(--line);
+.seg button{flex:1;min-height:40px;font-size:13.5px;padding:7px 4px;border:1px solid var(--edge-strong);
   border-radius:8px;background:#fff;transition:background .15s,border-color .15s}
 .seg button:hover{border-color:var(--faint)}
 .seg button[aria-pressed="true"]{font-weight:650;border-width:1.5px}
@@ -79,7 +140,7 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
 .side-b .seg button[aria-pressed="true"]{background:var(--b-soft);border-color:var(--b-text);color:var(--b-text)}
 
 /* cards */
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.card{background:var(--card);border:1px solid var(--edge);border-radius:12px;padding:14px;box-shadow:var(--lift)}
 .side-card{border-top:4px solid}
 .side-a{border-top-color:var(--a)} .side-b{border-top-color:var(--b)}
 /* card header: big numeric standard ("148x12") over a small marketing
@@ -132,7 +193,7 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
    sensitive to: motion. See makeWheel() for the drawing and the tween. */
 .simple-stage{display:none}
 body.simple .simple-stage{display:grid;grid-template-columns:1fr;gap:20px;
-  background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;
+  background:var(--card);border:1px solid var(--edge);border-radius:14px;padding:20px;
   box-shadow:0 10px 30px -24px rgba(0,0,0,.6)}
 @media(min-width:760px){
   /* Capped and centred rather than spanning the full 1320px wrap: with only a
@@ -149,7 +210,7 @@ body.simple .simple-stage{display:grid;grid-template-columns:1fr;gap:20px;
   color:var(--faint);text-align:center;margin:6px 0 0}
 .s-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;
   color:var(--faint);font-weight:600}
-.s-dets{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;
+.s-dets{display:inline-flex;border:1px solid var(--edge-strong);border-radius:9px;overflow:hidden;
   margin:9px 0 12px}
 .s-dets button{font:inherit;font-size:15px;font-weight:750;letter-spacing:-.01em;
   padding:8px 16px;background:var(--card);border:none;color:var(--muted);cursor:pointer}
@@ -210,8 +271,8 @@ body.simple .detail-wrap,
 body.simple .note{display:none}
 
 /* comparison cards — center-out "tug of war" bars */
-.cmp-card{background:var(--card);border:1px solid var(--line);border-radius:12px;
-  padding:16px;margin-bottom:10px}
+.cmp-card{background:var(--card);border:1px solid var(--edge);border-radius:12px;
+  padding:16px;margin-bottom:10px;box-shadow:var(--lift)}
 
 /* ── Primary card (F_lat) — hero treatment ─── */
 .cmp-card.primary{padding:0;overflow:hidden;border:2px solid var(--ink);margin-bottom:14px}
@@ -309,7 +370,7 @@ body.simple .note{display:none}
 .adv-help .h{font-size:11px;font-weight:700;color:var(--b-text);text-transform:uppercase;letter-spacing:.05em}
 .adv-help p{font-size:12px;color:var(--muted);line-height:1.45;margin-top:2px}
 .adv-note{font-size:12px;color:var(--faint);margin-top:8px}
-.reset{font-size:12.5px;border:1px solid var(--line);background:#fff;border-radius:8px;
+.reset{font-size:12.5px;border:1px solid var(--edge-strong);background:#fff;border-radius:8px;
   padding:6px 12px;min-height:36px}
 .reset:hover{border-color:var(--faint)}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -318,7 +379,7 @@ body.simple .note{display:none}
 .page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .pmr-link{flex-shrink:0;font-size:12px;font-weight:700;letter-spacing:.07em;
   text-transform:uppercase;color:var(--b-text);text-decoration:none;background:#fff;
-  border:1px solid var(--line);border-radius:999px;padding:6px 14px;min-height:32px;
+  border:1px solid var(--edge-strong);border-radius:999px;padding:6px 14px;min-height:32px;
   display:inline-flex;align-items:center}
 .pmr-link:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-text)}
 
@@ -333,7 +394,7 @@ body.simple .note{display:none}
   .head-actions{justify-content:flex-start}
 }
 .act-btn{font-size:12px;font-weight:600;color:var(--ink);background:#fff;
-  border:1px solid var(--line);border-radius:8px;padding:6px 11px;min-height:32px;
+  border:1px solid var(--edge-strong);border-radius:8px;padding:6px 11px;min-height:32px;
   display:inline-flex;align-items:center;gap:6px}
 .act-btn:hover{border-color:var(--accent);color:var(--accent-text)}
 .act-btn .dot{width:10px;height:10px;border-radius:999px;flex-shrink:0}
@@ -349,8 +410,8 @@ body.simple .note{display:none}
 .simp-btn[aria-pressed="true"] .sw::after{transform:translateX(12px)}
 
 /* one-line plain takeaway above the primary card */
-.takeaway{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--ink);
-  border-radius:10px;padding:13px 16px;margin-bottom:14px;font-size:14.5px;line-height:1.5}
+.takeaway{background:var(--card);border:1px solid var(--edge);border-left:4px solid var(--ink);
+  border-radius:10px;padding:13px 16px;margin-bottom:14px;font-size:14.5px;line-height:1.5;box-shadow:var(--lift)}
 .takeaway b{font-weight:700}
 .takeaway .win-a{color:var(--a-text)} .takeaway .win-b{color:var(--b-text)}
 
@@ -365,7 +426,7 @@ body.simple .note{display:none}
   box-shadow:0 10px 30px -22px rgba(0,0,0,.65),0 0 0 1px var(--accent-glow),0 0 28px -14px var(--accent-glow)}
 .hero[data-win="a"]{--win:var(--a);--win-text:var(--a-text);--win-soft:var(--a-soft)}
 .hero[data-win="b"]{--win:var(--b);--win-text:var(--b-text);--win-soft:var(--b-soft)}
-.hero[data-win="tie"]{--win:var(--faint);--win-text:var(--ink);--win-soft:var(--paper)}
+.hero[data-win="tie"]{--win:var(--faint);--win-text:var(--ink);--win-soft:var(--well)}
 .hero::before{content:"";position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(125% 95% at 50% -25%, var(--win-soft) 0%, transparent 72%)}
 .hero > *{position:relative}
@@ -387,7 +448,7 @@ body.simple .note{display:none}
 .hero-bars{margin-top:15px;display:grid;gap:7px;text-align:left}
 .hero-row{display:grid;grid-template-columns:30px 1fr auto;align-items:center;gap:9px}
 .hero-row .lbl{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--muted)}
-.hero-row .track{display:block;height:12px;background:var(--paper);
+.hero-row .track{display:block;height:12px;background:var(--well);
   border:1px solid var(--line);border-radius:999px;overflow:hidden}
 .hero-row .fill{display:block;height:100%;border-radius:999px;
   transition:width .5s cubic-bezier(.22,1,.36,1)}
@@ -411,10 +472,10 @@ html[data-theme="mgb"] .hero{
    eye and signal "this is interactive" without becoming a distraction while
    someone is reading the numbers below. */
 .rand-btn{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;
-  gap:9px;width:100%;background:var(--card);border:1.5px dashed var(--line);border-radius:12px;
+  gap:9px;width:100%;background:var(--card);border:1.5px dashed var(--edge-strong);border-radius:12px;
   padding:10px 14px;min-height:46px;margin-bottom:12px;font-size:13.5px;font-weight:700;
   letter-spacing:.01em;transition:border-color .15s,background .15s}
-.rand-btn:hover{border-color:var(--ink);background:var(--paper)}
+.rand-btn:hover{border-color:var(--ink);background:var(--well)}
 .rand-btn > *{position:relative;z-index:1}
 .rand-btn::after{content:"";position:absolute;z-index:0;top:0;bottom:0;left:0;width:55%;
   pointer-events:none;transform:translateX(-180%);
@@ -486,7 +547,7 @@ html[data-theme="mgb"] .hero{
 .ch-tbl th:first-child,.ch-tbl td:first-child{text-align:left}
 .ch-tbl td{font-family:var(--mono);font-size:12px;text-align:right;padding:4px 6px;border-top:1px solid var(--line)}
 .ch-tbl td:first-child{font-family:inherit;font-weight:600}
-.ch-tbl tr.on td{background:var(--paper)}
+.ch-tbl tr.on td{background:var(--well)}
 
 /* decomposition waterfall: two lines per row (label + value, then the bar) so
    it reads the same at phone width as at desktop width. */
@@ -497,7 +558,7 @@ html[data-theme="mgb"] .hero{
 .dc-sub{display:block;font-size:11.5px;font-weight:400;color:var(--muted);margin-top:1px}
 .dc-val{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px;font-weight:650;white-space:nowrap;text-align:right}
 .dc-val .pp{display:block;font-size:11px;font-weight:500;color:var(--muted)}
-.dc-track{position:relative;height:12px;margin-top:6px;background:var(--paper);border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.dc-track{position:relative;height:12px;margin-top:6px;background:var(--well);border:1px solid var(--line);border-radius:999px;overflow:hidden}
 .dc-bar{position:absolute;top:0;bottom:0;min-width:3px;border-radius:999px}
 .dc-bar.neg{background:repeating-linear-gradient(135deg,var(--muted) 0 3px,transparent 3px 6px)!important;
   outline:1px solid var(--muted);outline-offset:-1px}
@@ -514,12 +575,12 @@ html[data-theme="mgb"] .hero{
   border-radius:10px;padding:11px 14px;margin-bottom:12px;font-size:13.5px;line-height:1.5}
 .buckle-note b{color:var(--over)}
 
-.note{font-size:12px;color:var(--muted);margin:14px auto 0;padding-top:10px;
-  border-top:1px solid var(--line);line-height:1.55;max-width:90ch;text-align:center}
-.note b{color:var(--ink)}
-.note a{color:var(--b-text);text-decoration:underline;text-underline-offset:2px}
+.note{font-size:12px;color:var(--on-ground-muted);margin:14px auto 0;padding-top:10px;
+  border-top:1px solid var(--edge);line-height:1.55;max-width:90ch;text-align:center}
+.note b{color:var(--on-ground)}
+.note a{color:var(--on-ground-link);text-decoration:underline;text-underline-offset:2px}
 .note a:hover{text-decoration-thickness:2px}
-.note .credit{display:block;margin-top:10px;color:var(--ink);font-weight:600}
+.note .credit{display:block;margin-top:10px;color:var(--on-ground);font-weight:600}
 </style>
 </head>
 <body>
