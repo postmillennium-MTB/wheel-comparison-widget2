@@ -445,6 +445,71 @@ html[data-theme="mgb"] .hero{
 .cmp-card.calm .sec-toggle{padding-top:14px}
 .cmp-card.calm .cmp-plain{color:var(--ink);font-size:13px;line-height:1.55;margin:10px 0 2px}
 
+/* ── "Why the numbers differ" cards ───────────────────────────────────────────
+   The scatter and the sweep sit side by side on wide screens and stack on
+   narrow ones. Their SVG is drawn at the container's real pixel width
+   (renderWhyCharts), so type stays 11px on a phone instead of being scaled
+   down with a viewBox. Chart text uses text tokens, never a series colour;
+   identity rides on the mark beside it. */
+.chart-pair{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:8px}
+.chart-pair .cmp-card{margin-bottom:0}
+@media(min-width:960px){.chart-pair{grid-template-columns:1fr 1fr}}
+.ch-wrap{margin-top:6px}
+.ch{display:block;width:100%;height:auto;overflow:visible;touch-action:pan-y}
+.ch:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.ch text{font-family:inherit;font-size:11px;fill:var(--muted)}
+.ch .ch-title{fill:var(--faint);font-size:11px;letter-spacing:.02em}
+.ch .ch-lbl{fill:var(--ink);font-weight:700}
+.ch .ch-lbl.sub{fill:var(--muted);font-weight:500}
+.ch .ch-val{fill:var(--ink);font-weight:700;font-family:var(--mono);font-size:11.5px}
+.ch .ch-grid{stroke:var(--line);stroke-width:1}
+.ch .ch-axis{stroke:var(--faint);stroke-width:1}
+.ch .ch-hair{stroke:var(--ink);stroke-width:1;opacity:.5}
+.ch .sc-trend{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 3;fill:none}
+.ch .sc-pt{stroke:var(--card);stroke-width:1.5;opacity:.85}
+.ch .sc-pt.s148{fill:var(--a)} .ch .sc-pt.s157{fill:var(--b)}
+.ch .sc-ring{fill:none;stroke:var(--ink);stroke-width:2}
+.ch .sc-hover{fill:none;stroke:var(--ink);stroke-width:1.5;stroke-dasharray:2 2}
+.ch .sw-line{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ch .sw-line.dash{stroke-dasharray:5 4}
+.ch .sw-dot{stroke:var(--card);stroke-width:2}
+.ch-legend{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;font-size:12px;color:var(--muted);margin-top:8px}
+.ch-key{display:inline-flex;align-items:center;gap:5px;color:var(--ink)}
+.ch-key svg{flex-shrink:0}
+.ch-readout{font-size:12.5px;line-height:1.45;min-height:2.9em;margin-top:6px;color:var(--muted)}
+.ch-readout b{color:var(--ink);font-weight:700}
+.ch-table{margin-top:8px;font-size:12px}
+.ch-table summary{cursor:pointer;color:var(--muted);min-height:32px;display:flex;align-items:center}
+.ch-table summary:hover{color:var(--ink)}
+.ch-tbl{width:100%;border-collapse:collapse;margin-top:4px}
+.ch-tbl th{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;font-weight:600;text-align:right;padding:4px 6px}
+.ch-tbl th:first-child,.ch-tbl td:first-child{text-align:left}
+.ch-tbl td{font-family:var(--mono);font-size:12px;text-align:right;padding:4px 6px;border-top:1px solid var(--line)}
+.ch-tbl td:first-child{font-family:inherit;font-weight:600}
+.ch-tbl tr.on td{background:var(--paper)}
+
+/* decomposition waterfall: two lines per row (label + value, then the bar) so
+   it reads the same at phone width as at desktop width. */
+.dc-row{padding:8px 0;border-top:1px solid var(--line)}
+.dc-row:first-child{border-top:none}
+.dc-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.dc-lbl{font-size:13px;font-weight:650;min-width:0}
+.dc-sub{display:block;font-size:11.5px;font-weight:400;color:var(--muted);margin-top:1px}
+.dc-val{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px;font-weight:650;white-space:nowrap;text-align:right}
+.dc-val .pp{display:block;font-size:11px;font-weight:500;color:var(--muted)}
+.dc-track{position:relative;height:12px;margin-top:6px;background:var(--paper);border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.dc-bar{position:absolute;top:0;bottom:0;min-width:3px;border-radius:999px}
+.dc-bar.neg{background:repeating-linear-gradient(135deg,var(--muted) 0 3px,transparent 3px 6px)!important;
+  outline:1px solid var(--muted);outline-offset:-1px}
+
+@media(max-width:639px){
+  /* A collapsed card's one-line verdict is what a phone visitor scans, so let
+     it wrap onto its own line instead of being cut off with an ellipsis. */
+  .sec-toggle{flex-wrap:wrap;row-gap:2px}
+  .sec-arrow{order:1;margin-left:auto}
+  .sec-sum{order:2;flex-basis:100%;text-align:left;white-space:normal;padding-right:0}
+}
+
 .note{font-size:12px;color:var(--muted);margin:14px auto 0;padding-top:10px;
   border-top:1px solid var(--line);line-height:1.55;max-width:90ch;text-align:center}
 .note b{color:var(--ink)}
@@ -487,19 +552,14 @@ built on those stiffnesses.</p>
   </div>
   <div id="adv-panel">
     <div class="adv-grid">
-      <div><div class="slbl">EI_lat (N·m²)</div><input class="ctl-num" id="g-eil" type="number" value="50" step="5" min="1" onchange="refresh()" aria-label="Rim lateral bending stiffness"></div>
-      <div><div class="slbl">EI_rad (N·m²)</div><input class="ctl-num" id="g-eir" type="number" value="150" step="5" min="1" onchange="refresh()" aria-label="Rim radial bending stiffness"></div>
-      <div><div class="slbl">GJ (N·m²)</div><input class="ctl-num" id="g-gj" type="number" value="22" step="1" min="1" onchange="refresh()" aria-label="Rim torsional stiffness"></div>
-      <div><div class="slbl">EA_rim (MN)</div><input class="ctl-num" id="g-ea" type="number" value="11.5" step="0.5" min="1" onchange="refresh()" aria-label="Rim axial stiffness"></div>
+      <div><div class="slbl">EI_lat (N·m²)</div><input class="ctl-num" id="g-eil" type="number" step="5" onchange="refresh()" aria-label="Rim lateral bending stiffness"></div>
+      <div><div class="slbl">EI_rad (N·m²)</div><input class="ctl-num" id="g-eir" type="number" step="5" onchange="refresh()" aria-label="Rim radial bending stiffness"></div>
+      <div><div class="slbl">GJ (N·m²)</div><input class="ctl-num" id="g-gj" type="number" step="1" onchange="refresh()" aria-label="Rim torsional stiffness"></div>
+      <div><div class="slbl">EA_rim (MN)</div><input class="ctl-num" id="g-ea" type="number" step="0.5" onchange="refresh()" aria-label="Rim axial stiffness"></div>
       <div><div class="slbl">Modes N</div>
-        <select class="ctl" id="g-modes" onchange="refresh()" aria-label="Number of Fourier modes">
-          <option value="8">8</option><option value="16">16</option>
-          <option value="24" selected>24</option><option value="48">48</option>
-        </select></div>
+        <select class="ctl" id="g-modes" onchange="refresh()" aria-label="Number of Fourier modes"></select></div>
       <div><div class="slbl">Spoke count</div>
-        <select class="ctl" id="g-ns" onchange="refresh()" aria-label="Spoke count">
-          <option value="28">28H</option><option value="32" selected>32H</option><option value="36">36H</option>
-        </select></div>
+        <select class="ctl" id="g-ns" onchange="refresh()" aria-label="Spoke count"></select></div>
     </div>
     <div class="adv-help">
       <div><div class="h">EI_lat</div><p>Rim lateral bending stiffness — resists the rim bowing sideways. Typical alloy double-wall rims: 40–80 N·m².</p></div>
@@ -561,11 +621,7 @@ built on those stiffnesses.</p>
         <button id="w148-32" aria-pressed="false" onclick="setWheel('148','32')">32″</button>
       </div></div>
     <div class="fld simple-hide"><div class="slbl">DS tension (kgf)</div>
-      <select class="ctl" id="tds148" aria-label="148 drive-side spoke tension">
-        <option value="95">95</option><option value="100">100</option>
-        <option value="105">105</option><option value="110">110</option>
-        <option value="115">115</option><option value="120">120</option><option value="125">125</option>
-      </select>
+      <select class="ctl" id="tds148" aria-label="148 drive-side spoke tension"></select>
       <div style="font-size:10.5px;color:var(--faint);margin-top:3px;line-height:1.4">
         Defaults to <b>100</b> at 32″ (lower buckling margin at that size), <b>120</b> otherwise. Change wheel size to see the default follow it, or set your own.
       </div></div>
@@ -596,11 +652,7 @@ built on those stiffnesses.</p>
         <button id="w157-32" aria-pressed="false" onclick="setWheel('157','32')">32″</button>
       </div></div>
     <div class="fld simple-hide"><div class="slbl">DS tension (kgf)</div>
-      <select class="ctl" id="tds157" aria-label="157 drive-side spoke tension">
-        <option value="95">95</option><option value="100">100</option>
-        <option value="105">105</option><option value="110">110</option>
-        <option value="115">115</option><option value="120">120</option><option value="125">125</option>
-      </select>
+      <select class="ctl" id="tds157" aria-label="157 drive-side spoke tension"></select>
       <div style="font-size:10.5px;color:var(--faint);margin-top:3px;line-height:1.4">
         Defaults to <b>100</b> at 32″ (lower buckling margin at that size), <b>120</b> otherwise. Change wheel size to see the default follow it, or set your own.
       </div></div>
@@ -672,11 +724,11 @@ built on those stiffnesses.</p>
     <div class="cmp-body" id="body-flat">
       <div class="cmp-plain">Sideways push at the rim before the first spoke goes slack — <span id="flat-gov">—</span></div>
       <div class="cmp-values">
-        <div><div class="cmp-num lg va" id="cmp-flat148">—</div><div class="cmp-unit">kgf · 148</div></div>
-        <div style="text-align:right"><div class="cmp-num lg vb" id="cmp-flat157">—</div><div class="cmp-unit">kgf · 157</div></div>
+        <div><div class="cmp-num lg va" id="cmp-flat148">—</div><div class="cmp-unit">kgf · <span class="slot-a">148</span></div></div>
+        <div style="text-align:right"><div class="cmp-num lg vb" id="cmp-flat157">—</div><div class="cmp-unit">kgf · <span class="slot-b">157</span></div></div>
       </div>
       <div class="tug" aria-hidden="true"><div class="half l"><div class="ha" id="bar-flat-a"></div></div><div class="half"><div class="hb" id="bar-flat-b"></div></div></div>
-      <div class="tug-lbl"><span>148</span><span>157</span></div>
+      <div class="tug-lbl"><span class="slot-a">148</span><span class="slot-b">157</span></div>
       <div class="verdict" id="cmp-flat-stmt">—</div>
     </div>
   </div>
@@ -690,11 +742,11 @@ built on those stiffnesses.</p>
     <div class="cmp-body" id="body-frad">
       <div class="cmp-plain">Vertical hit at the contact patch before the first spoke goes slack — <span id="frad-gov">—</span></div>
       <div class="cmp-values">
-        <div><div class="cmp-num va" id="cmp-frad148">—</div><div class="cmp-unit">kgf · 148</div></div>
-        <div style="text-align:right"><div class="cmp-num vb" id="cmp-frad157">—</div><div class="cmp-unit">kgf · 157</div></div>
+        <div><div class="cmp-num va" id="cmp-frad148">—</div><div class="cmp-unit">kgf · <span class="slot-a">148</span></div></div>
+        <div style="text-align:right"><div class="cmp-num vb" id="cmp-frad157">—</div><div class="cmp-unit">kgf · <span class="slot-b">157</span></div></div>
       </div>
       <div class="tug" aria-hidden="true"><div class="half l"><div class="ha" id="bar-frad-a"></div></div><div class="half"><div class="hb" id="bar-frad-b"></div></div></div>
-      <div class="tug-lbl"><span>148</span><span>157</span></div>
+      <div class="tug-lbl"><span class="slot-a">148</span><span class="slot-b">157</span></div>
       <div class="verdict" id="cmp-frad-stmt">—</div>
     </div>
   </div>
@@ -708,11 +760,11 @@ built on those stiffnesses.</p>
     <div class="cmp-body" id="body-klat">
       <div class="cmp-plain">Resistance to side-to-side flex when cornering or landing off-line</div>
       <div class="cmp-values">
-        <div><div class="cmp-num va" id="cmp-klat148">—</div><div class="cmp-unit">N/mm · 148</div></div>
-        <div style="text-align:right"><div class="cmp-num vb" id="cmp-klat157">—</div><div class="cmp-unit">N/mm · 157</div></div>
+        <div><div class="cmp-num va" id="cmp-klat148">—</div><div class="cmp-unit">N/mm · <span class="slot-a">148</span></div></div>
+        <div style="text-align:right"><div class="cmp-num vb" id="cmp-klat157">—</div><div class="cmp-unit">N/mm · <span class="slot-b">157</span></div></div>
       </div>
       <div class="tug" aria-hidden="true"><div class="half l"><div class="ha" id="bar-klat-a"></div></div><div class="half"><div class="hb" id="bar-klat-b"></div></div></div>
-      <div class="tug-lbl"><span>148</span><span>157</span></div>
+      <div class="tug-lbl"><span class="slot-a">148</span><span class="slot-b">157</span></div>
       <div class="verdict" id="cmp-klat-stmt">—</div>
     </div>
   </div>
@@ -726,12 +778,68 @@ built on those stiffnesses.</p>
     <div class="cmp-body" id="body-ratio">
       <div class="cmp-plain">How evenly the two sides share spoke tension — higher means the slack-prone side holds more</div>
       <div class="cmp-values">
-        <div><div class="cmp-num va" id="cmp-ratio148">—</div><div class="cmp-unit">148 hub</div></div>
-        <div style="text-align:right"><div class="cmp-num vb" id="cmp-ratio157">—</div><div class="cmp-unit">157 hub</div></div>
+        <div><div class="cmp-num va" id="cmp-ratio148">—</div><div class="cmp-unit">NDS/DS · <span class="slot-a">148</span></div></div>
+        <div style="text-align:right"><div class="cmp-num vb" id="cmp-ratio157">—</div><div class="cmp-unit">NDS/DS · <span class="slot-b">157</span></div></div>
       </div>
       <div class="tug" aria-hidden="true"><div class="half l"><div class="ha" id="bar-ratio-a"></div></div><div class="half"><div class="hb" id="bar-ratio-b"></div></div></div>
-      <div class="tug-lbl"><span>148</span><span>157</span></div>
+      <div class="tug-lbl"><span class="slot-a">148</span><span class="slot-b">157</span></div>
       <div class="verdict" id="cmp-ratio-stmt">—<span class="ctx">Dished MTB rear wheels typically land between 55–75<svg class="pct-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>. Shown for context, not as a pass/fail line.</span></div>
+    </div>
+  </div>
+  </div>
+
+  <!-- Why the numbers differ. Drawn by renderWhyCharts(); see the "Why the
+       numbers differ" section of the script. Open by default on wide screens,
+       collapsed on narrow ones (COLLAPSE_ON_NARROW). -->
+  <div class="cmp-card secondary">
+    <button class="sec-toggle" id="tog-decomp" aria-expanded="true" aria-controls="body-decomp" onclick="toggleCard('decomp')">
+      <span class="sec-title">Where the gap comes from</span>
+      <span class="sec-sum" id="sum-decomp">—</span>
+      <span class="sec-arrow">▼</span>
+    </button>
+    <div class="cmp-body" id="body-decomp">
+      <div class="cmp-plain" id="dc-lede">—</div>
+      <div id="dc-rows"></div>
+      <div class="adv-note" id="dc-foot">Each factor is credited by swapping it from the weaker hub's value to the stronger hub's value while the others are in every possible state, then averaging. That way the split does not depend on which change you imagine happening first, and the bars add up exactly to the gap.</div>
+    </div>
+  </div>
+
+  <div class="chart-pair">
+  <div class="cmp-card secondary">
+    <button class="sec-toggle" id="tog-scatter" aria-expanded="true" aria-controls="body-scatter" onclick="toggleCard('scatter')">
+      <span class="sec-title">Whole catalogue: spread vs strength</span>
+      <span class="sec-sum" id="sum-scatter">—</span>
+      <span class="sec-arrow">▼</span>
+    </button>
+    <div class="cmp-body" id="body-scatter">
+      <div class="cmp-plain" id="sc-lede">—</div>
+      <div class="ch-legend">
+        <span class="ch-key"><svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="5" style="fill:var(--a)"/></svg>148x12</span>
+        <span class="ch-key"><svg width="14" height="14" aria-hidden="true"><path d="M7 1.5 12.5 7 7 12.5 1.5 7Z" style="fill:var(--b)"/></svg>157x12</span>
+        <span class="ch-key"><svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" style="fill:none;stroke:var(--ink);stroke-width:2"/></svg>on your cards</span>
+        <span class="ch-key"><svg width="22" height="14" aria-hidden="true"><line x1="1" x2="21" y1="7" y2="7" style="stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 3"/></svg>trend, all hubs</span>
+        <span>Marker size = tension balance (bigger = more even)</span>
+      </div>
+      <div class="ch-wrap" id="sc-chart"></div>
+      <div class="ch-readout" id="sc-readout" aria-live="polite">—</div>
+      <div class="adv-note" id="sc-note">—</div>
+      <details class="ch-table"><summary>Show as table</summary><div id="sc-table"></div></details>
+    </div>
+  </div>
+
+  <div class="cmp-card secondary">
+    <button class="sec-toggle" id="tog-sweep" aria-expanded="true" aria-controls="body-sweep" onclick="toggleCard('sweep')">
+      <span class="sec-title">Tension sweep</span>
+      <span class="sec-sum" id="sum-sweep">—</span>
+      <span class="sec-arrow">▼</span>
+    </button>
+    <div class="cmp-body" id="body-sweep">
+      <div class="cmp-plain">Lateral strength as drive-side tension changes, with every other setting as on your cards.</div>
+      <div class="ch-legend" id="sw-legend"></div>
+      <div class="ch-wrap" id="sw-chart"></div>
+      <div class="ch-readout" id="sw-readout" aria-live="polite">—</div>
+      <div class="adv-note" id="sw-note">—</div>
+      <details class="ch-table"><summary>Show as table</summary><div id="sw-table"></div></details>
     </div>
   </div>
   </div>
@@ -747,8 +855,8 @@ built on those stiffnesses.</p>
       <table class="btable">
         <thead><tr><th scope="col">Build</th><th scope="col">T_c avg (kgf)</th><th scope="col">T_c as DS (kgf)</th><th scope="col">Used</th></tr></thead>
         <tbody>
-          <tr><td class="va">148</td><td id="tc148-avg">—</td><td id="tc148-ds">—</td><td id="tc148-use">—</td></tr>
-          <tr><td class="vb">157</td><td id="tc157-avg">—</td><td id="tc157-ds">—</td><td id="tc157-use">—</td></tr>
+          <tr><td class="va slot-a">148</td><td id="tc148-avg">—</td><td id="tc148-ds">—</td><td id="tc148-use">—</td></tr>
+          <tr><td class="vb slot-b">157</td><td id="tc157-avg">—</td><td id="tc157-ds">—</td><td id="tc157-use">—</td></tr>
         </tbody>
       </table>
       <div class="verdict" style="margin-top:12px" id="cmp-tc-stmt">—<span class="ctx">"Used" = current average tension ÷ critical tension. The ✓ below 70<svg class="pct-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg> is this widget's chosen comfort margin, not a threshold from Ford.</span></div>
@@ -1071,8 +1179,39 @@ const NICK = {
 };
 
 const WHEEL_ERDS = { '26':534, '27.5':559, '29':600, '32':667 };
+const WHEEL_SIZES = Object.keys(WHEEL_ERDS);
 const SPOKE_DIAS = ['1.5','1.6','1.7','1.8','1.9','2.0','2.1','2.2','2.3'];
+const DEFAULT_SPOKE_DIA = '2.0';
 const DEFAULTS = { wheel148:'29', wheel157:'29', hub148:'h6', hub157:'h7' };
+
+/* Everything a visitor can type or pick that feeds the engine, in one place.
+   The <select>s are filled from these arrays and a shared link is checked
+   against them, so an option can no longer exist in the menu but be refused by
+   the link parser (or the reverse). Values from outside -- a hand-edited URL,
+   an emptied field -- are clamped or ignored rather than passed to the engine,
+   where a zero, a blank or a negative EI turns every card into NaN.
+
+   RIM_LIMITS are wide on purpose: they are a "this is not a bicycle rim" fence,
+   not a recommendation. The typical ranges live in the help text. */
+const TDS_OPTIONS = [95, 100, 105, 110, 115, 120, 125];          // DS tension, kgf
+const MODE_OPTIONS = ['8', '16', '24', '48'];                    // Fourier modes N
+const SPOKE_COUNT_OPTIONS = ['28', '32', '36'];                  // spoke holes
+const RIM_DEFAULTS = { eil:50, eir:150, gj:22, ea:11.5, nn:'24', ns:'32' };  // DT Swiss TK540
+const RIM_LIMITS = { eil:[1, 500], eir:[1, 1000], gj:[1, 200], ea:[1, 100] };
+const RIM_FIELD_IDS = { eil:'g-eil', eir:'g-eir', gj:'g-gj', ea:'g-ea', nn:'g-modes', ns:'g-ns' };
+
+// Buckling usage (average tension / critical tension) at which a build is
+// called "tight" and "over". This tool's own comfort margins, not Ford's -- see
+// the note under the buckling card. Named because the sweep chart shades the
+// same boundary the chip() badges announce.
+const BUCKLE_TIGHT_PCT = 70, BUCKLE_OVER_PCT = 85;
+
+/* Below this viewport width the six detail cards open collapsed (F_lat stays
+   open) -- the same 640px at which .metric-quad drops to one column. The
+   header line of each card still carries its one-sentence verdict, so a phone
+   visitor scans six verdicts instead of scrolling six bodies. */
+const NARROW_CARDS_PX = 640;
+const COLLAPSE_ON_NARROW = ['frad', 'klat', 'ratio', 'decomp', 'scatter', 'sweep'];
 
 // DS tension used to be one control shared by both sides. It no longer is:
 // this tool lets each side pick its own wheel size (26-32"), and buckling
@@ -1105,12 +1244,16 @@ const ST = Object.assign({}, DEFAULTS, {
 });
 
 // ── UI ───────────────────────────────────────────────────────────────────────
+function setCard(id, open) {
+  document.getElementById('tog-' + id).setAttribute('aria-expanded', open ? 'true' : 'false');
+  document.getElementById('body-' + id).hidden = !open;
+}
 function toggleCard(id) {
-  const btn  = document.getElementById('tog-' + id);
-  const body = document.getElementById('body-' + id);
-  const open = btn.getAttribute('aria-expanded') === 'true';
-  btn.setAttribute('aria-expanded', open ? 'false' : 'true');
-  body.hidden = open;
+  const open = document.getElementById('tog-' + id).getAttribute('aria-expanded') === 'true';
+  setCard(id, !open);
+  // A chart in a closed card has no width to draw into, so opening one is the
+  // moment it actually gets drawn.
+  if (!open) renderWhyCharts();
 }
 
 /* ── Simplified mode ─────────────────────────────────────────────────────────
@@ -1257,8 +1400,7 @@ function drawSimple(m148, m157, hub148, hub157, Ns) {
   // The whole catalogue, grouped by standard: picking across the groups is
   // what switches this side's standard, and is how 148-vs-148 is set up here.
   var sel = document.getElementById('s-hub');
-  sel.innerHTML = hubOptions();
-  sel.value = meHub.id;
+  sel.value = meHub.id;     // options were filled once in buildControls()
   // Names where the click lands, so it needs no explaining.
   var meStd = isA ? stdA() : stdB();
   document.getElementById('s-swap').innerHTML =
@@ -1508,7 +1650,20 @@ function cycleStd(slot) {
 /* Keeps every label that names a standard in step with the hub each slot is
    actually holding -- the headers, their marketing nicknames, and simplified
    mode's two buttons. */
+/* What to call a comparison slot in a caption, a bar label or a table row: its
+   axle standard normally, its hub's name when both slots hold the same standard
+   (then the standard names nothing). Slot 'a' is the amber/left card, 'b' the
+   blue/right one -- the same convention winnerName() uses. */
+function slotLabel(slot) {
+  if (stdA() === stdB()) return hubById(slot === 'a' ? ST.hub148 : ST.hub157).name;
+  return slot === 'a' ? stdA() : stdB();
+}
 function syncStdLabels() {
+  // Every label in the detail cards that names a side carries slot-a / slot-b.
+  ['a', 'b'].forEach(function (slot) {
+    var txt = slotLabel(slot);
+    document.querySelectorAll('.slot-' + slot).forEach(function (el) { el.textContent = txt; });
+  });
   [['148', stdA()], ['157', stdB()]].forEach(function (pair) {
     var slot = pair[0], n = NICK[pair[1]];
     document.getElementById('std' + slot).textContent = n.name;
@@ -1610,41 +1765,57 @@ window.addEventListener('hashchange', () => {
   if (applyHashAlias(location.hash)) { urlPristine = true; refresh(); }
 });
 
+/* A hash is typed, pasted, truncated by chat apps and mangled by forums, so
+   nothing in it is trusted. decodeURIComponent throws on a stray "%" -- and an
+   uncaught throw at load stops the whole script, leaving a blank page -- so a
+   bad escape is kept as literal text and then fails validation like any other
+   unknown value. */
+function safeDecode(s) {
+  try { return decodeURIComponent(s); } catch (e) { return s; }
+}
+
 function readURL() {
   const h = location.hash.replace(/^#/, '');
   if (!h) return;
   if (applyHashAlias(h)) { urlPristine = true; return; }
   const p = {};
   h.split('&').forEach(pair => {
-    const [k, v] = pair.split('=');
-    if (k) p[k] = decodeURIComponent(v || '');
+    const i = pair.indexOf('=');
+    const k = i < 0 ? pair : pair.slice(0, i);
+    if (k) p[safeDecode(k)] = i < 0 ? '' : safeDecode(pair.slice(i + 1));
   });
   // Either slot may hold either standard, so a hub id is valid for both.
-  const validHub = (arr, id) => !!hubById(id);
-  const okWheel = w => ['26','27.5','29','32'].includes(w);
+  const okHub   = id => !!hubById(id);
+  const okWheel = w => WHEEL_SIZES.includes(w);
   const okDia   = d => SPOKE_DIAS.includes(d);
 
   if (okWheel(p.w1)) ST.wheel148 = p.w1;
   if (okWheel(p.w2)) ST.wheel157 = p.w2;
-  if (validHub(HUBS_148, p.h1)) ST.hub148 = p.h1;
-  if (validHub(HUBS_157, p.h2)) ST.hub157 = p.h2;
+  if (okHub(p.h1)) ST.hub148 = p.h1;
+  if (okHub(p.h2)) ST.hub157 = p.h2;
 
-  const setSel = (id, v, ok) => { if (v != null && (!ok || ok(v))) { const el = document.getElementById(id); if (el) el.value = v; } };
+  const setSel = (id, v, ok) => { if (v != null && ok(v)) { const el = document.getElementById(id); if (el) el.value = v; } };
   setSel('spk148ds',  p.s1, okDia); setSel('spk148nds', p.s2, okDia);
   setSel('spk157ds',  p.s3, okDia); setSel('spk157nds', p.s4, okDia);
-  setSel('g-eil', p.eil); setSel('g-eir', p.eir); setSel('g-gj', p.gj);
-  setSel('g-ea', p.ea);   setSel('g-modes', p.nn);
-  setSel('g-ns', p.ns);
+  setSel('g-modes', p.nn, v => MODE_OPTIONS.includes(v));
+  setSel('g-ns',    p.ns, v => SPOKE_COUNT_OPTIONS.includes(v));
+  // Free-typed rim numbers: parse, then clamp into RIM_LIMITS. Blank or
+  // non-numeric is ignored (the default stays), not turned into zero.
+  Object.keys(RIM_LIMITS).forEach(k => {
+    const v = parseFloat(p[k]);
+    if (isFinite(v)) document.getElementById(RIM_FIELD_IDS[k]).value = clampRim(k, v);
+  });
 
   // A shared link should reproduce exactly what its author saw, tension
   // included -- so a value present in the URL counts as deliberately set,
   // the same way a manual edit does, and won't be overwritten by a later
-  // wheel-size change on that side (see setWheel()).
-  if (p.td1 != null) {
+  // wheel-size change on that side (see setWheel()). Only values the
+  // dropdown actually offers are accepted.
+  if (TDS_OPTIONS.includes(+p.td1)) {
     ST.tds148 = +p.td1; ST.tds148Touched = true;
     document.getElementById('tds148').value = ST.tds148;
   }
-  if (p.td2 != null) {
+  if (TDS_OPTIONS.includes(+p.td2)) {
     ST.tds157 = +p.td2; ST.tds157Touched = true;
     document.getElementById('tds157').value = ST.tds157;
   }
@@ -1682,16 +1853,76 @@ function copyLink() {
   }
 }
 
+// Built once: the catalogue never changes while the page is open, and
+// rewriting a <select>'s options on every refresh() can close it under the
+// finger on some mobile browsers.
+let hubOptionsHTML = null;
 function hubOptions() {
-  return ['148', '157'].map(function (std) {
-    return '<optgroup label="' + NICK[std].name + '">' +
-      hubsFor(std).map(function (h) {
-        return '<option value="' + h.id + '">' + h.name + '</option>';
-      }).join('') + '</optgroup>';
-  }).join('');
+  if (hubOptionsHTML === null) {
+    hubOptionsHTML = ['148', '157'].map(function (std) {
+      return '<optgroup label="' + NICK[std].name + '">' +
+        hubsFor(std).map(function (h) {
+          return '<option value="' + h.id + '">' + esc(h.name) + '</option>';
+        }).join('') + '</optgroup>';
+    }).join('');
+  }
+  return hubOptionsHTML;
 }
 
+/* Clamp a rim number into its RIM_LIMITS fence; a blank or non-numeric field
+   falls back to the default. */
+function clampRim(key, v) {
+  const lim = RIM_LIMITS[key];
+  if (!isFinite(v)) v = RIM_DEFAULTS[key];
+  return Math.min(lim[1], Math.max(lim[0], v));
+}
+/* The shared rim and build settings, read once per refresh and always valid.
+   If a field held something out of range it is rewritten to the value that was
+   actually used, so the screen never shows a number the engine did not run. */
+function rimSettings() {
+  const num = key => {
+    const el = document.getElementById(RIM_FIELD_IDS[key]);
+    const v = clampRim(key, parseFloat(el.value));
+    if (parseFloat(el.value) !== v) el.value = v;
+    return v;
+  };
+  const opt = (key, options) => {
+    const el = document.getElementById(RIM_FIELD_IDS[key]);
+    if (!options.includes(el.value)) el.value = RIM_DEFAULTS[key];
+    return +el.value;
+  };
+  return { EIL: num('eil'), EIR: num('eir'), GJ: num('gj'), EA: num('ea') * 1e6,
+           N: opt('nn', MODE_OPTIONS), Ns: opt('ns', SPOKE_COUNT_OPTIONS) };
+}
+function resetRimInputs() {
+  Object.keys(RIM_FIELD_IDS).forEach(k =>
+    document.getElementById(RIM_FIELD_IDS[k]).value = RIM_DEFAULTS[k]);
+}
+function resetSpokeInputs() {
+  ['spk148ds','spk148nds','spk157ds','spk157nds'].forEach(id =>
+    document.getElementById(id).value = DEFAULT_SPOKE_DIA);
+}
+// Escapes text going into innerHTML. Hub names are our own data today, but
+// charts and tables are built from strings, so the habit is cheaper than the audit.
+const esc = s => String(s).replace(/[&<>"']/g, c =>
+  ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+
 function buildControls() {
+  // Option lists and defaults for every rim/build control come from the
+  // constants near the top of this script, so the menu, the reset button and
+  // the link parser cannot disagree.
+  document.getElementById('g-modes').innerHTML =
+    MODE_OPTIONS.map(n => `<option value="${n}">${n}</option>`).join('');
+  document.getElementById('g-ns').innerHTML =
+    SPOKE_COUNT_OPTIONS.map(n => `<option value="${n}">${n}H</option>`).join('');
+  ['tds148', 'tds157'].forEach(id => document.getElementById(id).innerHTML =
+    TDS_OPTIONS.map(t => `<option value="${t}">${t}</option>`).join(''));
+  Object.keys(RIM_LIMITS).forEach(k => {
+    const el = document.getElementById(RIM_FIELD_IDS[k]);
+    el.min = RIM_LIMITS[k][0]; el.max = RIM_LIMITS[k][1];
+  });
+  resetRimInputs();
+  document.getElementById('s-hub').innerHTML = hubOptions();
   /* Both slots offer the whole catalogue, grouped by standard. Picking a hub
      from the other group is what switches that side's standard -- which is
      how a wheelbuilder thinks about it anyway: you choose a hub, and its
@@ -1700,7 +1931,7 @@ function buildControls() {
   document.getElementById('hub157').innerHTML = hubOptions();
   ['spk148ds','spk148nds','spk157ds','spk157nds'].forEach(id => {
     document.getElementById(id).innerHTML =
-      SPOKE_DIAS.map(d => `<option value="${d}"${d==='2.0'?' selected':''}>${d}</option>`).join('');
+      SPOKE_DIAS.map(d => `<option value="${d}"${d===DEFAULT_SPOKE_DIA?' selected':''}>${d}</option>`).join('');
   });
   document.getElementById('hub148').value = ST.hub148;
   document.getElementById('hub157').value = ST.hub157;
@@ -1724,9 +1955,7 @@ function onTensionChange(side) {
 
 function setWheel(side, w) {
   if (side === '148') ST.wheel148 = w; else ST.wheel157 = w;
-  ['26','27.5','29','32'].forEach(sz =>
-    document.getElementById(`w${side}-${sz.replace('.','')}`)
-      .setAttribute('aria-pressed', sz === w ? 'true' : 'false'));
+  setWheelSilent(side, w);
 
   // Follow the size-based tension default UNLESS this side's tension was
   // set by hand -- a deliberate choice shouldn't be overwritten just
@@ -1751,15 +1980,12 @@ function resetAll() {
   document.getElementById('hub157').value = ST.hub157;
   document.getElementById('tds148').value = ST.tds148;
   document.getElementById('tds157').value = ST.tds157;
-  ['spk148ds','spk148nds','spk157ds','spk157nds'].forEach(id => document.getElementById(id).value = '2.0');
-  document.getElementById('g-eil').value = 50;  document.getElementById('g-eir').value = 150;
-  document.getElementById('g-gj').value = 22;   document.getElementById('g-ea').value = 11.5;
-  document.getElementById('g-modes').value = '24';
-  document.getElementById('g-ns').value = '32';
+  resetSpokeInputs();
+  resetRimInputs();
   refresh();
 }
 function setWheelSilent(side, w) {
-  ['26','27.5','29','32'].forEach(sz =>
+  WHEEL_SIZES.forEach(sz =>
     document.getElementById(`w${side}-${sz.replace('.','')}`)
       .setAttribute('aria-pressed', sz === w ? 'true' : 'false'));
 }
@@ -1779,19 +2005,12 @@ function randomCompare() {
   setTimeout(() => btn.classList.remove('rolling'), 600);
 
   // everything except wheel size + hub returns to default
-  ['spk148ds','spk148nds','spk157ds','spk157nds']
-    .forEach(id => document.getElementById(id).value = '2.0');
-  document.getElementById('g-eil').value = 50;
-  document.getElementById('g-eir').value = 150;
-  document.getElementById('g-gj').value  = 22;
-  document.getElementById('g-ea').value  = 11.5;
-  document.getElementById('g-modes').value = '24';
-  document.getElementById('g-ns').value    = '32';
+  resetSpokeInputs();
+  resetRimInputs();
 
-  const sizes = ['26','27.5','29','32'];
   let w, h1, h2, guard = 0;
   do {
-    w  = pick(sizes);
+    w  = pick(WHEEL_SIZES);
     h1 = pick(HUBS_148).id;
     h2 = pick(HUBS_157).id;
     guard++;
@@ -1856,27 +2075,23 @@ function tug(metric, v148, v157) {
 }
 
 function chip(usedPct) {
-  if (usedPct <= 70) return '<span class="chip ok">✓ ok</span>';
-  if (usedPct <= 85) return '<span class="chip warn">! tight</span>';
+  if (usedPct <= BUCKLE_TIGHT_PCT) return '<span class="chip ok">✓ ok</span>';
+  if (usedPct <= BUCKLE_OVER_PCT) return '<span class="chip warn">! tight</span>';
   return '<span class="chip over">✕ over</span>';
 }
 
 function refresh() {
   const hub148 = hubById(ST.hub148);
   const hub157 = hubById(ST.hub157);
-  const EIL = +document.getElementById('g-eil').value;
-  const EIR = +document.getElementById('g-eir').value;
-  const GJ  = +document.getElementById('g-gj').value;
-  const EA  = +document.getElementById('g-ea').value * 1e6;
-  const N   = +document.getElementById('g-modes').value;
-  const Ns  = +document.getElementById('g-ns').value;
+  const rim = rimSettings();         // validated; see clampRim()
+  const Ns = rim.Ns;
 
   const m148 = calc(WHEEL_ERDS[ST.wheel148], hub148,
     +document.getElementById('spk148ds').value, +document.getElementById('spk148nds').value,
-    ST.tds148, EIL, EIR, GJ, EA, Ns, N);
+    ST.tds148, rim.EIL, rim.EIR, rim.GJ, rim.EA, rim.Ns, rim.N);
   const m157 = calc(WHEEL_ERDS[ST.wheel157], hub157,
     +document.getElementById('spk157ds').value, +document.getElementById('spk157nds').value,
-    ST.tds157, EIL, EIR, GJ, EA, Ns, N);
+    ST.tds157, rim.EIL, rim.EIR, rim.GJ, rim.EA, rim.Ns, rim.N);
 
   // side cards: tensions
   document.getElementById('t148-nds').textContent = fmt(m148.T_NDS, 1);
@@ -1891,7 +2106,7 @@ function refresh() {
   document.getElementById('cmp-flat-stmt').innerHTML = verdict(m148.F_lat, m157.F_lat, 'stronger');
   document.getElementById('sum-flat').innerHTML = verdict(m148.F_lat, m157.F_lat, 'stronger');
   document.getElementById('flat-gov').textContent =
-    `${m148.latGov} spokes govern the ${stdA()} build, ${m157.latGov} the ${stdB()}`;
+    `${m148.latGov} spokes govern the ${slotLabel('a')} build, ${m157.latGov} the ${slotLabel('b')}`;
 
   // F_rad
   document.getElementById('cmp-frad148').textContent = fmt(m148.F_rad, 0);
@@ -1900,7 +2115,7 @@ function refresh() {
   document.getElementById('cmp-frad-stmt').innerHTML = verdict(m148.F_rad, m157.F_rad, 'stronger');
   document.getElementById('sum-frad').innerHTML = verdict(m148.F_rad, m157.F_rad, 'stronger');
   document.getElementById('frad-gov').textContent =
-    `${m148.radGov} spokes govern the ${stdA()} build, ${m157.radGov} the ${stdB()}`;
+    `${m148.radGov} spokes govern the ${slotLabel('a')} build, ${m157.radGov} the ${slotLabel('b')}`;
 
   // K_lat
   document.getElementById('cmp-klat148').textContent = fmt(m148.K_lat, 1);
@@ -1917,7 +2132,7 @@ function refresh() {
   tug('ratio', m148.ratio, m157.ratio);
   const rStmt = Math.abs(m157.ratio - m148.ratio) < 0.05
     ? 'Effectively equal'
-    : `${m157.ratio > m148.ratio ? '157' : '148'} build is more evenly tensioned (+${Math.abs(m157.ratio - m148.ratio).toFixed(1)} pp)`;
+    : `${winnerName(m148.ratio > m157.ratio)} build is more evenly tensioned (+${Math.abs(m157.ratio - m148.ratio).toFixed(1)} pp)`;
   document.getElementById('cmp-ratio-stmt').firstChild.textContent = rStmt;
   document.getElementById('sum-ratio').textContent = rStmt;
 
@@ -1933,13 +2148,14 @@ function refresh() {
   const sEqual = Math.abs(m157.T_safety - m148.T_safety) < 0.05;
   const tcStmt = sEqual
     ? 'Effectively equal margin'
-    : `${m157.T_safety < m148.T_safety ? '157' : '148'} build has more buckling headroom`;
+    : `${winnerName(m148.T_safety < m157.T_safety)} build has more buckling headroom`;
   document.getElementById('cmp-tc-stmt').firstChild.textContent = tcStmt;
   document.getElementById('sum-tc').textContent = tcStmt;
 
   syncStdLabels();
   buildHero(m148, m157, hub148, hub157);
   buildTakeaway(m148, m157, hub148, hub157);
+  renderWhyCharts(rim);
 
   // Simplified mode's two drawings. Everything above still ran, so flipping
   // the mode back off shows a fully up-to-date full view with no extra work.
@@ -2067,8 +2283,585 @@ function buildTakeaway(m148, m157, hub148, hub157) {
     `That's the headline difference; open the cards below for stiffness, vertical hits, and buckling margin.`;
 }
 
+/* ── Why the numbers differ ──────────────────────────────────────────────────
+   The hero says WHICH build is stronger and by how much. These three cards say
+   why, each from a different angle:
+
+     decomp   splits the gap between the two builds into what each hub
+              parameter group contributes (an order-independent Shapley split)
+     scatter  puts all 30 hubs on one plot -- flange spread against F_lat --
+              so the two on your cards are seen against the whole catalogue
+     sweep    re-runs both builds across DS tension, showing how the headline
+              gap moves and where the buckling margin starts to bite
+
+   Everything here is presentation over calc(): no second physics path. The
+   decomposition's ends reproduce the two F_lat figures on the cards exactly. */
+
+/* Chart tuning -- every number a chart reads, named and explained. */
+const SWEEP_T_MIN = 90, SWEEP_T_MAX = 140, SWEEP_T_STEP = 5;
+                                   // kgf DS. Wider than the tension dropdown (95-125) so the dot for the
+                                   // current setting always lands on a plotted point and has room either side.
+const SCATTER_R_MIN = 4, SCATTER_R_MAX = 9;   // px radius at the lowest / highest tension balance in the catalogue
+const SCATTER_OUTLIER_LABELS = 2;  // how many biggest-residual hubs get a permanent name label
+const SCATTER_HIT_PX = 36;         // pointer snaps to the nearest hub within this distance (a bare 8px dot is a pinpoint)
+const CHART_MIN_W = 240;           // px; narrower than this a chart is not worth drawing
+const CHART_FONT_PX = 11;          // label height used for collision boxes -- keep in step with .ch text in the CSS
+const CHART_LABEL_CHAR_PX = 7.2;   // fallback glyph width (px, bold caps) if text cannot be measured
+const CHART_RESIZE_MS = 120;       // debounce for redrawing on window resize
+const TIE_PCT = 0.05;              // gaps below this many percent are a dead heat (matches the hero)
+const NO_EFFECT_KGF = 0.05;        // a decomposition factor smaller than this reads as "no effect"
+
+/* ── Shared plumbing ──────────────────────────────────────────────────────── */
+
+/* One slot's complete build as plain numbers: the hub reduced to the four
+   parameters the engine uses (re-expressed as spread, split and diameters so
+   the decomposition can swap them independently) plus the setup that rides
+   with the card (wheel size, tension, spoke gauges). */
+function slotConfig(slot) {
+  const isA = slot === 'a', sfx = isA ? '148' : '157';
+  const hub = hubById(isA ? ST.hub148 : ST.hub157);
+  const S = hub.nds + hub.ds;
+  return {
+    hub: hub,
+    S: S,                          // flange spread, mm
+    f: hub.ds / S,                 // share of the spread on the drive side (0.5 = no dish)
+    pds: hub.pds, pnds: hub.pnds,  // flange pitch-circle diameters, mm
+    wheel: isA ? ST.wheel148 : ST.wheel157,
+    tds: isA ? ST.tds148 : ST.tds157,
+    spkDS:  +document.getElementById('spk' + sfx + 'ds').value,
+    spkNDS: +document.getElementById('spk' + sfx + 'nds').value,
+  };
+}
+/* calc() for a config. A config with no .hub is rebuilt from its spread, split
+   and diameters -- that is how the decomposition builds its in-between hubs. */
+function calcCfg(cfg, rim, tds) {
+  const hub = cfg.hub || { nds: cfg.S * (1 - cfg.f), ds: cfg.S * cfg.f, pds: cfg.pds, pnds: cfg.pnds };
+  return calc(WHEEL_ERDS[cfg.wheel], hub, cfg.spkDS, cfg.spkNDS,
+    tds === undefined ? cfg.tds : tds, rim.EIL, rim.EIR, rim.GJ, rim.EA, rim.Ns, rim.N);
+}
+const slotColor = slot => slot === 'a' ? 'var(--a)' : 'var(--b)';
+const fmtSigned = (v, d) => (v < 0 ? '−' : '+') + Math.abs(v).toFixed(d);
+const shortName = (name, n) => name.length > n ? name.slice(0, n - 1) + '…' : name;
+
+/* A chart can only be drawn into a box that has a width: a closed card, or the
+   simplified view (which hides the whole detail area), has none. */
+function boxWidth(id) {
+  const w = Math.floor(document.getElementById(id).clientWidth);
+  return w >= CHART_MIN_W ? w : 0;
+}
+
+/* "Nice" axis: ticks at 1/2/2.5/5 x 10^k that bracket [lo, hi]. */
+function niceScale(lo, hi, target) {
+  const range = (hi - lo) || 1, raw = range / target;
+  const p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
+  const step = (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p;
+  const a = Math.floor(lo / step + 1e-9) * step, b = Math.ceil(hi / step - 1e-9) * step;
+  const ticks = [];
+  for (let i = 0; a + i * step <= b + step / 1e6; i++) ticks.push(+(a + i * step).toFixed(6));
+  return { lo: a, hi: b, ticks: ticks };
+}
+
+/* Pixel frame for an SVG chart: scale functions plus margins. */
+function makeFrame(w, h, xs, ys, margin) {
+  const g = Object.assign({ w: w, h: h }, margin);
+  const iw = w - g.l - g.r, ih = h - g.t - g.b;
+  return {
+    g: g, iw: iw, ih: ih,
+    px: x => g.l + (x - xs.lo) / (xs.hi - xs.lo) * iw,
+    py: y => g.t + ih - (y - ys.lo) / (ys.hi - ys.lo) * ih,
+  };
+}
+function axesSVG(f, xs, ys, xTitle, yTitle) {
+  const g = f.g, base = g.h - g.b;
+  let o = '';
+  ys.ticks.forEach(t => {
+    const y = f.py(t);
+    o += `<line class="ch-grid" x1="${g.l}" x2="${g.w - g.r}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"/>` +
+         `<text x="${g.l - 6}" y="${(y + 3.5).toFixed(1)}" text-anchor="end">${t}</text>`;
+  });
+  xs.ticks.forEach(t => {
+    const x = f.px(t);
+    o += `<line class="ch-axis" x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${base}" y2="${base + 4}"/>` +
+         `<text x="${x.toFixed(1)}" y="${base + 16}" text-anchor="middle">${t}</text>`;
+  });
+  o += `<line class="ch-axis" x1="${g.l}" x2="${g.w - g.r}" y1="${base}" y2="${base}"/>` +
+       `<text class="ch-title" x="${(g.l + f.iw / 2).toFixed(1)}" y="${g.h - 4}" text-anchor="middle">${esc(xTitle)}</text>` +
+       `<text class="ch-title" transform="translate(11 ${(g.t + f.ih / 2).toFixed(1)}) rotate(-90)" text-anchor="middle">${esc(yTitle)}</text>`;
+  return o;
+}
+/* Rendered width of a chart label. Collision boxes built from a per-character
+   guess drifted by several pixels on bold, all-caps hub names, which is exactly
+   when labels overlap markers; measuring with the same font is exact. */
+let measureCtx;
+function textWidth(text, bold) {
+  try {
+    if (!measureCtx) measureCtx = document.createElement('canvas').getContext('2d');
+    measureCtx.font = (bold ? '700 ' : '500 ') + CHART_FONT_PX + 'px ' + getComputedStyle(document.body).fontFamily;
+    return measureCtx.measureText(text).width;
+  } catch (e) {
+    return text.length * CHART_LABEL_CHAR_PX;
+  }
+}
+function tableHTML(head, rows, onRow) {
+  return '<table class="ch-tbl"><thead><tr>' +
+    head.map(h => `<th scope="col">${esc(h)}</th>`).join('') + '</tr></thead><tbody>' +
+    rows.map((r, i) => `<tr${onRow && onRow(i) ? ' class="on"' : ''}>` +
+      r.map(c => `<td>${esc(c)}</td>`).join('') + '</tr>').join('') + '</tbody></table>';
+}
+function setText(id, txt) { document.getElementById(id).textContent = txt; }
+
+/* ── 1. Where the gap comes from ──────────────────────────────────────────── */
+
+/* The registry of things a hub (or its card) can differ in. Each factor lists
+   the config keys it swaps; one that does not differ between the two builds is
+   left out, so the bars only ever name real differences. Adding a factor is one
+   entry here. `describe` is the small print under the label. */
+const DECOMP_FACTORS = [
+  { id: 'spread', label: 'Flange spread', keys: ['S'],
+    describe: (lo, hi) => `${lo.S.toFixed(1)} → ${hi.S.toFixed(1)} mm between the flanges` },
+  { id: 'split', label: 'Offset split (NDS ratio)', keys: ['f'],
+    describe: (lo, hi) => `drive flange takes ${(lo.f * 100).toFixed(0)}% → ${(hi.f * 100).toFixed(0)}% of the width (50% = no dish)` },
+  { id: 'dia', label: 'Flange diameters', keys: ['pds', 'pnds'],
+    describe: (lo, hi) => `drive ${lo.pds} → ${hi.pds} mm, non-drive ${lo.pnds} → ${hi.pnds} mm` },
+  { id: 'setup', label: 'Wheel size, tension & spokes', keys: ['wheel', 'tds', 'spkDS', 'spkNDS'],
+    describe: (lo, hi) => {
+      const bits = [];
+      if (lo.wheel !== hi.wheel) bits.push(`${lo.wheel}″ → ${hi.wheel}″ wheel`);
+      if (lo.tds !== hi.tds) bits.push(`${lo.tds} → ${hi.tds} kgf DS`);
+      if (lo.spkDS !== hi.spkDS || lo.spkNDS !== hi.spkNDS)
+        bits.push(`spokes ${lo.spkDS}/${lo.spkNDS} → ${hi.spkDS}/${hi.spkNDS} mm`);
+      return 'settings that differ between the cards: ' + bits.join(', ');
+    } },
+];
+
+/* Shapley values for n factors: each factor's marginal effect averaged over
+   every order the factors could be switched on. Order-independent, and the n
+   shares sum exactly to value(all on) - value(all off). 2^n evaluations; n <= 4
+   here, so at most 16 engine runs. */
+function shapley(n, value) {
+  const fact = [1];
+  for (let i = 1; i <= n; i++) fact[i] = fact[i - 1] * i;
+  const v = [];
+  for (let m = 0; m < (1 << n); m++) v[m] = value(m);
+  const phi = [];
+  for (let i = 0; i < n; i++) {
+    let s = 0;
+    for (let m = 0; m < (1 << n); m++) {
+      if (m & (1 << i)) continue;
+      let k = 0;
+      for (let j = 0; j < n; j++) if (m & (1 << j)) k++;
+      s += fact[k] * fact[n - k - 1] / fact[n] * (v[m | (1 << i)] - v[m]);
+    }
+    phi.push(s);
+  }
+  return phi;
+}
+
+function decompModel(rim) {
+  const cfg = { a: slotConfig('a'), b: slotConfig('b') };
+  const F = { a: calcCfg(cfg.a, rim).F_lat, b: calcCfg(cfg.b, rim).F_lat };
+  const loSlot = F.a <= F.b ? 'a' : 'b', hiSlot = loSlot === 'a' ? 'b' : 'a';
+  const lo = cfg[loSlot], hi = cfg[hiSlot];
+  const active = DECOMP_FACTORS.filter(f => f.keys.some(k => lo[k] !== hi[k]));
+  const phi = shapley(active.length, mask => {
+    const c = Object.assign({}, lo, { hub: null });         // null: rebuild the hub from the parts
+    active.forEach((f, i) => { if (mask & (1 << i)) f.keys.forEach(k => { c[k] = hi[k]; }); });
+    return calcCfg(c, rim).F_lat;
+  });
+  return { loSlot, hiSlot, lo, hi, Flo: F[loSlot], Fhi: F[hiSlot], active, phi };
+}
+
+function renderDecomp(rim) {
+  const m = decompModel(rim);
+  const gap = m.Fhi - m.Flo, pct = m.Flo ? gap / m.Flo * 100 : 0;
+  // Two sides on the same hub (compared at different settings) would otherwise
+  // read "X takes 7% more than X", so each name carries the settings that differ.
+  const setupTag = (c, o) => {
+    const bits = [];
+    if (c.wheel !== o.wheel) bits.push(c.wheel + '\u2033');
+    if (c.tds !== o.tds) bits.push(c.tds + ' kgf DS');
+    if (c.spkDS !== o.spkDS || c.spkNDS !== o.spkNDS) bits.push(`${c.spkDS.toFixed(1)}/${c.spkNDS.toFixed(1)} mm spokes`);
+    return bits.join(' \u00b7 ');
+  };
+  const sameHub = m.lo.hub.name === m.hi.hub.name;
+  const loName = sameHub ? `${m.lo.hub.name} (${setupTag(m.lo, m.hi)})` : m.lo.hub.name;
+  const hiName = sameHub ? `${m.hi.hub.name} (${setupTag(m.hi, m.lo)})` : m.hi.hub.name;
+  const rows = document.getElementById('dc-rows');
+
+  if (!m.active.length) {
+    setText('sum-decomp', 'Identical builds');
+    setText('dc-lede', 'Both sides are the same hub with the same settings, so there is no gap to split.');
+    rows.innerHTML = '';
+    return;
+  }
+  const top = m.phi.reduce((best, v, i) => v > m.phi[best] ? i : best, 0);
+  if (pct < TIE_PCT) {
+    setText('sum-decomp', 'Dead heat');
+    document.getElementById('dc-lede').innerHTML =
+      `<b>${esc(hiName)}</b> and <b>${esc(loName)}</b> end up level on lateral strength, but not for the same reasons — the factors below offset each other.`;
+  } else {
+    document.getElementById('sum-decomp').innerHTML =
+      `${pct.toFixed(0)}${PCT_ICON} gap · mostly ${esc(m.active[top].label.toLowerCase())}`;
+    document.getElementById('dc-lede').innerHTML =
+      `Why <b>${esc(hiName)}</b> takes <b class="pct-num">${pct.toFixed(0)}${PCT_ICON}</b> more sideways force than <b>${esc(loName)}</b> — hub by hub, starting from the weaker build:`;
+  }
+
+  // Bars: start and end rows run from zero; each factor floats from where the
+  // previous one left off, so the eye can follow the running total.
+  let cum = m.Flo, maxV = Math.max(m.Fhi, m.Flo);
+  const steps = m.active.map((f, i) => {
+    const from = cum; cum += m.phi[i];
+    maxV = Math.max(maxV, from, cum);
+    return { f, from, to: cum, d: m.phi[i] };
+  });
+  const scale = maxV * 1.03 || 1;
+  const bar = (from, to, color, neg) => {
+    const l = Math.min(from, to) / scale * 100, w = Math.abs(to - from) / scale * 100;
+    return `<span class="dc-bar${neg ? ' neg' : ''}" style="left:${l.toFixed(2)}%;width:${w.toFixed(2)}%;background:${color}"></span>`;
+  };
+  const row = (label, sub, val, sub2, barHTML) =>
+    `<div class="dc-row"><div class="dc-head"><span class="dc-lbl">${label}${sub ? `<span class="dc-sub">${sub}</span>` : ''}</span>` +
+    `<span class="dc-val">${val}${sub2 ? `<span class="pp">${sub2}</span>` : ''}</span></div>` +
+    `<div class="dc-track">${barHTML}</div></div>`;
+
+  let html = row(esc(loName), 'starting point — the weaker build', `${m.Flo.toFixed(1)} kgf`, '',
+                 bar(0, m.Flo, slotColor(m.loSlot)));
+  steps.forEach(st => {
+    const tiny = Math.abs(st.d) < NO_EFFECT_KGF, neg = st.d < 0;
+    html += row(esc(st.f.label), esc(st.f.describe(m.lo, m.hi)),
+      tiny ? 'no effect' : `${fmtSigned(st.d, 1)} kgf`,
+      tiny ? '' : `${fmtSigned(st.d / m.Flo * 100, 0)}${PCT_ICON}`,
+      bar(st.from, st.to, slotColor(m.hiSlot), neg && !tiny));
+  });
+  html += row(esc(hiName), 'ends here — the stronger build', `${m.Fhi.toFixed(1)} kgf`,
+              pct < TIE_PCT ? '' : `${fmtSigned(pct, 0)}${PCT_ICON} overall`, bar(0, m.Fhi, slotColor(m.hiSlot)));
+  rows.innerHTML = html;
+}
+
+/* ── 2. Whole-catalogue scatter ───────────────────────────────────────────── */
+
+const SCATTER = { rows: [], pts: [], order: [], idx: -1, ring: null, model: null };
+
+function scatterModel(rim) {
+  // One set of conditions for every hub, taken from the left card, so only the
+  // hub varies. The right card's own wheel/tension/spokes are not applied.
+  const ref = slotConfig('a'), other = slotConfig('b');
+  const rows = [];
+  ['148', '157'].forEach(std => hubsFor(std).forEach(h => {
+    const r = calcCfg(Object.assign({}, ref, { hub: h }), rim);
+    rows.push({ hub: h, std: std, spread: h.nds + h.ds, F: r.F_lat, ratio: r.ratio });
+  }));
+  // Least squares of F_lat on spread across all hubs, for the dashed trend and
+  // the "how much does spread alone explain" sentence.
+  const n = rows.length;
+  const mx = rows.reduce((a, r) => a + r.spread, 0) / n, my = rows.reduce((a, r) => a + r.F, 0) / n;
+  let sxx = 0, sxy = 0, syy = 0;
+  rows.forEach(r => { sxx += (r.spread - mx) ** 2; sxy += (r.spread - mx) * (r.F - my); syy += (r.F - my) ** 2; });
+  const slope = sxx ? sxy / sxx : 0, icpt = my - slope * mx, r2 = sxx && syy ? sxy * sxy / (sxx * syy) : 0;
+  rows.forEach(r => { r.resid = r.F - (slope * r.spread + icpt); });
+  const mean = std => { const a = rows.filter(r => r.std === std); return a.reduce((s, r) => s + r.F, 0) / a.length; };
+  const differs = ['wheel', 'tds', 'spkDS', 'spkNDS'].some(k => ref[k] !== other[k]);
+  return { rows, slope, icpt, r2, ref, differs, mean148: mean('148'), mean157: mean('157') };
+}
+
+/* Greedy label placement: for each label try right, left, above, below and the
+   diagonals, and take the first spot that stays inside the plot and hits
+   neither another label nor any marker. `must` labels are drawn even if every
+   spot collides; the rest are dropped rather than overprinted. */
+function placeLabels(items, f, obstacles) {
+  const g = f.g, boxes = [], out = [];
+  const hits = (a, b) => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
+  const dirs = [[1, 0], [-1, 0], [0, -1], [0, 1], [1, -1], [-1, -1], [1, 1], [-1, 1]];
+  const inside = b => b.x0 >= g.l && b.x1 <= g.w - g.r && b.y0 >= g.t && b.y1 <= g.h - g.b;
+  items.forEach(it => {
+    const tw = textWidth(it.text, it.bold) + 2, gap = it.r + 5;
+    const spots = dirs.map(([dx, dy]) => {
+      const anchor = dx < 0 ? 'end' : dx === 0 ? 'middle' : 'start';
+      const x = dx === 0 ? it.x : it.x + dx * gap;
+      const y = dy < 0 ? it.y - gap : dy > 0 ? it.y + gap + CHART_FONT_PX - 2 : it.y + 4;
+      const x0 = anchor === 'start' ? x : anchor === 'end' ? x - tw : x - tw / 2;
+      return { x, y, anchor, box: { x0, x1: x0 + tw, y0: y - CHART_FONT_PX, y1: y + 3 } };
+    });
+    let pick = spots.find(s => inside(s.box) && !boxes.some(b => hits(b, s.box)) && !obstacles.some(o => hits(o, s.box)));
+    if (!pick && it.must) pick = spots.find(s => inside(s.box)) || spots[0];
+    if (pick) { boxes.push(pick.box); out.push(Object.assign({}, it, pick)); }
+  });
+  return out;
+}
+
+function scatterReadout(i) {
+  const r = SCATTER.rows[i];
+  return `<b>${esc(r.hub.name)}</b> · ${r.std}x12 — spread <b>${r.spread.toFixed(1)}</b> mm · ` +
+    `tension balance <b>${r.ratio.toFixed(1)}</b>% · F_lat <b>${r.F.toFixed(1)}</b> kgf`;
+}
+function scatterDefaultReadout() {
+  const ids = [ST.hub148, ST.hub157].filter((id, k, a) => a.indexOf(id) === k);
+  const parts = ids.map(id => scatterReadout(SCATTER.rows.findIndex(r => r.hub.id === id)));
+  return 'On your cards: ' + parts.join('<br>') + '<br><span style="color:var(--faint)">Hover, tap, or use the arrow keys on the chart to read any hub.</span>';
+}
+function scatterSelect(i) {
+  SCATTER.idx = i;
+  const ring = SCATTER.ring;
+  if (i < 0 || !ring) {
+    if (ring) ring.setAttribute('visibility', 'hidden');
+    document.getElementById('sc-readout').innerHTML = scatterDefaultReadout();
+    return;
+  }
+  const p = SCATTER.pts[i];
+  ring.setAttribute('cx', p.x); ring.setAttribute('cy', p.y); ring.setAttribute('r', p.r + 5);
+  ring.setAttribute('visibility', 'visible');
+  document.getElementById('sc-readout').innerHTML = scatterReadout(i);
+}
+
+function renderScatter(rim) {
+  const mdl = scatterModel(rim), rows = mdl.rows;
+  SCATTER.rows = rows; SCATTER.model = mdl;
+
+  // Text that does not need the chart to be on screen: the summary line (shown
+  // when the card is collapsed) and the notes.
+  setText('sum-scatter', `Spread alone explains ${Math.round(mdl.r2 * 100)}% of lateral strength`);
+  const ref = mdl.ref;
+  const cond = `${ref.wheel}″ · ${rim.Ns}H · ${ref.tds} kgf DS · ${ref.spkDS.toFixed(1)}/${ref.spkNDS.toFixed(1)} mm spokes`;
+  setText('sc-lede', `All ${rows.length} hubs on the same wheel, tension and spokes (${cond} — the left card's), so only the hub differs.` +
+    (mdl.differs ? ' The right card’s different settings are not applied here.' : ''));
+  const ranked = rows.slice().sort((a, b) => Math.abs(b.resid) - Math.abs(a.resid));
+  const selIds = [ST.hub148, ST.hub157];
+  const outliers = ranked.filter(r => !selIds.includes(r.hub.id)).slice(0, SCATTER_OUTLIER_LABELS);
+  const rel = r => `${esc(r.hub.name)} ${Math.abs(r.resid).toFixed(1)} kgf ${r.resid >= 0 ? 'above' : 'below'}`;
+  document.getElementById('sc-note').innerHTML =
+    `On average the 157x12 hubs here give ${mdl.mean157.toFixed(1)} kgf against ${mdl.mean148.toFixed(1)} for the 148x12 ` +
+    `(${fmtSigned((mdl.mean157 / mdl.mean148 - 1) * 100, 0)}%). The dashed line is the trend across all hubs; ` +
+    `the hubs furthest from it are ${ranked.slice(0, 2).map(rel).join(' and ')} what their spread alone would predict ` +
+    `— marker size shows the other big lever, how evenly each hub shares tension between its two sides.`;
+  const byF = rows.slice().sort((a, b) => b.F - a.F);
+  document.getElementById('sc-table').innerHTML = tableHTML(
+    ['Hub', 'Std', 'Spread mm', 'Balance %', 'F_lat kgf'],
+    byF.map(r => [r.hub.name, r.std, r.spread.toFixed(1), r.ratio.toFixed(1), r.F.toFixed(1)]),
+    i => selIds.includes(byF[i].hub.id));
+
+  const w = boxWidth('sc-chart');
+  if (!w) return;
+  const box = document.getElementById('sc-chart');
+  const h = Math.round(Math.max(240, Math.min(400, w * 0.68)));
+  const xs = niceScale(Math.min(...rows.map(r => r.spread)), Math.max(...rows.map(r => r.spread)), 9);
+  const ys = niceScale(Math.min(...rows.map(r => r.F)), Math.max(...rows.map(r => r.F)), 5);
+  const f = makeFrame(w, h, xs, ys, { l: 44, r: 14, t: 12, b: 42 });
+  const rLo = Math.min(...rows.map(r => r.ratio)), rHi = Math.max(...rows.map(r => r.ratio));
+  const rad = r => SCATTER_R_MIN + (rHi > rLo ? (r.ratio - rLo) / (rHi - rLo) : 0.5) * (SCATTER_R_MAX - SCATTER_R_MIN);
+
+  SCATTER.pts = rows.map(r => ({ x: f.px(r.spread), y: f.py(r.F), r: rad(r) }));
+  // Left-to-right order for the arrow keys.
+  SCATTER.order = rows.map((r, i) => i).sort((a, b) => rows[a].spread - rows[b].spread || rows[a].F - rows[b].F);
+
+  let svg = `<svg class="ch" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" tabindex="0" ` +
+    `aria-label="Scatter of lateral strength against flange spread for all ${rows.length} hubs. Use left and right arrow keys to step through hubs.">` +
+    `<defs><clipPath id="sc-clip"><rect x="${f.g.l}" y="${f.g.t}" width="${f.iw}" height="${f.ih}"/></clipPath></defs>` +
+    axesSVG(f, xs, ys, 'Flange spread, mm (NDS + DS offset)', 'F_lat, kgf');
+  svg += `<line class="sc-trend" clip-path="url(#sc-clip)" x1="${f.px(xs.lo).toFixed(1)}" y1="${f.py(mdl.slope * xs.lo + mdl.icpt).toFixed(1)}" ` +
+         `x2="${f.px(xs.hi).toFixed(1)}" y2="${f.py(mdl.slope * xs.hi + mdl.icpt).toFixed(1)}"/>`;
+  rows.forEach((r, i) => {
+    const p = SCATTER.pts[i], rr = p.r * 1.3;
+    svg += r.std === '148'
+      ? `<circle class="sc-pt s148" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${p.r.toFixed(1)}"/>`
+      : `<path class="sc-pt s157" d="M${p.x.toFixed(1)} ${(p.y - rr).toFixed(1)}L${(p.x + rr).toFixed(1)} ${p.y.toFixed(1)}L${p.x.toFixed(1)} ${(p.y + rr).toFixed(1)}L${(p.x - rr).toFixed(1)} ${p.y.toFixed(1)}Z"/>`;
+  });
+  // Rings on the hubs that are on the cards, then names for them and for the outliers.
+  const selRows = [];
+  selIds.forEach(id => { const i = rows.findIndex(r => r.hub.id === id); if (i >= 0 && !selRows.includes(i)) selRows.push(i); });
+  selRows.forEach(i => { const p = SCATTER.pts[i];
+    svg += `<circle class="sc-ring" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${(p.r + 4).toFixed(1)}"/>`; });
+  const obstacles = SCATTER.pts.map((p, i) => { const e = p.r * 1.3 + (selRows.includes(i) ? 5 : 2);
+    return { x0: p.x - e, x1: p.x + e, y0: p.y - e, y1: p.y + e }; });
+  const labelItems = selRows.map(i => ({ i, text: shortName(rows[i].hub.name, 26), r: SCATTER.pts[i].r + 4, x: SCATTER.pts[i].x, y: SCATTER.pts[i].y, must: true, bold: true, cls: 'ch-lbl' }))
+    .concat(outliers.map(o => { const i = rows.indexOf(o);
+      return { i, text: shortName(o.hub.name, 22), r: SCATTER.pts[i].r, x: SCATTER.pts[i].x, y: SCATTER.pts[i].y, must: false, bold: false, cls: 'ch-lbl sub' }; }));
+  placeLabels(labelItems, f, obstacles).forEach(l => {
+    svg += `<text class="${l.cls}" x="${l.x.toFixed(1)}" y="${l.y.toFixed(1)}" text-anchor="${l.anchor}">${esc(l.text)}</text>`;
+  });
+  svg += `<circle class="sc-hover" id="sc-hover" r="8" visibility="hidden"/></svg>`;
+  box.innerHTML = svg;
+  SCATTER.ring = document.getElementById('sc-hover');
+  scatterSelect(Math.min(SCATTER.idx, rows.length - 1));
+}
+
+/* ── 3. Tension sweep ─────────────────────────────────────────────────────── */
+
+const SWEEP = { model: null, geo: null, cur: -1 };
+
+function sweepModel(rim) {
+  const cfg = { a: slotConfig('a'), b: slotConfig('b') };
+  const ts = [];
+  for (let t = SWEEP_T_MIN; t <= SWEEP_T_MAX; t += SWEEP_T_STEP) ts.push(t);
+  const pts = { a: [], b: [] }, now = {};
+  ['a', 'b'].forEach(s => {
+    ts.forEach(t => { const m = calcCfg(cfg[s], rim, t); pts[s].push({ t, F: m.F_lat, use: m.T_safety }); });
+    now[s] = calcCfg(cfg[s], rim);
+  });
+  // T_c_DS (the DS tension at which the rim would buckle) does not depend on
+  // the tension applied, so it can be read from the current-setting run.
+  const tight = { a: now.a.T_c_DS * BUCKLE_TIGHT_PCT / 100, b: now.b.T_c_DS * BUCKLE_TIGHT_PCT / 100 };
+  const strong = now.a.F_lat >= now.b.F_lat ? 'a' : 'b', weak = strong === 'a' ? 'b' : 'a';
+  const lead = i => (pts[strong][i].F / pts[weak][i].F - 1) * 100;   // stronger build's lead at grid point i
+  return { cfg, ts, pts, now, tight, strong, weak, lead };
+}
+
+function sweepReadout(i) {
+  const m = SWEEP.model, t = m.ts[i];
+  const part = s => `<b>${esc(slotLabel(s))}</b> ${m.pts[s][i].F.toFixed(1)} kgf (${m.pts[s][i].use.toFixed(0)}% of buckling)`;
+  return `At <b>${t}</b> kgf DS: ${part('a')} · ${part('b')} · ` +
+    `${esc(slotLabel(m.strong))} leads by <b>${fmtSigned(m.lead(i), 0)}</b>%`;
+}
+function sweepDefaultReadout() {
+  const m = SWEEP.model;
+  const part = s => `<b>${esc(slotLabel(s))}</b> ${m.now[s].F_lat.toFixed(1)} kgf at ${m.cfg[s].tds} kgf DS (${m.now[s].T_safety.toFixed(0)}% of buckling)`;
+  return `Your cards: ${part('a')} · ${part('b')}<br><span style="color:var(--faint)">Hover, tap, or use the arrow keys on the chart to read any tension.</span>`;
+}
+function sweepSelect(i) {
+  SWEEP.cur = i;
+  const hair = document.getElementById('sw-hair');
+  if (i < 0 || !hair) {
+    if (hair) hair.setAttribute('visibility', 'hidden');
+    document.getElementById('sw-readout').innerHTML = sweepDefaultReadout();
+    return;
+  }
+  const x = SWEEP.geo.px(SWEEP.model.ts[i]);
+  hair.setAttribute('x1', x); hair.setAttribute('x2', x); hair.setAttribute('visibility', 'visible');
+  document.getElementById('sw-readout').innerHTML = sweepReadout(i);
+}
+
+function renderSweep(rim) {
+  const m = sweepModel(rim); SWEEP.model = m;
+  const last = m.ts.length - 1;
+  const fmtLead = i => `${fmtSigned(m.lead(i), 0)}%`;
+
+  // Text that does not need the chart on screen.
+  setText('sum-sweep', `Lead ${fmtLead(0)} at ${SWEEP_T_MIN} kgf → ${fmtLead(last)} at ${SWEEP_T_MAX}`);
+  const peaks = [];
+  ['a', 'b'].forEach(s => {
+    const vals = m.pts[s].map(p => p.F), k = vals.indexOf(Math.max(...vals));
+    if (k < last && k > 0) peaks.push(`${esc(slotLabel(s))} peaks near ${m.ts[k]} kgf — above that, extra tension lowers its lateral strength`);
+  });
+  document.getElementById('sw-note').innerHTML =
+    `${esc(slotLabel(m.strong))}’s lead over ${esc(slotLabel(m.weak))} runs from ${fmtLead(0)} at ${SWEEP_T_MIN} kgf to ${fmtLead(last)} at ${SWEEP_T_MAX} kgf, ` +
+    `so the headline percentage is a statement about one tension, not a constant.` +
+    (peaks.length ? ' ' + peaks.join('; ') + ' (tension softening of the rim outpaces the extra preload).' : '');
+  document.getElementById('sw-legend').innerHTML =
+    ['a', 'b'].map(s => `<span class="ch-key"><svg width="22" height="14" aria-hidden="true"><line x1="1" x2="21" y1="7" y2="7" style="stroke:${slotColor(s)};stroke-width:3;stroke-linecap:round"/></svg>${esc(slotLabel(s))}</span>`).join('') +
+    `<span class="ch-key"><svg width="22" height="14" aria-hidden="true"><line x1="1" x2="21" y1="7" y2="7" style="stroke:var(--muted);stroke-width:2;stroke-dasharray:5 4"/></svg>dashed + shaded: past ${BUCKLE_TIGHT_PCT}% of buckling</span>`;
+  document.getElementById('sw-table').innerHTML = tableHTML(
+    ['DS kgf', `${slotLabel('a')} F_lat`, 'Buckling %', `${slotLabel('b')} F_lat`, 'Buckling %'],
+    m.ts.map((t, i) => [String(t), m.pts.a[i].F.toFixed(1), m.pts.a[i].use.toFixed(0), m.pts.b[i].F.toFixed(1), m.pts.b[i].use.toFixed(0)]),
+    i => m.ts[i] === m.cfg.a.tds || m.ts[i] === m.cfg.b.tds);
+
+  const w = boxWidth('sw-chart');
+  if (!w) return;
+  const box = document.getElementById('sw-chart');
+  const h = Math.round(Math.max(220, Math.min(340, w * 0.58)));
+  const all = m.pts.a.concat(m.pts.b).map(p => p.F);
+  const xs = { lo: SWEEP_T_MIN, hi: SWEEP_T_MAX, ticks: m.ts.filter(t => (t - SWEEP_T_MIN) % (2 * SWEEP_T_STEP) === 0) };
+  const ys = niceScale(Math.min(...all), Math.max(...all), 5);
+  const f = makeFrame(w, h, xs, ys, { l: 44, r: 14, t: 18, b: 42 });
+  SWEEP.geo = f;
+
+  let svg = `<svg class="ch" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" tabindex="0" ` +
+    `aria-label="Lateral strength against drive-side tension for both builds. Use left and right arrow keys to step through tensions.">` +
+    axesSVG(f, xs, ys, 'Drive-side tension, kgf', 'F_lat, kgf');
+  // Shaded zone per build: from the tension where it passes the comfort margin to the right edge.
+  ['a', 'b'].forEach(s => {
+    const x0 = f.px(Math.max(SWEEP_T_MIN, m.tight[s]));
+    if (m.tight[s] < SWEEP_T_MAX)
+      svg += `<rect x="${x0.toFixed(1)}" y="${f.g.t}" width="${(f.px(SWEEP_T_MAX) - x0).toFixed(1)}" height="${f.ih}" style="fill:${slotColor(s)};opacity:.12"/>`;
+  });
+  ['a', 'b'].forEach(s => {
+    for (let i = 0; i < last; i++) {
+      const p = m.pts[s][i], q = m.pts[s][i + 1], dash = q.use > BUCKLE_TIGHT_PCT;
+      svg += `<line class="sw-line${dash ? ' dash' : ''}" style="stroke:${slotColor(s)}" x1="${f.px(p.t).toFixed(1)}" y1="${f.py(p.F).toFixed(1)}" x2="${f.px(q.t).toFixed(1)}" y2="${f.py(q.F).toFixed(1)}"/>`;
+    }
+  });
+  // A dot (with its value) where each card currently sits; the higher value
+  // is labelled above its dot and the lower below, so the two never collide.
+  const aHigher = m.now.a.F_lat >= m.now.b.F_lat;
+  ['a', 'b'].forEach(s => {
+    const x = f.px(m.cfg[s].tds), y = f.py(m.now[s].F_lat), above = (s === 'a') === aHigher;
+    svg += `<circle class="sw-dot" style="fill:${slotColor(s)}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5"/>` +
+           `<text class="ch-val" x="${x.toFixed(1)}" y="${(above ? y - 10 : y + 19).toFixed(1)}" text-anchor="middle">${m.now[s].F_lat.toFixed(1)}</text>`;
+  });
+  svg += `<line class="ch-hair" id="sw-hair" y1="${f.g.t}" y2="${f.g.h - f.g.b}" visibility="hidden"/></svg>`;
+  box.innerHTML = svg;
+  sweepSelect(SWEEP.cur >= 0 && SWEEP.cur <= last ? SWEEP.cur : -1);
+}
+
+/* ── Wiring ───────────────────────────────────────────────────────────────── */
+
+function renderWhyCharts(rim) {
+  // The simplified view hides the whole detail area, so there is nothing to draw into.
+  if (document.body.classList.contains('simple')) return;
+  rim = rim || rimSettings();
+  renderDecomp(rim);
+  renderScatter(rim);
+  renderSweep(rim);
+}
+
+(function wireWhyCharts() {
+  // Pointer: scatter snaps to the nearest hub, sweep to the nearest tension.
+  // Delegated on the (persistent) wrapper because the SVG inside is rebuilt on every render.
+  const svgPoint = (e, box) => {
+    const svg = box.querySelector('svg');
+    if (!svg) return null;
+    const r = svg.getBoundingClientRect(), k = (svg.viewBox.baseVal.width || r.width) / (r.width || 1);
+    return { x: (e.clientX - r.left) * k, y: (e.clientY - r.top) * k };
+  };
+  const sc = document.getElementById('sc-chart'), sw = document.getElementById('sw-chart');
+  const nearest = (e) => {
+    const pt = svgPoint(e, sc);
+    if (!pt) return -1;
+    let best = -1, bd = SCATTER_HIT_PX;
+    SCATTER.pts.forEach((p, i) => { const d = Math.hypot(p.x - pt.x, p.y - pt.y); if (d < bd) { bd = d; best = i; } });
+    return best;
+  };
+  sc.addEventListener('pointermove', e => { const i = nearest(e); if (i !== SCATTER.idx) scatterSelect(i); });
+  sc.addEventListener('pointerdown', e => { scatterSelect(nearest(e)); });
+  sc.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') scatterSelect(-1); });
+  sc.addEventListener('keydown', e => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    const o = SCATTER.order, at = o.indexOf(SCATTER.idx);
+    const next = at < 0 ? (e.key === 'ArrowRight' ? 0 : o.length - 1)
+                        : Math.max(0, Math.min(o.length - 1, at + (e.key === 'ArrowRight' ? 1 : -1)));
+    scatterSelect(o[next]);
+  });
+  const tIndex = e => {
+    const pt = svgPoint(e, sw);
+    if (!pt || !SWEEP.geo || !SWEEP.model) return -1;
+    const g = SWEEP.geo.g;
+    if (pt.x < g.l - 8 || pt.x > g.w - g.r + 8) return -1;
+    const t = SWEEP_T_MIN + (pt.x - g.l) / SWEEP.geo.iw * (SWEEP_T_MAX - SWEEP_T_MIN);
+    return Math.max(0, Math.min(SWEEP.model.ts.length - 1, Math.round((t - SWEEP_T_MIN) / SWEEP_T_STEP)));
+  };
+  sw.addEventListener('pointermove', e => { const i = tIndex(e); if (i !== SWEEP.cur) sweepSelect(i); });
+  sw.addEventListener('pointerdown', e => { sweepSelect(tIndex(e)); });
+  sw.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') sweepSelect(-1); });
+  sw.addEventListener('keydown', e => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    const n = SWEEP.model.ts.length;
+    const next = SWEEP.cur < 0 ? (e.key === 'ArrowRight' ? 0 : n - 1)
+                               : Math.max(0, Math.min(n - 1, SWEEP.cur + (e.key === 'ArrowRight' ? 1 : -1)));
+    sweepSelect(next);
+  });
+  // Redraw at the new width after a resize or rotation.
+  let timer = 0;
+  window.addEventListener('resize', () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => renderWhyCharts(), CHART_RESIZE_MS);
+  });
+}());
+
 buildControls();
-readURL();          // hydrate state from a shared link, if present
+// Hydrate state from a shared link, if present. readURL() validates as it goes;
+// the try is the last line of defence, so that whatever a mangled link does,
+// the tool still opens (on whatever state was applied before the problem).
+try { readURL(); } catch (e) { /* fall through to defaults */ }
 applyTheme();       // set the color scheme (default DMC-12)
 // re-sync the wheel-size buttons + hub dropdowns to any URL-loaded state
 setWheelSilent('148', ST.wheel148); setWheelSilent('157', ST.wheel157);
@@ -2083,6 +2876,9 @@ if (!location.hash && window.innerWidth < AUTO_SIMPLE_PX) {
 }
 document.getElementById('simp-btn').setAttribute('aria-pressed',
   document.body.classList.contains('simple'));
+// Narrow screens open with every detail card but F_lat collapsed -- their
+// header lines still carry the verdicts. See COLLAPSE_ON_NARROW.
+if (window.innerWidth < NARROW_CARDS_PX) COLLAPSE_ON_NARROW.forEach(id => setCard(id, false));
 SWHEEL = makeWheel(document.getElementById('s-canvas'));
 /* Keep the spin honest about when it is worth running: only while simplified
    mode is open, the tab is frontmost, and the stage is actually on screen. */
