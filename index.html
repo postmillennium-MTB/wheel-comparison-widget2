@@ -510,6 +510,10 @@ html[data-theme="mgb"] .hero{
   .sec-sum{order:2;flex-basis:100%;text-align:left;white-space:normal;padding-right:0}
 }
 
+.buckle-note{background:var(--card);border:1px solid var(--over);border-left:5px solid var(--over);
+  border-radius:10px;padding:11px 14px;margin-bottom:12px;font-size:13.5px;line-height:1.5}
+.buckle-note b{color:var(--over)}
+
 .note{font-size:12px;color:var(--muted);margin:14px auto 0;padding-top:10px;
   border-top:1px solid var(--line);line-height:1.55;max-width:90ch;text-align:center}
 .note b{color:var(--ink)}
@@ -542,6 +546,10 @@ html[data-theme="mgb"] .hero{
 bike-wheel-calc (Mode Matrix method, Ford 2018) and verified against it to
 floating-point precision. Strength figures are first-spoke-slack thresholds
 built on those stiffnesses.</p>
+
+<!-- Shown (both modes) only when a build is past its modelled buckling tension;
+     see renderBuckleNote(). -->
+<div class="buckle-note" id="buckle-note" role="alert" hidden></div>
 
 <!-- Global build settings -->
 <div class="card" id="global-card" style="margin-bottom:12px">
@@ -1447,7 +1455,9 @@ function drawSimple(m148, m157, hub148, hub157, Ns) {
   var hiV = Math.max(me.F_lat, other.F_lat), loV = Math.min(me.F_lat, other.F_lat);
   var d = loV ? (hiV - loV) / loV * 100 : 0;
   document.getElementById('s-vs').innerHTML =
-    meHub.id === oHub.id
+    isBuckled(me) || isBuckled(other)
+    ? 'A build here is past its buckling tension, so there is <b>no meaningful comparison</b>.'
+    : meHub.id === oHub.id
     ? 'Both sides are the same wheel — <b>' + meHub.name + '</b>.'
     : d < 1
     ? 'The <b>' + meHub.name + '</b> and the <b>' + oHub.name +
@@ -2155,6 +2165,7 @@ function refresh() {
   syncStdLabels();
   buildHero(m148, m157, hub148, hub157);
   buildTakeaway(m148, m157, hub148, hub157);
+  renderBuckleNote(m148, m157, hub148, hub157);
   renderWhyCharts(rim);
 
   // Simplified mode's two drawings. Everything above still ran, so flipping
@@ -2163,6 +2174,23 @@ function refresh() {
     drawSimple(m148, m157, hub148, hub157, Ns);
   }
   writeURL();
+}
+
+/* The cards below print whatever the engine returns, and past a build's
+   modelled buckling tension that is not a strength: stiffness has gone through
+   zero and negative (an unstable wheel, not a weaker one). The numbers are
+   left as computed -- this says plainly that they should not be read as a
+   comparison. Symbol and words, not colour alone. */
+function renderBuckleNote(m148, m157, hub148, hub157) {
+  const bad = [['a', m148, hub148, ST.tds148], ['b', m157, hub157, ST.tds157]].filter(x => isBuckled(x[1]));
+  const el = document.getElementById('buckle-note');
+  el.hidden = bad.length === 0;
+  if (!bad.length) return;
+  el.innerHTML = '<b>\u26a0 Past buckling.</b> ' + bad.map(x => {
+    const label = slotLabel(x[0]), name = x[2].name;
+    const who = label === name ? `<b>${esc(name)}</b>` : `the <b>${esc(label)}</b> build (${esc(name)})`;
+    return `At ${x[3]} kgf DS ${who} is beyond its modelled buckling tension (about ${x[1].T_c_DS.toFixed(0)} kgf DS).`;
+  }).join(' ') + ' The stiffness and strength figures for that side are not meaningful, and neither is the comparison. Lower its drive-side tension or choose a smaller wheel.';
 }
 
 /* ── Hero verdict ─────────────────────────────────────────────────────────────
@@ -2192,6 +2220,29 @@ function animateHeroNum(el, to) {
 function buildHero(m148, m157, hub148, hub157) {
   const hero  = document.getElementById('hero');
   const numEl = document.getElementById('hero-num');
+
+  // A build past buckling has no strength to compare (see isBuckled); the gap
+  // arithmetic would even read a negative figure as "a dead heat". Say so
+  // instead of issuing a verdict -- the notice above the page says why.
+  if (isBuckled(m148) || isBuckled(m157)) {
+    if (heroAnim) cancelAnimationFrame(heroAnim);
+    heroLast = 0;
+    hero.dataset.win = 'tie';
+    numEl.classList.add('word');
+    numEl.textContent = 'N/A';
+    document.getElementById('hero-word').textContent = 'past buckling';
+    document.getElementById('hero-badge').textContent = 'No valid comparison';
+    document.getElementById('hero-sub').textContent =
+      'At least one build is beyond its modelled buckling tension, where lateral strength stops being meaningful. Lower its drive-side tension or choose a smaller wheel.';
+    document.getElementById('hero-lbl-a').textContent = stdA();
+    document.getElementById('hero-lbl-b').textContent = stdB();
+    [['a', m148], ['b', m157]].forEach(function (x) {
+      document.getElementById('hero-fill-' + x[0]).style.width = '0';
+      document.getElementById('hero-val-' + x[0]).textContent = isBuckled(x[1]) ? 'buckled' : fmt(x[1].F_lat, 1) + ' kgf';
+    });
+    document.getElementById('hero-cond').textContent = condText();
+    return;
+  }
   const d = Math.abs(m157.F_lat - m148.F_lat) / Math.min(m148.F_lat, m157.F_lat) * 100;
   const tie = d < 0.05;
   const winIs157 = m157.F_lat > m148.F_lat;
@@ -2258,8 +2309,13 @@ function condText() {
    names the two hubs, and says what the strength gap means in everyday terms.
    Kept honest: "before a spoke starts to go slack," not "before it breaks." */
 function buildTakeaway(m148, m157, hub148, hub157) {
-  const d = Math.abs(m157.F_lat - m148.F_lat) / Math.min(m148.F_lat, m157.F_lat) * 100;
   const el = document.getElementById('takeaway');
+  if (isBuckled(m148) || isBuckled(m157)) {
+    el.innerHTML = '<b>Bottom line:</b> no comparison at these settings \u2014 at least one build is past its modelled buckling tension, ' +
+      'so its lateral strength is not a meaningful number. Lower that side\u2019s drive-side tension or choose a smaller wheel.';
+    return;
+  }
+  const d = Math.abs(m157.F_lat - m148.F_lat) / Math.min(m148.F_lat, m157.F_lat) * 100;
   const n1 = hub148.name, n2 = hub157.name;
   if (d < 1) {
     el.innerHTML = `<b>Bottom line:</b> with these two builds, the ${stdA()} (${n1}) and the ` +
@@ -2339,6 +2395,16 @@ function calcCfg(cfg, rim, tds) {
   return calc(WHEEL_ERDS[cfg.wheel], hub, cfg.spkDS, cfg.spkNDS,
     tds === undefined ? cfg.tds : tds, rim.EIL, rim.EIR, rim.GJ, rim.EA, rim.Ns, rim.N);
 }
+/* A build at or past its modelled buckling tension (T_c). The engine is left
+   exactly as it is; this only decides what the charts draw. At T_c the lateral
+   stiffness reaches zero -- so F_lat falls to zero, which is true to the model
+   and is drawn -- and beyond it the stiffness goes negative (an unstable wheel,
+   not a weaker one). Near a pole of the Fourier sum F_lat then swings through
+   values like -362 kgf and back to a positive number that means nothing. A 32"
+   KOM Xeno 148 does exactly that above ~121 kgf DS. Charts stop at buckling
+   rather than plot the formula outside the range where it describes a wheel. */
+const BUCKLED_PCT = 100;   // average tension / critical tension, %
+const isBuckled = m => !(m.T_safety < BUCKLED_PCT) || !(m.K_lat > 0) || !isFinite(m.F_lat);
 const slotColor = slot => slot === 'a' ? 'var(--a)' : 'var(--b)';
 const fmtSigned = (v, d) => (v < 0 ? '−' : '+') + Math.abs(v).toFixed(d);
 const shortName = (name, n) => name.length > n ? name.slice(0, n - 1) + '…' : name;
@@ -2463,12 +2529,15 @@ function decompModel(rim) {
   const loSlot = F.a <= F.b ? 'a' : 'b', hiSlot = loSlot === 'a' ? 'b' : 'a';
   const lo = cfg[loSlot], hi = cfg[hiSlot];
   const active = DECOMP_FACTORS.filter(f => f.keys.some(k => lo[k] !== hi[k]));
+  let bad = false;       // any build in the split (ends or in-between hybrids) past buckling
   const phi = shapley(active.length, mask => {
     const c = Object.assign({}, lo, { hub: null });         // null: rebuild the hub from the parts
     active.forEach((f, i) => { if (mask & (1 << i)) f.keys.forEach(k => { c[k] = hi[k]; }); });
-    return calcCfg(c, rim).F_lat;
+    const r = calcCfg(c, rim);
+    if (isBuckled(r)) bad = true;
+    return r.F_lat;
   });
-  return { loSlot, hiSlot, lo, hi, Flo: F[loSlot], Fhi: F[hiSlot], active, phi };
+  return { loSlot, hiSlot, lo, hi, Flo: F[loSlot], Fhi: F[hiSlot], active, phi, bad };
 }
 
 function renderDecomp(rim) {
@@ -2488,6 +2557,12 @@ function renderDecomp(rim) {
   const hiName = sameHub ? `${m.hi.hub.name} (${setupTag(m.hi, m.lo)})` : m.hi.hub.name;
   const rows = document.getElementById('dc-rows');
 
+  if (m.bad) {
+    setText('sum-decomp', 'Past buckling \u2014 not meaningful');
+    setText('dc-lede', 'At these settings at least one build (or a hybrid of the two) is past its buckling tension, where the model\u2019s strength figure stops meaning anything, so the gap cannot be split. Lower the drive-side tension or choose a smaller wheel.');
+    rows.innerHTML = '';
+    return;
+  }
   if (!m.active.length) {
     setText('sum-decomp', 'Identical builds');
     setText('dc-lede', 'Both sides are the same hub with the same settings, so there is no gap to split.');
@@ -2546,9 +2621,12 @@ function scatterModel(rim) {
   // One set of conditions for every hub, taken from the left card, so only the
   // hub varies. The right card's own wheel/tension/spokes are not applied.
   const ref = slotConfig('a'), other = slotConfig('b');
-  const rows = [];
+  const rows = [], excluded = [];
   ['148', '157'].forEach(std => hubsFor(std).forEach(h => {
     const r = calcCfg(Object.assign({}, ref, { hub: h }), rim);
+    // A hub past buckling under these settings has no meaningful strength to
+    // plot (see isBuckled), so it is left off the chart and the trend.
+    if (isBuckled(r)) { excluded.push(h); return; }
     rows.push({ hub: h, std: std, spread: h.nds + h.ds, F: r.F_lat, ratio: r.ratio });
   }));
   // Least squares of F_lat on spread across all hubs, for the dashed trend and
@@ -2561,7 +2639,7 @@ function scatterModel(rim) {
   rows.forEach(r => { r.resid = r.F - (slope * r.spread + icpt); });
   const mean = std => { const a = rows.filter(r => r.std === std); return a.reduce((s, r) => s + r.F, 0) / a.length; };
   const differs = ['wheel', 'tds', 'spkDS', 'spkNDS'].some(k => ref[k] !== other[k]);
-  return { rows, slope, icpt, r2, ref, differs, mean148: mean('148'), mean157: mean('157') };
+  return { rows, excluded, slope, icpt, r2, ref, differs, mean148: mean('148'), mean157: mean('157') };
 }
 
 /* Greedy label placement: for each label try right, left, above, below and the
@@ -2596,7 +2674,11 @@ function scatterReadout(i) {
 }
 function scatterDefaultReadout() {
   const ids = [ST.hub148, ST.hub157].filter((id, k, a) => a.indexOf(id) === k);
-  const parts = ids.map(id => scatterReadout(SCATTER.rows.findIndex(r => r.hub.id === id)));
+  const parts = ids.map(id => {
+    const i = SCATTER.rows.findIndex(r => r.hub.id === id);
+    return i >= 0 ? scatterReadout(i)
+      : `<b>${esc(hubById(id).name)}</b> \u2014 past its buckling tension at these settings, so it is not plotted`;
+  });
   return 'On your cards: ' + parts.join('<br>') + '<br><span style="color:var(--faint)">Hover, tap, or use the arrow keys on the chart to read any hub.</span>';
 }
 function scatterSelect(i) {
@@ -2617,6 +2699,16 @@ function renderScatter(rim) {
   const mdl = scatterModel(rim), rows = mdl.rows;
   SCATTER.rows = rows; SCATTER.model = mdl;
 
+  // Too few hubs left to say anything: nearly everything is past buckling at
+  // the left card's wheel size and tension.
+  if (rows.length < 3) {
+    setText('sum-scatter', 'Past buckling \u2014 not meaningful');
+    setText('sc-lede', 'At the left card\u2019s wheel size and tension nearly every hub is past its buckling tension, where the strength figure stops meaning anything, so there is nothing sensible to plot. Lower the drive-side tension or choose a smaller wheel.');
+    document.getElementById('sc-chart').innerHTML = '';
+    setText('sc-readout', ''); setText('sc-note', ''); document.getElementById('sc-table').innerHTML = '';
+    SCATTER.pts = []; SCATTER.ring = null;
+    return;
+  }
   // Text that does not need the chart to be on screen: the summary line (shown
   // when the card is collapsed) and the notes.
   setText('sum-scatter', `Spread alone explains ${Math.round(mdl.r2 * 100)}% of lateral strength`);
@@ -2628,11 +2720,15 @@ function renderScatter(rim) {
   const selIds = [ST.hub148, ST.hub157];
   const outliers = ranked.filter(r => !selIds.includes(r.hub.id)).slice(0, SCATTER_OUTLIER_LABELS);
   const rel = r => `${esc(r.hub.name)} ${Math.abs(r.resid).toFixed(1)} kgf ${r.resid >= 0 ? 'above' : 'below'}`;
+  const gone = mdl.excluded.length
+    ? ` ${mdl.excluded.length} hub${mdl.excluded.length > 1 ? 's are' : ' is'} past buckling at these settings and left off: ${mdl.excluded.map(h => esc(h.name)).join(', ')}.` : '';
   document.getElementById('sc-note').innerHTML =
-    `On average the 157x12 hubs here give ${mdl.mean157.toFixed(1)} kgf against ${mdl.mean148.toFixed(1)} for the 148x12 ` +
-    `(${fmtSigned((mdl.mean157 / mdl.mean148 - 1) * 100, 0)}%). The dashed line is the trend across all hubs; ` +
+    (isFinite(mdl.mean157) && isFinite(mdl.mean148)
+      ? `On average the 157x12 hubs here give ${mdl.mean157.toFixed(1)} kgf against ${mdl.mean148.toFixed(1)} for the 148x12 ` +
+        `(${fmtSigned((mdl.mean157 / mdl.mean148 - 1) * 100, 0)}%). ` : '') +
+    `The dashed line is the trend across all hubs; ` +
     `the hubs furthest from it are ${ranked.slice(0, 2).map(rel).join(' and ')} what their spread alone would predict ` +
-    `— marker size shows the other big lever, how evenly each hub shares tension between its two sides.`;
+    `— marker size shows the other big lever, how evenly each hub shares tension between its two sides.` + gone;
   const byF = rows.slice().sort((a, b) => b.F - a.F);
   document.getElementById('sc-table').innerHTML = tableHTML(
     ['Hub', 'Std', 'Spread mm', 'Balance %', 'F_lat kgf'],
@@ -2692,28 +2788,51 @@ function sweepModel(rim) {
   const cfg = { a: slotConfig('a'), b: slotConfig('b') };
   const ts = [];
   for (let t = SWEEP_T_MIN; t <= SWEEP_T_MAX; t += SWEEP_T_STEP) ts.push(t);
-  const pts = { a: [], b: [] }, now = {};
+  const pts = { a: [], b: [] }, now = {}, lastOk = {};
   ['a', 'b'].forEach(s => {
-    ts.forEach(t => { const m = calcCfg(cfg[s], rim, t); pts[s].push({ t, F: m.F_lat, use: m.T_safety }); });
+    ts.forEach(t => { const m = calcCfg(cfg[s], rim, t); pts[s].push({ t, F: m.F_lat, use: m.T_safety, ok: !isBuckled(m) }); });
     now[s] = calcCfg(cfg[s], rim);
+    // Past its buckling tension a build has no meaningful strength, and more
+    // tension only makes that worse, so the usable points are a leading run.
+    // The curve is drawn up to the last of them, then down to zero at T_c.
+    let k = -1;
+    while (k + 1 < ts.length && pts[s][k + 1].ok) k++;
+    lastOk[s] = k;
   });
+  const common = Math.min(lastOk.a, lastOk.b);       // last grid tension where BOTH builds are usable (-1: none)
   // T_c_DS (the DS tension at which the rim would buckle) does not depend on
   // the tension applied, so it can be read from the current-setting run.
   const tight = { a: now.a.T_c_DS * BUCKLE_TIGHT_PCT / 100, b: now.b.T_c_DS * BUCKLE_TIGHT_PCT / 100 };
-  const strong = now.a.F_lat >= now.b.F_lat ? 'a' : 'b', weak = strong === 'a' ? 'b' : 'a';
-  const lead = i => (pts[strong][i].F / pts[weak][i].F - 1) * 100;   // stronger build's lead at grid point i
-  return { cfg, ts, pts, now, tight, strong, weak, lead };
+  // Which build is "stronger" is read where both are usable: the current
+  // setting if neither card is buckled, else the first grid point.
+  const atNow = !isBuckled(now.a) && !isBuckled(now.b);
+  const fa = atNow ? now.a.F_lat : pts.a[0].F, fb = atNow ? now.b.F_lat : pts.b[0].F;
+  const strong = fa >= fb ? 'a' : 'b', weak = strong === 'a' ? 'b' : 'a';
+  const lead = i => i <= common ? (pts[strong][i].F / pts[weak][i].F - 1) * 100 : null;   // stronger build's lead at grid point i
+  // The lead is quoted out to the last tension where both builds are under the
+  // "over" mark. Closer to buckling the weaker build's strength heads to zero,
+  // so the percentage grows without bound -- true to the model, but a ratio
+  // against a vanishing number says nothing about the hubs.
+  let leadEnd = -1;
+  for (let i = 0; i <= common; i++) if (pts.a[i].use <= BUCKLE_OVER_PCT && pts.b[i].use <= BUCKLE_OVER_PCT) leadEnd = i;
+  if (leadEnd < 0) leadEnd = Math.max(0, common);
+  return { cfg, ts, pts, now, tight, strong, weak, lead, lastOk, common, leadEnd };
 }
 
 function sweepReadout(i) {
   const m = SWEEP.model, t = m.ts[i];
-  const part = s => `<b>${esc(slotLabel(s))}</b> ${m.pts[s][i].F.toFixed(1)} kgf (${m.pts[s][i].use.toFixed(0)}% of buckling)`;
-  return `At <b>${t}</b> kgf DS: ${part('a')} · ${part('b')} · ` +
-    `${esc(slotLabel(m.strong))} leads by <b>${fmtSigned(m.lead(i), 0)}</b>%`;
+  const part = s => m.pts[s][i].ok
+    ? `<b>${esc(slotLabel(s))}</b> ${m.pts[s][i].F.toFixed(1)} kgf (${m.pts[s][i].use.toFixed(0)}% of buckling)`
+    : `<b>${esc(slotLabel(s))}</b> past buckling (${m.pts[s][i].use.toFixed(0)}% of its critical tension) \u2014 no meaningful strength`;
+  const L = m.lead(i);
+  return `At <b>${t}</b> kgf DS: ${part('a')} \u00b7 ${part('b')}` +
+    (L === null ? '' : ` \u00b7 ${esc(slotLabel(m.strong))} leads by <b>${fmtSigned(L, 0)}</b>%`);
 }
 function sweepDefaultReadout() {
   const m = SWEEP.model;
-  const part = s => `<b>${esc(slotLabel(s))}</b> ${m.now[s].F_lat.toFixed(1)} kgf at ${m.cfg[s].tds} kgf DS (${m.now[s].T_safety.toFixed(0)}% of buckling)`;
+  const part = s => isBuckled(m.now[s])
+    ? `<b>${esc(slotLabel(s))}</b> is past its buckling tension at ${m.cfg[s].tds} kgf DS`
+    : `<b>${esc(slotLabel(s))}</b> ${m.now[s].F_lat.toFixed(1)} kgf at ${m.cfg[s].tds} kgf DS (${m.now[s].T_safety.toFixed(0)}% of buckling)`;
   return `Your cards: ${part('a')} · ${part('b')}<br><span style="color:var(--faint)">Hover, tap, or use the arrow keys on the chart to read any tension.</span>`;
 }
 function sweepSelect(i) {
@@ -2733,31 +2852,51 @@ function renderSweep(rim) {
   const m = sweepModel(rim); SWEEP.model = m;
   const last = m.ts.length - 1;
   const fmtLead = i => `${fmtSigned(m.lead(i), 0)}%`;
+  // Builds that reach buckling inside the range: their curves fall to zero and stop.
+  const stops = ['a', 'b'].filter(s => m.lastOk[s] < last && m.lastOk[s] >= 0);
+  const stopTxt = ['a', 'b'].filter(s => m.lastOk[s] < last).map(s =>
+    `${esc(slotLabel(s))} reaches its buckling tension at about ${m.now[s].T_c_DS.toFixed(0)} kgf DS`).join('; ');
 
   // Text that does not need the chart on screen.
-  setText('sum-sweep', `Lead ${fmtLead(0)} at ${SWEEP_T_MIN} kgf → ${fmtLead(last)} at ${SWEEP_T_MAX}`);
+  setText('sum-sweep', m.common < 0 ? 'Past buckling \u2014 not meaningful'
+    : m.common === 0 ? `Buckles above ${SWEEP_T_MIN} kgf DS`
+    : `Lead ${fmtLead(0)} at ${SWEEP_T_MIN} kgf \u2192 ${fmtLead(m.leadEnd)} at ${m.ts[m.leadEnd]}` + (m.leadEnd < last ? ' (buckling nears)' : ''));
   const peaks = [];
   ['a', 'b'].forEach(s => {
-    const vals = m.pts[s].map(p => p.F), k = vals.indexOf(Math.max(...vals));
-    if (k < last && k > 0) peaks.push(`${esc(slotLabel(s))} peaks near ${m.ts[k]} kgf — above that, extra tension lowers its lateral strength`);
+    const vals = m.pts[s].slice(0, m.lastOk[s] + 1).map(p => p.F), k = vals.indexOf(Math.max(...vals));
+    if (k > 0 && k < vals.length - 1) peaks.push(`${esc(slotLabel(s))} peaks near ${m.ts[k]} kgf \u2014 above that, extra tension lowers its lateral strength`);
   });
   document.getElementById('sw-note').innerHTML =
-    `${esc(slotLabel(m.strong))}’s lead over ${esc(slotLabel(m.weak))} runs from ${fmtLead(0)} at ${SWEEP_T_MIN} kgf to ${fmtLead(last)} at ${SWEEP_T_MAX} kgf, ` +
-    `so the headline percentage is a statement about one tension, not a constant.` +
-    (peaks.length ? ' ' + peaks.join('; ') + ' (tension softening of the rim outpaces the extra preload).' : '');
+    (m.common >= 0
+      ? `${esc(slotLabel(m.strong))}\u2019s lead over ${esc(slotLabel(m.weak))} runs from ${fmtLead(0)} at ${SWEEP_T_MIN} kgf to ${fmtLead(m.leadEnd)} at ${m.ts[m.leadEnd]} kgf, ` +
+        `so the headline percentage is a statement about one tension, not a constant.` +
+        (m.leadEnd < m.common || m.common < last ? ` Past that the gap widens fast, because the weaker build\u2019s strength is heading to zero as it nears buckling.` : '')
+      : `Both builds are past their buckling tension across this range, so there is no meaningful strength to plot.`) +
+    (peaks.length ? ' ' + peaks.join('; ') + ' (tension softening of the rim outpaces the extra preload).' : '') +
+    (stopTxt ? ` ${stopTxt}. Strength falls to zero as a build approaches that tension; beyond it the model gives negative stiffness (an unstable wheel, not a weaker one), so the curve stops.` : '');
   document.getElementById('sw-legend').innerHTML =
     ['a', 'b'].map(s => `<span class="ch-key"><svg width="22" height="14" aria-hidden="true"><line x1="1" x2="21" y1="7" y2="7" style="stroke:${slotColor(s)};stroke-width:3;stroke-linecap:round"/></svg>${esc(slotLabel(s))}</span>`).join('') +
     `<span class="ch-key"><svg width="22" height="14" aria-hidden="true"><line x1="1" x2="21" y1="7" y2="7" style="stroke:var(--muted);stroke-width:2;stroke-dasharray:5 4"/></svg>dashed + shaded: past ${BUCKLE_TIGHT_PCT}% of buckling</span>`;
   document.getElementById('sw-table').innerHTML = tableHTML(
     ['DS kgf', `${slotLabel('a')} F_lat`, 'Buckling %', `${slotLabel('b')} F_lat`, 'Buckling %'],
-    m.ts.map((t, i) => [String(t), m.pts.a[i].F.toFixed(1), m.pts.a[i].use.toFixed(0), m.pts.b[i].F.toFixed(1), m.pts.b[i].use.toFixed(0)]),
+    m.ts.map((t, i) => [String(t),
+      m.pts.a[i].ok ? m.pts.a[i].F.toFixed(1) : 'buckled', m.pts.a[i].use.toFixed(0),
+      m.pts.b[i].ok ? m.pts.b[i].F.toFixed(1) : 'buckled', m.pts.b[i].use.toFixed(0)]),
     i => m.ts[i] === m.cfg.a.tds || m.ts[i] === m.cfg.b.tds);
 
   const w = boxWidth('sw-chart');
   if (!w) return;
   const box = document.getElementById('sw-chart');
   const h = Math.round(Math.max(220, Math.min(340, w * 0.58)));
-  const all = m.pts.a.concat(m.pts.b).map(p => p.F);
+  // Only usable points set the y range -- a buckled point can be -362 kgf and
+  // would flatten the real curves -- plus zero for a build that falls to it.
+  const all = m.pts.a.slice(0, m.lastOk.a + 1).concat(m.pts.b.slice(0, m.lastOk.b + 1)).map(p => p.F)
+    .concat(stops.length ? [0] : []);
+  if (m.lastOk.a < 0 && m.lastOk.b < 0) {
+    box.innerHTML = '';
+    sweepSelect(-1);
+    return;
+  }
   const xs = { lo: SWEEP_T_MIN, hi: SWEEP_T_MAX, ticks: m.ts.filter(t => (t - SWEEP_T_MIN) % (2 * SWEEP_T_STEP) === 0) };
   const ys = niceScale(Math.min(...all), Math.max(...all), 5);
   const f = makeFrame(w, h, xs, ys, { l: 44, r: 14, t: 18, b: 42 });
@@ -2773,15 +2912,28 @@ function renderSweep(rim) {
       svg += `<rect x="${x0.toFixed(1)}" y="${f.g.t}" width="${(f.px(SWEEP_T_MAX) - x0).toFixed(1)}" height="${f.ih}" style="fill:${slotColor(s)};opacity:.12"/>`;
   });
   ['a', 'b'].forEach(s => {
-    for (let i = 0; i < last; i++) {
+    for (let i = 0; i < m.lastOk[s]; i++) {
       const p = m.pts[s][i], q = m.pts[s][i + 1], dash = q.use > BUCKLE_TIGHT_PCT;
       svg += `<line class="sw-line${dash ? ' dash' : ''}" style="stroke:${slotColor(s)}" x1="${f.px(p.t).toFixed(1)}" y1="${f.py(p.F).toFixed(1)}" x2="${f.px(q.t).toFixed(1)}" y2="${f.py(q.F).toFixed(1)}"/>`;
     }
   });
+  // A build that reaches buckling inside the range: stiffness (so F_lat) goes
+  // to zero at T_c, so its curve is carried down to zero there -- dashed, since
+  // it is a limit rather than a computed point -- and a dotted line marks the
+  // tension. Past it the model has nothing meaningful to say, so nothing is drawn.
+  stops.forEach((s, row) => {
+    const last0 = m.pts[s][m.lastOk[s]], tb = m.now[s].T_c_DS, x = f.px(tb);
+    svg += `<line class="sw-line dash" style="stroke:${slotColor(s)}" x1="${f.px(last0.t).toFixed(1)}" y1="${f.py(last0.F).toFixed(1)}" x2="${x.toFixed(1)}" y2="${f.py(0).toFixed(1)}"/>` +
+           `<line style="stroke:${slotColor(s)};stroke-width:2;stroke-dasharray:1 4;stroke-linecap:round" x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${f.g.t}" y2="${f.g.h - f.g.b}"/>`;
+    const txt = `\u2715 ${shortName(slotLabel(s), 20)} buckles \u2248 ${tb.toFixed(0)} kgf`;
+    const left = x > f.g.l + f.iw / 2;
+    svg += `<text class="ch-lbl sub" x="${(x + (left ? -6 : 6)).toFixed(1)}" y="${(f.g.t + 12 + row * 14).toFixed(1)}" text-anchor="${left ? 'end' : 'start'}">${esc(txt)}</text>`;
+  });
   // A dot (with its value) where each card currently sits; the higher value
   // is labelled above its dot and the lower below, so the two never collide.
+  // A card whose own setting is past buckling has no figure to mark.
   const aHigher = m.now.a.F_lat >= m.now.b.F_lat;
-  ['a', 'b'].forEach(s => {
+  ['a', 'b'].filter(s => !isBuckled(m.now[s])).forEach(s => {
     const x = f.px(m.cfg[s].tds), y = f.py(m.now[s].F_lat), above = (s === 'a') === aHigher;
     svg += `<circle class="sw-dot" style="fill:${slotColor(s)}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5"/>` +
            `<text class="ch-val" x="${x.toFixed(1)}" y="${(above ? y - 10 : y + 19).toFixed(1)}" text-anchor="middle">${m.now[s].F_lat.toFixed(1)}</text>`;
