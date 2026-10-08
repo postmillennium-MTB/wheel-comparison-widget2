@@ -487,19 +487,14 @@ built on those stiffnesses.</p>
   </div>
   <div id="adv-panel">
     <div class="adv-grid">
-      <div><div class="slbl">EI_lat (N·m²)</div><input class="ctl-num" id="g-eil" type="number" value="50" step="5" min="1" onchange="refresh()" aria-label="Rim lateral bending stiffness"></div>
-      <div><div class="slbl">EI_rad (N·m²)</div><input class="ctl-num" id="g-eir" type="number" value="150" step="5" min="1" onchange="refresh()" aria-label="Rim radial bending stiffness"></div>
-      <div><div class="slbl">GJ (N·m²)</div><input class="ctl-num" id="g-gj" type="number" value="22" step="1" min="1" onchange="refresh()" aria-label="Rim torsional stiffness"></div>
-      <div><div class="slbl">EA_rim (MN)</div><input class="ctl-num" id="g-ea" type="number" value="11.5" step="0.5" min="1" onchange="refresh()" aria-label="Rim axial stiffness"></div>
+      <div><div class="slbl">EI_lat (N·m²)</div><input class="ctl-num" id="g-eil" type="number" step="5" onchange="refresh()" aria-label="Rim lateral bending stiffness"></div>
+      <div><div class="slbl">EI_rad (N·m²)</div><input class="ctl-num" id="g-eir" type="number" step="5" onchange="refresh()" aria-label="Rim radial bending stiffness"></div>
+      <div><div class="slbl">GJ (N·m²)</div><input class="ctl-num" id="g-gj" type="number" step="1" onchange="refresh()" aria-label="Rim torsional stiffness"></div>
+      <div><div class="slbl">EA_rim (MN)</div><input class="ctl-num" id="g-ea" type="number" step="0.5" onchange="refresh()" aria-label="Rim axial stiffness"></div>
       <div><div class="slbl">Modes N</div>
-        <select class="ctl" id="g-modes" onchange="refresh()" aria-label="Number of Fourier modes">
-          <option value="8">8</option><option value="16">16</option>
-          <option value="24" selected>24</option><option value="48">48</option>
-        </select></div>
+        <select class="ctl" id="g-modes" onchange="refresh()" aria-label="Number of Fourier modes"></select></div>
       <div><div class="slbl">Spoke count</div>
-        <select class="ctl" id="g-ns" onchange="refresh()" aria-label="Spoke count">
-          <option value="28">28H</option><option value="32" selected>32H</option><option value="36">36H</option>
-        </select></div>
+        <select class="ctl" id="g-ns" onchange="refresh()" aria-label="Spoke count"></select></div>
     </div>
     <div class="adv-help">
       <div><div class="h">EI_lat</div><p>Rim lateral bending stiffness — resists the rim bowing sideways. Typical alloy double-wall rims: 40–80 N·m².</p></div>
@@ -561,11 +556,7 @@ built on those stiffnesses.</p>
         <button id="w148-32" aria-pressed="false" onclick="setWheel('148','32')">32″</button>
       </div></div>
     <div class="fld simple-hide"><div class="slbl">DS tension (kgf)</div>
-      <select class="ctl" id="tds148" aria-label="148 drive-side spoke tension">
-        <option value="95">95</option><option value="100">100</option>
-        <option value="105">105</option><option value="110">110</option>
-        <option value="115">115</option><option value="120">120</option><option value="125">125</option>
-      </select>
+      <select class="ctl" id="tds148" aria-label="148 drive-side spoke tension"></select>
       <div style="font-size:10.5px;color:var(--faint);margin-top:3px;line-height:1.4">
         Defaults to <b>100</b> at 32″ (lower buckling margin at that size), <b>120</b> otherwise. Change wheel size to see the default follow it, or set your own.
       </div></div>
@@ -596,11 +587,7 @@ built on those stiffnesses.</p>
         <button id="w157-32" aria-pressed="false" onclick="setWheel('157','32')">32″</button>
       </div></div>
     <div class="fld simple-hide"><div class="slbl">DS tension (kgf)</div>
-      <select class="ctl" id="tds157" aria-label="157 drive-side spoke tension">
-        <option value="95">95</option><option value="100">100</option>
-        <option value="105">105</option><option value="110">110</option>
-        <option value="115">115</option><option value="120">120</option><option value="125">125</option>
-      </select>
+      <select class="ctl" id="tds157" aria-label="157 drive-side spoke tension"></select>
       <div style="font-size:10.5px;color:var(--faint);margin-top:3px;line-height:1.4">
         Defaults to <b>100</b> at 32″ (lower buckling margin at that size), <b>120</b> otherwise. Change wheel size to see the default follow it, or set your own.
       </div></div>
@@ -672,11 +659,11 @@ built on those stiffnesses.</p>
     <div class="cmp-body" id="body-flat">
       <div class="cmp-plain">Sideways push at the rim before the first spoke goes slack — <span id="flat-gov">—</span></div>
       <div class="cmp-values">
-        <div><div class="cmp-num lg va" id="cmp-flat148">—</div><div class="cmp-unit">kgf · 148</div></div>
-        <div style="text-align:right"><div class="cmp-num lg vb" id="cmp-flat157">—</div><div class="cmp-unit">kgf · 157</div></div>
+        <div><div class="cmp-num lg va" id="cmp-flat148">—</div><div class="cmp-unit">kgf · <span class="slot-a">148</span></div></div>
+        <div style="text-align:right"><div class="cmp-num lg vb" id="cmp-flat157">—</div><div class="cmp-unit">kgf · <span class="slot-b">157</span></div></div>
       </div>
       <div class="tug" aria-hidden="true"><div class="half l"><div class="ha" id="bar-flat-a"></div></div><div class="half"><div class="hb" id="bar-flat-b"></div></div></div>
-      <div class="tug-lbl"><span>148</span><span>157</span></div>
+      <div class="tug-lbl"><span class="slot-a">148</span><span class="slot-b">157</span></div>
       <div class="verdict" id="cmp-flat-stmt">—</div>
     </div>
   </div>
@@ -690,11 +677,11 @@ built on those stiffnesses.</p>
     <div class="cmp-body" id="body-frad">
       <div class="cmp-plain">Vertical hit at the contact patch before the first spoke goes slack — <span id="frad-gov">—</span></div>
       <div class="cmp-values">
-        <div><div class="cmp-num va" id="cmp-frad148">—</div><div class="cmp-unit">kgf · 148</div></div>
-        <div style="text-align:right"><div class="cmp-num vb" id="cmp-frad157">—</div><div class="cmp-unit">kgf · 157</div></div>
+        <div><div class="cmp-num va" id="cmp-frad148">—</div><div class="cmp-unit">kgf · <span class="slot-a">148</span></div></div>
+        <div style="text-align:right"><div class="cmp-num vb" id="cmp-frad157">—</div><div class="cmp-unit">kgf · <span class="slot-b">157</span></div></div>
       </div>
       <div class="tug" aria-hidden="true"><div class="half l"><div class="ha" id="bar-frad-a"></div></div><div class="half"><div class="hb" id="bar-frad-b"></div></div></div>
-      <div class="tug-lbl"><span>148</span><span>157</span></div>
+      <div class="tug-lbl"><span class="slot-a">148</span><span class="slot-b">157</span></div>
       <div class="verdict" id="cmp-frad-stmt">—</div>
     </div>
   </div>
@@ -708,11 +695,11 @@ built on those stiffnesses.</p>
     <div class="cmp-body" id="body-klat">
       <div class="cmp-plain">Resistance to side-to-side flex when cornering or landing off-line</div>
       <div class="cmp-values">
-        <div><div class="cmp-num va" id="cmp-klat148">—</div><div class="cmp-unit">N/mm · 148</div></div>
-        <div style="text-align:right"><div class="cmp-num vb" id="cmp-klat157">—</div><div class="cmp-unit">N/mm · 157</div></div>
+        <div><div class="cmp-num va" id="cmp-klat148">—</div><div class="cmp-unit">N/mm · <span class="slot-a">148</span></div></div>
+        <div style="text-align:right"><div class="cmp-num vb" id="cmp-klat157">—</div><div class="cmp-unit">N/mm · <span class="slot-b">157</span></div></div>
       </div>
       <div class="tug" aria-hidden="true"><div class="half l"><div class="ha" id="bar-klat-a"></div></div><div class="half"><div class="hb" id="bar-klat-b"></div></div></div>
-      <div class="tug-lbl"><span>148</span><span>157</span></div>
+      <div class="tug-lbl"><span class="slot-a">148</span><span class="slot-b">157</span></div>
       <div class="verdict" id="cmp-klat-stmt">—</div>
     </div>
   </div>
@@ -726,11 +713,11 @@ built on those stiffnesses.</p>
     <div class="cmp-body" id="body-ratio">
       <div class="cmp-plain">How evenly the two sides share spoke tension — higher means the slack-prone side holds more</div>
       <div class="cmp-values">
-        <div><div class="cmp-num va" id="cmp-ratio148">—</div><div class="cmp-unit">148 hub</div></div>
-        <div style="text-align:right"><div class="cmp-num vb" id="cmp-ratio157">—</div><div class="cmp-unit">157 hub</div></div>
+        <div><div class="cmp-num va" id="cmp-ratio148">—</div><div class="cmp-unit">NDS/DS · <span class="slot-a">148</span></div></div>
+        <div style="text-align:right"><div class="cmp-num vb" id="cmp-ratio157">—</div><div class="cmp-unit">NDS/DS · <span class="slot-b">157</span></div></div>
       </div>
       <div class="tug" aria-hidden="true"><div class="half l"><div class="ha" id="bar-ratio-a"></div></div><div class="half"><div class="hb" id="bar-ratio-b"></div></div></div>
-      <div class="tug-lbl"><span>148</span><span>157</span></div>
+      <div class="tug-lbl"><span class="slot-a">148</span><span class="slot-b">157</span></div>
       <div class="verdict" id="cmp-ratio-stmt">—<span class="ctx">Dished MTB rear wheels typically land between 55–75<svg class="pct-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>. Shown for context, not as a pass/fail line.</span></div>
     </div>
   </div>
@@ -747,8 +734,8 @@ built on those stiffnesses.</p>
       <table class="btable">
         <thead><tr><th scope="col">Build</th><th scope="col">T_c avg (kgf)</th><th scope="col">T_c as DS (kgf)</th><th scope="col">Used</th></tr></thead>
         <tbody>
-          <tr><td class="va">148</td><td id="tc148-avg">—</td><td id="tc148-ds">—</td><td id="tc148-use">—</td></tr>
-          <tr><td class="vb">157</td><td id="tc157-avg">—</td><td id="tc157-ds">—</td><td id="tc157-use">—</td></tr>
+          <tr><td class="va slot-a">148</td><td id="tc148-avg">—</td><td id="tc148-ds">—</td><td id="tc148-use">—</td></tr>
+          <tr><td class="vb slot-b">157</td><td id="tc157-avg">—</td><td id="tc157-ds">—</td><td id="tc157-use">—</td></tr>
         </tbody>
       </table>
       <div class="verdict" style="margin-top:12px" id="cmp-tc-stmt">—<span class="ctx">"Used" = current average tension ÷ critical tension. The ✓ below 70<svg class="pct-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg> is this widget's chosen comfort margin, not a threshold from Ford.</span></div>
@@ -1071,8 +1058,39 @@ const NICK = {
 };
 
 const WHEEL_ERDS = { '26':534, '27.5':559, '29':600, '32':667 };
+const WHEEL_SIZES = Object.keys(WHEEL_ERDS);
 const SPOKE_DIAS = ['1.5','1.6','1.7','1.8','1.9','2.0','2.1','2.2','2.3'];
+const DEFAULT_SPOKE_DIA = '2.0';
 const DEFAULTS = { wheel148:'29', wheel157:'29', hub148:'h6', hub157:'h7' };
+
+/* Everything a visitor can type or pick that feeds the engine, in one place.
+   The <select>s are filled from these arrays and a shared link is checked
+   against them, so an option can no longer exist in the menu but be refused by
+   the link parser (or the reverse). Values from outside -- a hand-edited URL,
+   an emptied field -- are clamped or ignored rather than passed to the engine,
+   where a zero, a blank or a negative EI turns every card into NaN.
+
+   RIM_LIMITS are wide on purpose: they are a "this is not a bicycle rim" fence,
+   not a recommendation. The typical ranges live in the help text. */
+const TDS_OPTIONS = [95, 100, 105, 110, 115, 120, 125];          // DS tension, kgf
+const MODE_OPTIONS = ['8', '16', '24', '48'];                    // Fourier modes N
+const SPOKE_COUNT_OPTIONS = ['28', '32', '36'];                  // spoke holes
+const RIM_DEFAULTS = { eil:50, eir:150, gj:22, ea:11.5, nn:'24', ns:'32' };  // DT Swiss TK540
+const RIM_LIMITS = { eil:[1, 500], eir:[1, 1000], gj:[1, 200], ea:[1, 100] };
+const RIM_FIELD_IDS = { eil:'g-eil', eir:'g-eir', gj:'g-gj', ea:'g-ea', nn:'g-modes', ns:'g-ns' };
+
+// Buckling usage (average tension / critical tension) at which a build is
+// called "tight" and "over". This tool's own comfort margins, not Ford's -- see
+// the note under the buckling card. Named because the sweep chart shades the
+// same boundary the chip() badges announce.
+const BUCKLE_TIGHT_PCT = 70, BUCKLE_OVER_PCT = 85;
+
+/* Below this viewport width the six detail cards open collapsed (F_lat stays
+   open) -- the same 640px at which .metric-quad drops to one column. The
+   header line of each card still carries its one-sentence verdict, so a phone
+   visitor scans six verdicts instead of scrolling six bodies. */
+const NARROW_CARDS_PX = 640;
+const COLLAPSE_ON_NARROW = ['frad', 'klat', 'ratio', 'decomp', 'scatter', 'sweep'];
 
 // DS tension used to be one control shared by both sides. It no longer is:
 // this tool lets each side pick its own wheel size (26-32"), and buckling
@@ -1105,12 +1123,16 @@ const ST = Object.assign({}, DEFAULTS, {
 });
 
 // ── UI ───────────────────────────────────────────────────────────────────────
+function setCard(id, open) {
+  document.getElementById('tog-' + id).setAttribute('aria-expanded', open ? 'true' : 'false');
+  document.getElementById('body-' + id).hidden = !open;
+}
 function toggleCard(id) {
-  const btn  = document.getElementById('tog-' + id);
-  const body = document.getElementById('body-' + id);
-  const open = btn.getAttribute('aria-expanded') === 'true';
-  btn.setAttribute('aria-expanded', open ? 'false' : 'true');
-  body.hidden = open;
+  const open = document.getElementById('tog-' + id).getAttribute('aria-expanded') === 'true';
+  setCard(id, !open);
+  // A chart in a closed card has no width to draw into, so opening one is the
+  // moment it actually gets drawn.
+  if (!open) renderWhyCharts();
 }
 
 /* ── Simplified mode ─────────────────────────────────────────────────────────
@@ -1257,8 +1279,7 @@ function drawSimple(m148, m157, hub148, hub157, Ns) {
   // The whole catalogue, grouped by standard: picking across the groups is
   // what switches this side's standard, and is how 148-vs-148 is set up here.
   var sel = document.getElementById('s-hub');
-  sel.innerHTML = hubOptions();
-  sel.value = meHub.id;
+  sel.value = meHub.id;     // options were filled once in buildControls()
   // Names where the click lands, so it needs no explaining.
   var meStd = isA ? stdA() : stdB();
   document.getElementById('s-swap').innerHTML =
@@ -1508,7 +1529,20 @@ function cycleStd(slot) {
 /* Keeps every label that names a standard in step with the hub each slot is
    actually holding -- the headers, their marketing nicknames, and simplified
    mode's two buttons. */
+/* What to call a comparison slot in a caption, a bar label or a table row: its
+   axle standard normally, its hub's name when both slots hold the same standard
+   (then the standard names nothing). Slot 'a' is the amber/left card, 'b' the
+   blue/right one -- the same convention winnerName() uses. */
+function slotLabel(slot) {
+  if (stdA() === stdB()) return hubById(slot === 'a' ? ST.hub148 : ST.hub157).name;
+  return slot === 'a' ? stdA() : stdB();
+}
 function syncStdLabels() {
+  // Every label in the detail cards that names a side carries slot-a / slot-b.
+  ['a', 'b'].forEach(function (slot) {
+    var txt = slotLabel(slot);
+    document.querySelectorAll('.slot-' + slot).forEach(function (el) { el.textContent = txt; });
+  });
   [['148', stdA()], ['157', stdB()]].forEach(function (pair) {
     var slot = pair[0], n = NICK[pair[1]];
     document.getElementById('std' + slot).textContent = n.name;
@@ -1610,41 +1644,57 @@ window.addEventListener('hashchange', () => {
   if (applyHashAlias(location.hash)) { urlPristine = true; refresh(); }
 });
 
+/* A hash is typed, pasted, truncated by chat apps and mangled by forums, so
+   nothing in it is trusted. decodeURIComponent throws on a stray "%" -- and an
+   uncaught throw at load stops the whole script, leaving a blank page -- so a
+   bad escape is kept as literal text and then fails validation like any other
+   unknown value. */
+function safeDecode(s) {
+  try { return decodeURIComponent(s); } catch (e) { return s; }
+}
+
 function readURL() {
   const h = location.hash.replace(/^#/, '');
   if (!h) return;
   if (applyHashAlias(h)) { urlPristine = true; return; }
   const p = {};
   h.split('&').forEach(pair => {
-    const [k, v] = pair.split('=');
-    if (k) p[k] = decodeURIComponent(v || '');
+    const i = pair.indexOf('=');
+    const k = i < 0 ? pair : pair.slice(0, i);
+    if (k) p[safeDecode(k)] = i < 0 ? '' : safeDecode(pair.slice(i + 1));
   });
   // Either slot may hold either standard, so a hub id is valid for both.
-  const validHub = (arr, id) => !!hubById(id);
-  const okWheel = w => ['26','27.5','29','32'].includes(w);
+  const okHub   = id => !!hubById(id);
+  const okWheel = w => WHEEL_SIZES.includes(w);
   const okDia   = d => SPOKE_DIAS.includes(d);
 
   if (okWheel(p.w1)) ST.wheel148 = p.w1;
   if (okWheel(p.w2)) ST.wheel157 = p.w2;
-  if (validHub(HUBS_148, p.h1)) ST.hub148 = p.h1;
-  if (validHub(HUBS_157, p.h2)) ST.hub157 = p.h2;
+  if (okHub(p.h1)) ST.hub148 = p.h1;
+  if (okHub(p.h2)) ST.hub157 = p.h2;
 
-  const setSel = (id, v, ok) => { if (v != null && (!ok || ok(v))) { const el = document.getElementById(id); if (el) el.value = v; } };
+  const setSel = (id, v, ok) => { if (v != null && ok(v)) { const el = document.getElementById(id); if (el) el.value = v; } };
   setSel('spk148ds',  p.s1, okDia); setSel('spk148nds', p.s2, okDia);
   setSel('spk157ds',  p.s3, okDia); setSel('spk157nds', p.s4, okDia);
-  setSel('g-eil', p.eil); setSel('g-eir', p.eir); setSel('g-gj', p.gj);
-  setSel('g-ea', p.ea);   setSel('g-modes', p.nn);
-  setSel('g-ns', p.ns);
+  setSel('g-modes', p.nn, v => MODE_OPTIONS.includes(v));
+  setSel('g-ns',    p.ns, v => SPOKE_COUNT_OPTIONS.includes(v));
+  // Free-typed rim numbers: parse, then clamp into RIM_LIMITS. Blank or
+  // non-numeric is ignored (the default stays), not turned into zero.
+  Object.keys(RIM_LIMITS).forEach(k => {
+    const v = parseFloat(p[k]);
+    if (isFinite(v)) document.getElementById(RIM_FIELD_IDS[k]).value = clampRim(k, v);
+  });
 
   // A shared link should reproduce exactly what its author saw, tension
   // included -- so a value present in the URL counts as deliberately set,
   // the same way a manual edit does, and won't be overwritten by a later
-  // wheel-size change on that side (see setWheel()).
-  if (p.td1 != null) {
+  // wheel-size change on that side (see setWheel()). Only values the
+  // dropdown actually offers are accepted.
+  if (TDS_OPTIONS.includes(+p.td1)) {
     ST.tds148 = +p.td1; ST.tds148Touched = true;
     document.getElementById('tds148').value = ST.tds148;
   }
-  if (p.td2 != null) {
+  if (TDS_OPTIONS.includes(+p.td2)) {
     ST.tds157 = +p.td2; ST.tds157Touched = true;
     document.getElementById('tds157').value = ST.tds157;
   }
@@ -1682,16 +1732,76 @@ function copyLink() {
   }
 }
 
+// Built once: the catalogue never changes while the page is open, and
+// rewriting a <select>'s options on every refresh() can close it under the
+// finger on some mobile browsers.
+let hubOptionsHTML = null;
 function hubOptions() {
-  return ['148', '157'].map(function (std) {
-    return '<optgroup label="' + NICK[std].name + '">' +
-      hubsFor(std).map(function (h) {
-        return '<option value="' + h.id + '">' + h.name + '</option>';
-      }).join('') + '</optgroup>';
-  }).join('');
+  if (hubOptionsHTML === null) {
+    hubOptionsHTML = ['148', '157'].map(function (std) {
+      return '<optgroup label="' + NICK[std].name + '">' +
+        hubsFor(std).map(function (h) {
+          return '<option value="' + h.id + '">' + esc(h.name) + '</option>';
+        }).join('') + '</optgroup>';
+    }).join('');
+  }
+  return hubOptionsHTML;
 }
 
+/* Clamp a rim number into its RIM_LIMITS fence; a blank or non-numeric field
+   falls back to the default. */
+function clampRim(key, v) {
+  const lim = RIM_LIMITS[key];
+  if (!isFinite(v)) v = RIM_DEFAULTS[key];
+  return Math.min(lim[1], Math.max(lim[0], v));
+}
+/* The shared rim and build settings, read once per refresh and always valid.
+   If a field held something out of range it is rewritten to the value that was
+   actually used, so the screen never shows a number the engine did not run. */
+function rimSettings() {
+  const num = key => {
+    const el = document.getElementById(RIM_FIELD_IDS[key]);
+    const v = clampRim(key, parseFloat(el.value));
+    if (parseFloat(el.value) !== v) el.value = v;
+    return v;
+  };
+  const opt = (key, options) => {
+    const el = document.getElementById(RIM_FIELD_IDS[key]);
+    if (!options.includes(el.value)) el.value = RIM_DEFAULTS[key];
+    return +el.value;
+  };
+  return { EIL: num('eil'), EIR: num('eir'), GJ: num('gj'), EA: num('ea') * 1e6,
+           N: opt('nn', MODE_OPTIONS), Ns: opt('ns', SPOKE_COUNT_OPTIONS) };
+}
+function resetRimInputs() {
+  Object.keys(RIM_FIELD_IDS).forEach(k =>
+    document.getElementById(RIM_FIELD_IDS[k]).value = RIM_DEFAULTS[k]);
+}
+function resetSpokeInputs() {
+  ['spk148ds','spk148nds','spk157ds','spk157nds'].forEach(id =>
+    document.getElementById(id).value = DEFAULT_SPOKE_DIA);
+}
+// Escapes text going into innerHTML. Hub names are our own data today, but
+// charts and tables are built from strings, so the habit is cheaper than the audit.
+const esc = s => String(s).replace(/[&<>"']/g, c =>
+  ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+
 function buildControls() {
+  // Option lists and defaults for every rim/build control come from the
+  // constants near the top of this script, so the menu, the reset button and
+  // the link parser cannot disagree.
+  document.getElementById('g-modes').innerHTML =
+    MODE_OPTIONS.map(n => `<option value="${n}">${n}</option>`).join('');
+  document.getElementById('g-ns').innerHTML =
+    SPOKE_COUNT_OPTIONS.map(n => `<option value="${n}">${n}H</option>`).join('');
+  ['tds148', 'tds157'].forEach(id => document.getElementById(id).innerHTML =
+    TDS_OPTIONS.map(t => `<option value="${t}">${t}</option>`).join(''));
+  Object.keys(RIM_LIMITS).forEach(k => {
+    const el = document.getElementById(RIM_FIELD_IDS[k]);
+    el.min = RIM_LIMITS[k][0]; el.max = RIM_LIMITS[k][1];
+  });
+  resetRimInputs();
+  document.getElementById('s-hub').innerHTML = hubOptions();
   /* Both slots offer the whole catalogue, grouped by standard. Picking a hub
      from the other group is what switches that side's standard -- which is
      how a wheelbuilder thinks about it anyway: you choose a hub, and its
@@ -1700,7 +1810,7 @@ function buildControls() {
   document.getElementById('hub157').innerHTML = hubOptions();
   ['spk148ds','spk148nds','spk157ds','spk157nds'].forEach(id => {
     document.getElementById(id).innerHTML =
-      SPOKE_DIAS.map(d => `<option value="${d}"${d==='2.0'?' selected':''}>${d}</option>`).join('');
+      SPOKE_DIAS.map(d => `<option value="${d}"${d===DEFAULT_SPOKE_DIA?' selected':''}>${d}</option>`).join('');
   });
   document.getElementById('hub148').value = ST.hub148;
   document.getElementById('hub157').value = ST.hub157;
@@ -1724,9 +1834,7 @@ function onTensionChange(side) {
 
 function setWheel(side, w) {
   if (side === '148') ST.wheel148 = w; else ST.wheel157 = w;
-  ['26','27.5','29','32'].forEach(sz =>
-    document.getElementById(`w${side}-${sz.replace('.','')}`)
-      .setAttribute('aria-pressed', sz === w ? 'true' : 'false'));
+  setWheelSilent(side, w);
 
   // Follow the size-based tension default UNLESS this side's tension was
   // set by hand -- a deliberate choice shouldn't be overwritten just
@@ -1751,15 +1859,12 @@ function resetAll() {
   document.getElementById('hub157').value = ST.hub157;
   document.getElementById('tds148').value = ST.tds148;
   document.getElementById('tds157').value = ST.tds157;
-  ['spk148ds','spk148nds','spk157ds','spk157nds'].forEach(id => document.getElementById(id).value = '2.0');
-  document.getElementById('g-eil').value = 50;  document.getElementById('g-eir').value = 150;
-  document.getElementById('g-gj').value = 22;   document.getElementById('g-ea').value = 11.5;
-  document.getElementById('g-modes').value = '24';
-  document.getElementById('g-ns').value = '32';
+  resetSpokeInputs();
+  resetRimInputs();
   refresh();
 }
 function setWheelSilent(side, w) {
-  ['26','27.5','29','32'].forEach(sz =>
+  WHEEL_SIZES.forEach(sz =>
     document.getElementById(`w${side}-${sz.replace('.','')}`)
       .setAttribute('aria-pressed', sz === w ? 'true' : 'false'));
 }
@@ -1779,19 +1884,12 @@ function randomCompare() {
   setTimeout(() => btn.classList.remove('rolling'), 600);
 
   // everything except wheel size + hub returns to default
-  ['spk148ds','spk148nds','spk157ds','spk157nds']
-    .forEach(id => document.getElementById(id).value = '2.0');
-  document.getElementById('g-eil').value = 50;
-  document.getElementById('g-eir').value = 150;
-  document.getElementById('g-gj').value  = 22;
-  document.getElementById('g-ea').value  = 11.5;
-  document.getElementById('g-modes').value = '24';
-  document.getElementById('g-ns').value    = '32';
+  resetSpokeInputs();
+  resetRimInputs();
 
-  const sizes = ['26','27.5','29','32'];
   let w, h1, h2, guard = 0;
   do {
-    w  = pick(sizes);
+    w  = pick(WHEEL_SIZES);
     h1 = pick(HUBS_148).id;
     h2 = pick(HUBS_157).id;
     guard++;
@@ -1856,27 +1954,23 @@ function tug(metric, v148, v157) {
 }
 
 function chip(usedPct) {
-  if (usedPct <= 70) return '<span class="chip ok">✓ ok</span>';
-  if (usedPct <= 85) return '<span class="chip warn">! tight</span>';
+  if (usedPct <= BUCKLE_TIGHT_PCT) return '<span class="chip ok">✓ ok</span>';
+  if (usedPct <= BUCKLE_OVER_PCT) return '<span class="chip warn">! tight</span>';
   return '<span class="chip over">✕ over</span>';
 }
 
 function refresh() {
   const hub148 = hubById(ST.hub148);
   const hub157 = hubById(ST.hub157);
-  const EIL = +document.getElementById('g-eil').value;
-  const EIR = +document.getElementById('g-eir').value;
-  const GJ  = +document.getElementById('g-gj').value;
-  const EA  = +document.getElementById('g-ea').value * 1e6;
-  const N   = +document.getElementById('g-modes').value;
-  const Ns  = +document.getElementById('g-ns').value;
+  const rim = rimSettings();         // validated; see clampRim()
+  const Ns = rim.Ns;
 
   const m148 = calc(WHEEL_ERDS[ST.wheel148], hub148,
     +document.getElementById('spk148ds').value, +document.getElementById('spk148nds').value,
-    ST.tds148, EIL, EIR, GJ, EA, Ns, N);
+    ST.tds148, rim.EIL, rim.EIR, rim.GJ, rim.EA, rim.Ns, rim.N);
   const m157 = calc(WHEEL_ERDS[ST.wheel157], hub157,
     +document.getElementById('spk157ds').value, +document.getElementById('spk157nds').value,
-    ST.tds157, EIL, EIR, GJ, EA, Ns, N);
+    ST.tds157, rim.EIL, rim.EIR, rim.GJ, rim.EA, rim.Ns, rim.N);
 
   // side cards: tensions
   document.getElementById('t148-nds').textContent = fmt(m148.T_NDS, 1);
@@ -1891,7 +1985,7 @@ function refresh() {
   document.getElementById('cmp-flat-stmt').innerHTML = verdict(m148.F_lat, m157.F_lat, 'stronger');
   document.getElementById('sum-flat').innerHTML = verdict(m148.F_lat, m157.F_lat, 'stronger');
   document.getElementById('flat-gov').textContent =
-    `${m148.latGov} spokes govern the ${stdA()} build, ${m157.latGov} the ${stdB()}`;
+    `${m148.latGov} spokes govern the ${slotLabel('a')} build, ${m157.latGov} the ${slotLabel('b')}`;
 
   // F_rad
   document.getElementById('cmp-frad148').textContent = fmt(m148.F_rad, 0);
@@ -1900,7 +1994,7 @@ function refresh() {
   document.getElementById('cmp-frad-stmt').innerHTML = verdict(m148.F_rad, m157.F_rad, 'stronger');
   document.getElementById('sum-frad').innerHTML = verdict(m148.F_rad, m157.F_rad, 'stronger');
   document.getElementById('frad-gov').textContent =
-    `${m148.radGov} spokes govern the ${stdA()} build, ${m157.radGov} the ${stdB()}`;
+    `${m148.radGov} spokes govern the ${slotLabel('a')} build, ${m157.radGov} the ${slotLabel('b')}`;
 
   // K_lat
   document.getElementById('cmp-klat148').textContent = fmt(m148.K_lat, 1);
@@ -1917,7 +2011,7 @@ function refresh() {
   tug('ratio', m148.ratio, m157.ratio);
   const rStmt = Math.abs(m157.ratio - m148.ratio) < 0.05
     ? 'Effectively equal'
-    : `${m157.ratio > m148.ratio ? '157' : '148'} build is more evenly tensioned (+${Math.abs(m157.ratio - m148.ratio).toFixed(1)} pp)`;
+    : `${winnerName(m148.ratio > m157.ratio)} build is more evenly tensioned (+${Math.abs(m157.ratio - m148.ratio).toFixed(1)} pp)`;
   document.getElementById('cmp-ratio-stmt').firstChild.textContent = rStmt;
   document.getElementById('sum-ratio').textContent = rStmt;
 
@@ -1933,13 +2027,14 @@ function refresh() {
   const sEqual = Math.abs(m157.T_safety - m148.T_safety) < 0.05;
   const tcStmt = sEqual
     ? 'Effectively equal margin'
-    : `${m157.T_safety < m148.T_safety ? '157' : '148'} build has more buckling headroom`;
+    : `${winnerName(m148.T_safety < m157.T_safety)} build has more buckling headroom`;
   document.getElementById('cmp-tc-stmt').firstChild.textContent = tcStmt;
   document.getElementById('sum-tc').textContent = tcStmt;
 
   syncStdLabels();
   buildHero(m148, m157, hub148, hub157);
   buildTakeaway(m148, m157, hub148, hub157);
+  renderWhyCharts(rim);
 
   // Simplified mode's two drawings. Everything above still ran, so flipping
   // the mode back off shows a fully up-to-date full view with no extra work.
@@ -2067,8 +2162,13 @@ function buildTakeaway(m148, m157, hub148, hub157) {
     `That's the headline difference; open the cards below for stiffness, vertical hits, and buckling margin.`;
 }
 
+function renderWhyCharts() {}   // replaced by the chart section
+
 buildControls();
-readURL();          // hydrate state from a shared link, if present
+// Hydrate state from a shared link, if present. readURL() validates as it goes;
+// the try is the last line of defence, so that whatever a mangled link does,
+// the tool still opens (on whatever state was applied before the problem).
+try { readURL(); } catch (e) { /* fall through to defaults */ }
 applyTheme();       // set the color scheme (default DMC-12)
 // re-sync the wheel-size buttons + hub dropdowns to any URL-loaded state
 setWheelSilent('148', ST.wheel148); setWheelSilent('157', ST.wheel157);
