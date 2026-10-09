@@ -16,6 +16,7 @@ Readers of the Pinkbike and Post Millennium Renaissance articles, mostly on a ph
 - Both hubs are visible and changeable at the same time, in two fixed rows (amber first, blue second), with no tab to press first.
 - Either row can hold either axle standard. Each row's picker lists the whole catalogue grouped under "148x12" and "157x12" headings; choosing a hub from the other group changes that row's standard. The row's label ("148x12" or "157x12") is read-only and follows the hub chosen in it, so the "Switch this side" button goes away. On a bare visit the rows hold the current defaults: CK 148x12 CENTERLOCK REAR in the first row, CK 157 SB CENTERLOCK REAR in the second.
 - The result is stated as one plain sentence, set on three lines: "157x12" / "is 28% stronger" / "than 148x12", the stronger side first, with the percentage as the only large type and no mid-sentence bold.
+- Everything is framed: each hub row, the answer and the wheel sit in matching rectangles. The two hub rows take their row colour (amber, blue) for the border, and the answer's frame takes the stronger side's colour, so the card reads as a few clear blocks.
 - The result is on the first screen of a phone (393×852) without scrolling.
 - "to first slack spoke" no longer appears in compact mode. "Lateral strength" stays as the label so "stronger" is not an unqualified claim.
 - Each hub's strength is shown as a bar and a figure on one shared scale, next to its picker.
