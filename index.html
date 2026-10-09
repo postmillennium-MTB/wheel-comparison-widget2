@@ -180,95 +180,158 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
 }
 
 /* ── Simplified mode ─────────────────────────────────────────────────────────
-   Strips the page back to one wheel, one hub picker and one number, for
-   readers who want the answer rather than the workings. Nothing leaves the
-   DOM: every hidden control stays wired and keeps feeding the engine, so
-   switching back restores the full view with the state untouched.
+   Strips the page back to what a reader asks first: which two hubs, and how
+   much stronger one is than the other. Nothing leaves the DOM: every hidden
+   control stays wired and keeps feeding the engine, so switching back restores
+   the full view with the state untouched.
+
+   Order is inputs, answer, picture. Both hubs are on screen at once, each in
+   its own fixed row (amber, then blue), so choosing a pair is two ordinary
+   pickers one above the other and never a mode ("select 148x12, pick a hub,
+   now select 157x12, pick another"). The answer sits directly under them, so on
+   a phone it is on the first screen; the wheel illustrates it and is not the
+   way in.
 
    One wheel rather than two, deliberately. Two wheels side by side at honest
    scale look identical -- the difference between a 148 and a 157 build is
    about one degree of bracing angle on a 600 mm wheel -- so the picture would
-   argue against the 20-30% number printed underneath it. Switching one wheel
+   argue against the 20-30% figure printed beside it. Switching one wheel
    between the two puts the same change on the channel the eye is actually
    sensitive to: motion. See makeWheel() for the drawing and the tween. */
 .simple-stage{display:none}
-body.simple .simple-stage{display:grid;grid-template-columns:1fr;gap:20px;
-  background:var(--card);border:1px solid var(--edge);border-radius:14px;padding:20px;
+body.simple .simple-stage{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;
+  background:var(--card);border:1px solid var(--edge);border-radius:14px;padding:16px;
   box-shadow:0 10px 30px -24px rgba(0,0,0,.6)}
 @media(min-width:760px){
-  /* Capped and centred rather than spanning the full 1320px wrap: with only a
-     wheel and four readouts on it, the stage reads as a plate, not a page. */
+  /* Capped and centred rather than spanning the full 1320px wrap: with two
+     pickers, a sentence and a wheel the stage reads as a plate, not a page.
+     The wheel is second in the markup (answer first for a phone and for a
+     screen reader) and first on screen here. */
   body.simple .simple-stage{grid-template-columns:minmax(0,.9fr) minmax(0,1fr);
     gap:30px;align-items:center;padding:26px;max-width:1000px;margin:0 auto}
+  .s-wheel{order:-1}
 }
-.simple-stage[data-side="148"]{--win:var(--a);--win-text:var(--a-text)}
-.simple-stage[data-side="157"]{--win:var(--b);--win-text:var(--b-text)}
-.ws-box{position:relative;width:100%;max-width:400px;margin:0 auto;aspect-ratio:1;
-  touch-action:pan-y}
-.ws-box canvas{width:100%;height:100%;display:block;cursor:ew-resize}
-.ws-hint{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;
-  color:var(--faint);text-align:center;margin:6px 0 0}
+/* --win follows the side the wheel is showing: it colours the pressed state of
+   the wheel switch under the drawing. */
+.simple-stage[data-side="148"]{--win:var(--a);--win-text:var(--a-text);--win-soft:var(--a-soft)}
+.simple-stage[data-side="157"]{--win:var(--b);--win-text:var(--b-text);--win-soft:var(--b-soft)}
+
 .s-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;
   color:var(--faint);font-weight:600}
-.s-dets{display:inline-flex;border:1px solid var(--edge-strong);border-radius:9px;overflow:hidden;
-  margin:9px 0 12px}
-.s-dets button{font:inherit;font-size:15px;font-weight:750;letter-spacing:-.01em;
-  padding:8px 16px;background:var(--card);border:none;color:var(--muted);cursor:pointer}
-.s-dets button+button{border-left:1px solid var(--line)}
-.s-dets button[aria-pressed="true"]{background:var(--win);color:#fff}
-/* The two buttons above choose which side you are LOOKING at; this one changes
-   what that side IS. Without it the only route to a 148-vs-148 comparison was
-   noticing the optgroups in the hub list, which nobody does. */
-.s-swap{display:block;font:inherit;font-size:12px;font-weight:600;color:var(--muted);
-  background:none;border:none;padding:0;margin:0 0 12px;cursor:pointer;
-  text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
-.s-swap:hover,.s-swap:focus-visible{color:var(--win-text)}
+
+/* The two hub rows. Amber is always the first row and blue the second, as in the
+   full view, whatever standard either one holds -- the label above each picker
+   follows the hub chosen in it. */
+/* Every block is a frame of the same shape: each hub row, the answer and the
+   wheel. The rows and the answer take their own colour for the border, so the
+   card reads as a few clear rectangles rather than a run of loose lines. */
+.s-slots{display:grid;gap:12px;margin-top:12px}
+.s-slot{--c:var(--a);--ct:var(--a-text);border:2px solid var(--c);border-radius:12px;
+  padding:12px 12px 14px;background:var(--card)}
+.s-slot[data-slot="b"]{--c:var(--b);--ct:var(--b-text)}
+.s-slot-lbl{display:flex;align-items:baseline;gap:8px;margin:0 0 6px}
+.s-std{font-size:15px;font-weight:700;color:var(--ct)}
+.s-std::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;
+  background:var(--c);margin-right:7px}
+/* 16px so iOS does not zoom the page when the picker is focused; 46px tall for a
+   thumb. The thick left edge repeats the row's colour on the control itself. */
+.s-slot select.ctl{font-size:16px;min-height:46px;padding:10px 12px}
+/* The strength of each hub as a bar on one shared scale (the stronger fills
+   the track), with its figure at the end: the comparison can be seen before it
+   is read. */
+.s-bar{display:flex;align-items:center;gap:12px;margin-top:9px}
+.s-track{flex:1;min-width:0;height:10px;border-radius:999px;background:var(--well);
+  border:1px solid var(--line);overflow:hidden}
+.s-fill{display:block;height:100%;width:0;border-radius:999px;background:var(--c);
+  transition:width .38s cubic-bezier(.22,.8,.3,1)}
+@media(prefers-reduced-motion:reduce){.s-fill{transition:none}}
+.s-val{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:16px;font-weight:650;
+  color:var(--ct);white-space:nowrap;min-width:7.6ch;text-align:right}
+.s-val .u{font-size:11px;font-weight:600;color:var(--faint);margin-left:4px}
+.s-val.off{font-family:inherit;font-size:12px;font-weight:700;color:var(--over)}
+
+/* The answer, as one sentence read top to bottom: subject, the gap, the other
+   hub, all inside one frame in the winner's colour. The gap is the only large
+   type, so the eye lands on "28% stronger" and the sentence needs no bold words
+   to find its way around. It always leads with the stronger build
+   and never says "weaker": 28% stronger and 22% weaker are the same gap, and
+   having both in play is how a reader ends up with the wrong one. */
+.s-vs{--rw:var(--ink);--rwb:var(--edge-strong);--rws:var(--well);margin-top:12px;padding:16px 14px;
+  border:2px solid var(--rwb);border-radius:12px;background:var(--rws);text-align:center;line-height:1.3}
+.s-vs[data-win="a"]{--rw:var(--a-text);--rwb:var(--a);--rws:var(--a-soft)}
+.s-vs[data-win="b"]{--rw:var(--b-text);--rwb:var(--b);--rws:var(--b-soft)}
+.s-who{display:block;font-size:clamp(20px,5.8vw,24px);font-weight:700;letter-spacing:-.01em;
+  line-height:1.25;color:var(--ct)}
+.s-who::before{content:"";display:inline-block;width:11px;height:11px;border-radius:3px;
+  background:var(--c);margin-right:9px;vertical-align:1px}
+.s-who[data-slot="a"]{--c:var(--a);--ct:var(--a-text)}
+.s-who[data-slot="b"]{--c:var(--b);--ct:var(--b-text)}
+/* A hub name (the fallback when both sides share a standard) is long, so it sits
+   smaller in the same frame. */
+.s-who.long{font-size:16px;font-weight:650;letter-spacing:0}
+.s-mid{display:flex;justify-content:center;align-items:baseline;flex-wrap:wrap;gap:0 10px;margin:8px 0}
+.s-w{font-size:15px;font-weight:500;color:var(--muted)}
+.s-gap{display:inline-flex;align-items:baseline;gap:8px;color:var(--rw)}
+.s-pct{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:clamp(40px,11.5vw,54px);
+  font-weight:700;letter-spacing:-.04em;line-height:1}
+.s-word{font-size:clamp(20px,5.6vw,26px);font-weight:650;letter-spacing:-.01em}
+/* The percent sign is a drawing (PCT_ICON), which a screen reader skips, so the
+   word rides along unseen. */
+.s-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.s-msg{font-size:17px;font-weight:500;color:var(--ink)}
+.s-msg b{font-weight:700}
+.s-cond{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:var(--faint);
+  margin-top:14px;padding-top:10px;border-top:1px solid var(--line);line-height:1.6}
+.s-cond .ca{color:var(--a-text);font-weight:700} .s-cond .cb{color:var(--b-text);font-weight:700}
+/* Last on the card, under the wheel, so nothing sits between the answer and its
+   picture. */
+.s-foot{grid-column:1/-1}
 /* Shown only when simplified was applied by the width rule rather than chosen.
    A first-time visitor on a phone would otherwise see a wheel, a number and a
    sentence, and reasonably conclude that is the whole tool. */
 .s-more{display:block;font:inherit;font-size:12px;font-weight:600;color:var(--muted);
-  background:none;border:none;padding:0;margin:12px 0 0;cursor:pointer;text-align:left;
+  background:none;border:none;padding:0;margin:0;cursor:pointer;text-align:left;
   text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
 .s-more:hover,.s-more:focus-visible{color:var(--win-text)}
-/* Both wheels' kgf, side by side and each attributed to its own hub. A lone
-   number ("25.1kgf to first slack spoke") invites the reader to ask "more
-   than what?" -- it only means something next to the wheel it's being
-   measured against, so the other hub's figure and name are printed at the
-   same time, not left for the prose line below to explain. The "me" figure
-   (whichever wheel is on the turntable) stays the large tweened one since
-   it is what the drag/switch controls act on; the other hub's figure is
-   static -- it does not need to animate to make the comparison legible. */
-.s-num-pair{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-top:14px}
-.s-num{font-family:var(--mono);font-variant-numeric:tabular-nums;
-  font-size:clamp(46px,12vw,64px);line-height:.94;font-weight:700;letter-spacing:-.04em;
-  color:var(--win-text)}
-.s-num .u{font-size:.28em;font-weight:650;letter-spacing:.08em;margin-left:6px;
-  color:var(--faint)}
-.s-num-other{font-size:clamp(24px,6vw,32px);color:var(--muted)}
-.s-num-who{font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--faint);
-  margin-top:4px;max-width:22ch;line-height:1.3}
-.s-lbl{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--faint);margin-top:6px}
-/* The tool's headline verdict in simplified mode -- full mode has the hero
-   card for this job, but simplified mode strips that card out entirely (see
-   the "Simplified mode" note above), so this sentence is the only place the
-   result actually lands. Sized and weighted to read as the answer, not as a
-   caption under the kgf figures. */
-.s-vs{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);
-  font-size:clamp(24px,6.2vw,30px);font-weight:600;color:var(--ink);line-height:1.3}
-.s-vs b{color:var(--ink);font-weight:800}
-.s-cond{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:var(--faint);
-  margin-top:12px;padding-top:10px;border-top:1px solid var(--line);line-height:1.5}
 /* Credit for the physics this tool runs on -- see the README's "Theory and
    source code" section for the full citation. Kept short and un-emphasized
    on purpose: it belongs on the page, not competing with the result. */
-.s-credit{font-size:10.5px;color:var(--faint);margin-top:14px;line-height:1.5}
+.s-credit{font-size:10.5px;color:var(--faint);margin-top:10px;line-height:1.5}
+
+/* The wheel and the switch that says which hub it is showing. Changing a hub
+   above points the wheel at it; the switch is for flipping back and forth. */
+.s-wheel{border:2px solid var(--edge);border-radius:12px;padding:14px 12px 16px;background:var(--card)}
+.ws-box{position:relative;width:100%;max-width:340px;margin:0 auto;aspect-ratio:1;touch-action:pan-y}
+.ws-box canvas{width:100%;height:100%;display:block;cursor:ew-resize}
+.ws-hint{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--faint);text-align:center;margin:6px 0 0}
+.s-view{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.s-view-lbl{font-size:12px;color:var(--muted)}
+.s-dets{display:inline-flex;border:1px solid var(--edge-strong);border-radius:9px;overflow:hidden}
+.s-dets button{font:inherit;font-size:14px;font-weight:650;padding:8px 14px;min-height:40px;
+  background:var(--card);border:none;color:var(--muted);cursor:pointer}
+.s-dets button+button{border-left:1px solid var(--line)}
+.s-dets button[aria-pressed="true"]{background:var(--win-soft);color:var(--win-text);
+  box-shadow:inset 0 -3px 0 var(--win)}
+
 body.simple .sub,
 body.simple #global-card,
 body.simple .layout,
 body.simple #takeaway,
 body.simple .detail-wrap,
 body.simple .note{display:none}
+
+/* A phone gets a slimmer header in this mode: the answer is what the visit is
+   for, and the title plus two rows of buttons were pushing it off the first
+   screen. */
+@media(max-width:560px){
+  body.simple h1{font-size:22px;text-wrap:balance}
+  body.simple .tagline{font-size:10.5px;margin-top:2px}
+  body.simple .page-head{gap:8px;margin-bottom:10px}
+  body.simple .head-actions{gap:6px}
+  body.simple .act-btn{padding:6px 9px;gap:5px}
+  body.simple .pmr-link{padding:6px 11px}
+}
 
 /* comparison cards — center-out "tug of war" bars */
 .cmp-card{background:var(--card);border:1px solid var(--edge);border-radius:12px;
@@ -642,31 +705,40 @@ built on those stiffnesses.</p>
 </div>
 
 <!-- Simplified mode's stage. Hidden in full mode; see the "Simplified mode"
-     CSS block and makeWheel() for what drives it. -->
+     CSS block and drawSimple() for what drives it. Inputs first, then the
+     answer, then the picture. -->
 <div class="simple-stage" id="s-stage" data-side="148" role="group"
      aria-label="Simplified comparison">
-  <div>
+  <div class="s-info">
+    <div class="s-eyebrow">Rear wheel &middot; lateral strength</div>
+    <div class="s-slots">
+      <div class="s-slot" data-slot="a">
+        <label class="s-slot-lbl" for="s-hub-a"><span class="s-std" id="s-std-a">148x12</span></label>
+        <select class="ctl" id="s-hub-a" aria-label="First hub"></select>
+        <div class="s-bar"><span class="s-track"><span class="s-fill" id="s-fill-a"></span></span><span class="s-val" id="s-val-a">&mdash;</span></div>
+      </div>
+      <div class="s-slot" data-slot="b">
+        <label class="s-slot-lbl" for="s-hub-b"><span class="s-std" id="s-std-b">157x12</span></label>
+        <select class="ctl" id="s-hub-b" aria-label="Second hub"></select>
+        <div class="s-bar"><span class="s-track"><span class="s-fill" id="s-fill-b"></span></span><span class="s-val" id="s-val-b">&mdash;</span></div>
+      </div>
+    </div>
+    <div class="s-vs" id="s-vs" data-win="tie" aria-live="polite">&mdash;</div>
+    <div class="s-cond" id="s-cond">&mdash;</div>
+  </div>
+  <div class="s-wheel">
     <div class="ws-box"><canvas id="s-canvas"
       aria-label="Wireframe rear wheel drawn from the selected hub's real flange geometry. Drag sideways to orbit it and bring the spoke bracing angle into view."></canvas></div>
     <p class="ws-hint">Drag the wheel sideways to orbit it</p>
+    <div class="s-view" role="group" aria-label="Which hub the wheel shows">
+      <span class="s-view-lbl">Wheel shows</span>
+      <div class="s-dets" id="s-dets">
+        <button type="button" data-s="148" aria-pressed="true">148x12</button>
+        <button type="button" data-s="157" aria-pressed="false">157x12</button>
+      </div>
+    </div>
   </div>
-  <div>
-    <div class="s-eyebrow">Rear wheel &middot; lateral strength</div>
-    <div class="s-dets" id="s-dets" role="group" aria-label="Axle standard">
-      <button type="button" data-s="148" aria-pressed="true">148x12</button>
-      <button type="button" data-s="157" aria-pressed="false">157x12</button>
-    </div>
-    <button type="button" class="s-swap" id="s-swap">&#8644; Switch this side</button>
-    <select class="ctl" id="s-hub" aria-label="Hub"></select>
-    <div class="s-num-pair">
-      <div><div class="s-num" id="s-num">&mdash;<span class="u">kgf</span></div>
-        <div class="s-num-who" id="s-num-who">&mdash;</div></div>
-      <div><div class="s-num s-num-other" id="s-num-other">&mdash;<span class="u">kgf</span></div>
-        <div class="s-num-who" id="s-num-other-who">&mdash;</div></div>
-    </div>
-    <div class="s-lbl">to first slack spoke</div>
-    <div class="s-vs" id="s-vs">&mdash;</div>
-    <div class="s-cond" id="s-cond">&mdash;</div>
+  <div class="s-foot">
     <button type="button" class="s-more" id="s-more" hidden>Show the full
       breakdown &mdash; stiffness, vertical hits and buckling margin &rarr;</button>
     <div class="s-credit">This project could not have been possible without the
@@ -1435,6 +1507,8 @@ function lerpGeo(from, to, t) {
   return o;
 }
 
+/* sPrevFlat is null until the wheel has been drawn once, so the first draw
+   lands finished and only a later change is animated. */
 var SWHEEL = null, sPrevFlat = null;
 
 /* Drive-side bracing angle for a hub that isn't the one currently on the
@@ -1448,16 +1522,12 @@ function bracingAngle(R, ds, pds) {
   return Math.atan(ds / (R - pds / 2)) * 180 / Math.PI;
 }
 
-/* Renders simplified mode's stage: the wheel for whichever standard is
-   selected, its number, and what the other standard would give. The tween's
-   progress drives the number and the bracing angle as well as the drawing, so
-   a switch lands as one motion instead of the number jumping on ahead. */
+/* Renders simplified mode's stage: both hubs with their figures, the sentence
+   that compares them, and the wheel for whichever hub it is pointed at. */
 function drawSimple(m148, m157, hub148, hub157, Ns) {
   var side = ST.simpleSide, isA = side === '148';
-  var me    = isA ? m148   : m157,   other  = isA ? m157   : m148;
-  var meHub = isA ? hub148 : hub157, oHub   = isA ? hub157 : hub148;
+  var meHub = isA ? hub148 : hub157;
   var erd = WHEEL_ERDS[isA ? ST.wheel148 : ST.wheel157];
-  var oErd = WHEEL_ERDS[isA ? ST.wheel157 : ST.wheel148];
   var stage = document.getElementById('s-stage');
   stage.dataset.side = side;
   document.getElementById('s-more').hidden = !ST.autoSimple;
@@ -1466,65 +1536,83 @@ function drawSimple(m148, m157, hub148, hub157, Ns) {
   for (var i = 0; i < dets.length; i++) {
     dets[i].setAttribute('aria-pressed', dets[i].dataset.s === side ? 'true' : 'false');
   }
-  // The whole catalogue, grouped by standard: picking across the groups is
-  // what switches this side's standard, and is how 148-vs-148 is set up here.
-  var sel = document.getElementById('s-hub');
-  sel.value = meHub.id;     // options were filled once in buildControls()
-  // Names where the click lands, so it needs no explaining.
-  var meStd = isA ? stdA() : stdB();
-  document.getElementById('s-swap').innerHTML =
-    '\u21c4 Switch this side to ' + NICK[meStd === '148' ? '157' : '148'].name;
 
-  var css = function (n) {
-    return getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-  };
-  // The other build's figure and bracing angle don't ride the tween -- they
-  // aren't the wheel on the turntable, so nothing animates them -- but they
-  // still need naming, or "25.1kgf" reads as a number with nothing to be
-  // more or less than. See bracingAngle() above for why this can't reuse
-  // SWHEEL.theta(), which only ever knows the wheel currently loaded into it.
-  // Computed before SWHEEL.set() below because its onFrame callback can fire
-  // synchronously (a first render, or reduced motion) -- these need to exist
-  // before that happens, not after.
-  var otherTheta = bracingAngle(oErd / 2, oHub.ds, oHub.pds);
-  document.getElementById('s-num-who').textContent = meHub.name;
-  document.getElementById('s-num-other').innerHTML =
-    fmt(other.F_lat, 1) + '<span class="u">kgf</span>';
-  document.getElementById('s-num-other-who').textContent = oHub.name;
+  // Each row: the hub in its picker, the standard that hub belongs to, and its
+  // bar. Options were filled once in buildControls(); the whole catalogue is
+  // offered in both rows, so picking across the groups is what changes a row's
+  // standard (and is how 148-vs-148 is set up).
+  var rows = [
+    { k: 'a', hub: hub148, m: m148, std: stdA() },
+    { k: 'b', hub: hub157, m: m157, std: stdB() },
+  ];
+  var live = rows.filter(function (r) { return !isBuckled(r.m); })
+                 .map(function (r) { return r.m.F_lat; });
+  var top = live.length ? Math.max.apply(null, live) : 1;
+  rows.forEach(function (r) {
+    var bad = isBuckled(r.m), val = document.getElementById('s-val-' + r.k);
+    document.getElementById('s-hub-' + r.k).value = r.hub.id;
+    document.getElementById('s-std-' + r.k).textContent = NICK[r.std].name;
+    document.getElementById('s-fill-' + r.k).style.width =
+      bad ? '0' : (r.m.F_lat / top * 100).toFixed(1) + '%';
+    val.classList.toggle('off', bad);
+    val.innerHTML = bad ? 'past buckling' : fmt(r.m.F_lat, 1) + '<span class="u">kgf</span>';
+  });
 
-  var from = sPrevFlat === null ? me.F_lat : sPrevFlat;
+  /* What a side is called in prose: its axle standard ("157x12"), which the two
+     rows above tie to a hub. When both sides hold the same standard that names
+     nothing, so it falls back to the hub's own name. */
+  var sameStd = stdA() === stdB();
+  var sideName = function (r) { return sameStd ? r.hub.name : NICK[r.std].name; };
+
+  // Bracing angle of each hub's drive side, in row order. Computed here rather
+  // than read off the wheel, which only knows the hub currently loaded into it.
+  var thA = bracingAngle(WHEEL_ERDS[ST.wheel148] / 2, hub148.ds, hub148.pds);
+  var thB = bracingAngle(WHEEL_ERDS[ST.wheel157] / 2, hub157.ds, hub157.pds);
+  document.getElementById('s-cond').innerHTML = esc(condText()) +
+    ' &middot; drive-side bracing <span class="ca">' + thA.toFixed(2) + '°</span> (' +
+    esc(sideName(rows[0])) + ') vs <span class="cb">' + thB.toFixed(2) + '°</span> (' +
+    esc(sideName(rows[1])) + ')';
+
   SWHEEL.set({
     R: erd / 2, nds: meHub.nds, ds: meHub.ds, pds: meHub.pds, pnds: meHub.pnds,
-    spokes: Ns, accent: css(isA ? '--a' : '--b'), ink: css('--ink'),
-  }, sPrevFlat !== null, function (e) {
-    document.getElementById('s-num').innerHTML =
-      fmt(from + (me.F_lat - from) * e, 1) + '<span class="u">kgf</span>';
-    document.getElementById('s-cond').textContent = condText() + ' · ' +
-      SWHEEL.theta().toFixed(2) + '° drive-side bracing (' + meHub.name + ') vs ' +
-      otherTheta.toFixed(2) + '° (' + oHub.name + ')';
-  });
-  sPrevFlat = me.F_lat;
+    spokes: Ns, accent: cssVar(isA ? '--a' : '--b'), ink: cssVar('--ink'),
+  }, sPrevFlat !== null, null);
+  sPrevFlat = true;
 
-  /* Names both wheels and always leads with the stronger one, so the sentence
-     reads in a single direction. The old wording described the other side
-     relative to the one on screen ("takes 12% more"), which left the reader
-     working out which way "more" and "less" pointed and which wheel was
-     which. Naming both also makes the same/different-standard cases identical
-     -- hub names distinguish the sides whatever standards they hold. */
-  var meWins = me.F_lat >= other.F_lat;
-  var hi = meWins ? meHub : oHub, lo = meWins ? oHub : meHub;
-  var hiV = Math.max(me.F_lat, other.F_lat), loV = Math.min(me.F_lat, other.F_lat);
-  var d = loV ? (hiV - loV) / loV * 100 : 0;
-  document.getElementById('s-vs').innerHTML =
-    isBuckled(me) || isBuckled(other)
-    ? 'A build here is past its buckling tension, so there is <b>no meaningful comparison</b>.'
-    : meHub.id === oHub.id
-    ? 'Both sides are the same wheel — <b>' + meHub.name + '</b>.'
-    : d < 1
-    ? 'The <b>' + meHub.name + '</b> and the <b>' + oHub.name +
-      '</b> are within a hair of each other laterally.'
-    : 'The <b>' + hi.name + '</b> build is <b class="pct-num">' + d.toFixed(0) +
-      PCT_ICON + '</b> more laterally strong than the <b>' + lo.name + '</b> wheel.';
+  /* Names both hubs and always leads with the stronger one, so the sentence
+     reads in a single direction whichever row it came from. */
+  var A = rows[0], B = rows[1];
+  var aLeads = m148.F_lat >= m157.F_lat;
+  var hi = aLeads ? A : B, lo = aLeads ? B : A;
+  var d = lo.m.F_lat ? (hi.m.F_lat - lo.m.F_lat) / lo.m.F_lat * 100 : 0;
+  var who = function (r) {
+    var n = sideName(r);
+    return '<span class="s-who' + (n.length > 12 ? ' long' : '') + '" data-slot="' + r.k + '">' + esc(n) + '</span>';
+  };
+  var mid = function (inner) { return '<span class="s-mid">' + inner + '</span>'; };
+  var word = function (t) { return '<span class="s-w">' + t + '</span>'; };
+  var html, win = 'tie';
+  if (isBuckled(m148) || isBuckled(m157)) {
+    html = '<span class="s-msg">A build here is past its buckling tension, so there is ' +
+           '<b>no meaningful comparison</b>.</span>';
+  } else if (hub148.id === hub157.id) {
+    html = '<span class="s-msg">Both sides are the same wheel: <b>' + esc(hub148.name) + '</b>.</span>';
+  } else if (d < 1) {
+    html = who(A) + ' ' + mid(word('is within 1% of')) + ' ' + who(B);
+  } else {
+    win = hi.k;
+    html = who(hi) + ' ' + mid(word('is') + ' <span class="s-gap"><b class="s-pct pct-num">' +
+      d.toFixed(0) + PCT_ICON + '<span class="s-sr"> percent</span></b> <span class="s-word">stronger</span></span> ' +
+      word('than')) + ' ' + who(lo);
+  }
+  var vs = document.getElementById('s-vs');
+  vs.dataset.win = win;
+  vs.innerHTML = html;
+}
+
+/* A theme colour as the string the canvas needs. */
+function cssVar(n) {
+  return getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 }
 
 function makeWheel(canvas) {
@@ -1691,16 +1779,19 @@ function makeWheel(canvas) {
   });
   var more = document.getElementById('s-more');
   if (more) more.addEventListener('click', function () { toggleSimple(); });
-  var swap = document.getElementById('s-swap');
-  if (swap) swap.addEventListener('click', function () { cycleStd(ST.simpleSide); });
-  var sel = document.getElementById('s-hub');
-  if (sel) sel.addEventListener('change', function () {
-    // Writes back to the same state the full view's own hub picker uses, so
-    // the two never disagree and switching modes keeps your choice.
-    var slot = ST.simpleSide === '148' ? 'hub148' : 'hub157';
-    ST[slot] = sel.value;
-    document.getElementById(slot).value = sel.value;
-    refresh();
+  ['a', 'b'].forEach(function (slot) {
+    var sel = document.getElementById('s-hub-' + slot);
+    if (!sel) return;
+    sel.addEventListener('change', function () {
+      // Writes back to the same state the full view's own hub picker uses, so
+      // the two never disagree and switching modes keeps your choice. The wheel
+      // then turns to the hub just chosen, so the change is seen as well as read.
+      var key = slot === 'a' ? 'hub148' : 'hub157';
+      ST[key] = sel.value;
+      document.getElementById(key).value = sel.value;
+      ST.simpleSide = slot === 'a' ? '148' : '157';
+      refresh();
+    });
   });
 }());
 
@@ -1993,7 +2084,8 @@ function buildControls() {
     el.min = RIM_LIMITS[k][0]; el.max = RIM_LIMITS[k][1];
   });
   resetRimInputs();
-  document.getElementById('s-hub').innerHTML = hubOptions();
+  document.getElementById('s-hub-a').innerHTML = hubOptions();
+  document.getElementById('s-hub-b').innerHTML = hubOptions();
   /* Both slots offer the whole catalogue, grouped by standard. Picking a hub
      from the other group is what switches that side's standard -- which is
      how a wheelbuilder thinks about it anyway: you choose a hub, and its
