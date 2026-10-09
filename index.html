@@ -259,10 +259,25 @@ body.simple .simple-stage{display:grid;grid-template-columns:minmax(0,1fr);gap:2
     gap:30px;align-items:center;padding:26px;max-width:1000px;margin:0 auto}
   .s-wheel{order:-1}
 }
+/* Both wheels: the stage widens and gives the drawings the larger share (the
+   wheel is the first column on screen, though second in the markup), so
+   each canvas stays near the size the single wheel has. Below 1060px there is
+   no room for that beside the answer, so the pair drops under it instead
+   (answer first, as on a phone). */
+@media(min-width:1060px){
+  body.simple .simple-stage[data-side="both"]{grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);
+    max-width:1180px}
+}
+@media(min-width:760px) and (max-width:1059px){
+  body.simple .simple-stage[data-side="both"]{grid-template-columns:minmax(0,1fr)}
+  body.simple .simple-stage[data-side="both"] .s-wheel{order:0}
+}
 /* --win follows the side the wheel is showing: it colours the pressed state of
    the wheel switch under the drawing. */
 .simple-stage[data-side="148"]{--win:var(--a);--win-text:var(--a-text);--win-soft:var(--a-soft)}
 .simple-stage[data-side="157"]{--win:var(--b);--win-text:var(--b-text);--win-soft:var(--b-soft)}
+/* "Both" has no winner colour of its own, so the pressed switch goes neutral. */
+.simple-stage[data-side="both"]{--win:var(--ink);--win-text:var(--ink);--win-soft:var(--well)}
 
 .s-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;
   color:var(--faint);font-weight:600}
@@ -345,10 +360,30 @@ body.simple .simple-stage{display:grid;grid-template-columns:minmax(0,1fr);gap:2
    source code" section for the full citation. Kept short and un-emphasized
    on purpose: it belongs on the page, not competing with the result. */
 .s-credit{font-size:10.5px;color:var(--faint);margin-top:10px;line-height:1.5}
+.s-credit a{color:var(--b-text);text-decoration:underline;text-underline-offset:2px}
+.s-credit a:hover{text-decoration-thickness:2px}
 
 /* The wheel and the switch that says which hub it is showing. Changing a hub
    above points the wheel at it; the switch is for flipping back and forth. */
 .s-wheel{border:2px solid var(--edge);border-radius:12px;padding:14px 12px 16px;background:var(--card)}
+.ws-pair{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.ws-fig{margin:0;min-width:0;--c:var(--a);--ct:var(--a-text)}
+.ws-fig[data-slot="b"]{--c:var(--b);--ct:var(--b-text)}
+/* One wheel by default; the second drawing and the captions that tell the two
+   apart exist only in "Both". */
+.ws-fig[data-slot="b"],.ws-cap{display:none}
+.simple-stage[data-side="both"] .ws-pair{grid-template-columns:repeat(2,minmax(0,1fr))}
+.simple-stage[data-side="both"] .ws-fig[data-slot="b"]{display:block}
+.simple-stage[data-side="both"] .ws-cap{display:block}
+.ws-cap{margin:6px 0 0;text-align:center;font-size:14px;font-weight:700;color:var(--ct);line-height:1.25}
+.ws-cap::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;
+  background:var(--c);margin-right:7px;vertical-align:0}
+.ws-cap.long{font-size:12px;font-weight:650}
+@media(max-width:559px){
+  .simple-stage[data-side="both"] .s-wheel{padding:12px 6px 14px}
+  .simple-stage[data-side="both"] .ws-pair{gap:4px}
+  .simple-stage[data-side="both"] .ws-cap{font-size:13px}
+}
 .ws-box{position:relative;width:100%;max-width:340px;margin:0 auto;aspect-ratio:1;touch-action:pan-y}
 .ws-box canvas{width:100%;height:100%;display:block;cursor:ew-resize}
 .ws-hint{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;
@@ -379,6 +414,16 @@ body.simple .note{display:none}
   body.simple .head-actions{gap:6px}
   body.simple .act-btn{padding:6px 9px;gap:5px}
   body.simple .pmr-link{padding:6px 11px}
+}
+
+/* On a laptop the stage is a centred plate narrower than the page, so a title
+   hard against the left edge and a menu hard against the right edge sat well
+   outside it. Stack and centre them over the plate instead. Below this width
+   the plate is as wide as the page and the single row already lines up with it. */
+@media(min-width:1060px){
+  body.simple .page-head{flex-direction:column;align-items:center;text-align:center;gap:12px;
+    margin-bottom:18px}
+  body.simple .head-actions{justify-content:center}
 }
 
 /* comparison cards — center-out "tug of war" bars */
@@ -775,14 +820,25 @@ built on those stiffnesses.</p>
     <div class="s-cond" id="s-cond">&mdash;</div>
   </div>
   <div class="s-wheel">
-    <div class="ws-box"><canvas id="s-canvas"
-      aria-label="Wireframe rear wheel drawn from the selected hub's real flange geometry. Drag sideways to orbit it and bring the spoke bracing angle into view."></canvas></div>
-    <p class="ws-hint">Drag the wheel sideways to orbit it</p>
+    <div class="ws-pair">
+      <figure class="ws-fig" data-slot="a">
+        <div class="ws-box"><canvas id="s-canvas"
+          aria-label="Wireframe rear wheel drawn from the selected hub's real flange geometry. Drag sideways to orbit it and bring the spoke bracing angle into view."></canvas></div>
+        <figcaption class="ws-cap" id="s-cap-a"></figcaption>
+      </figure>
+      <figure class="ws-fig" data-slot="b">
+        <div class="ws-box"><canvas id="s-canvas-b"
+          aria-label="Wireframe rear wheel for the second hub, shown beside the first. Drag sideways to orbit both."></canvas></div>
+        <figcaption class="ws-cap" id="s-cap-b"></figcaption>
+      </figure>
+    </div>
+    <p class="ws-hint" id="s-hint">Drag the wheel sideways to orbit it</p>
     <div class="s-view" role="group" aria-label="Which hub the wheel shows">
       <span class="s-view-lbl">Wheel shows</span>
       <div class="s-dets" id="s-dets">
         <button type="button" data-s="148" aria-pressed="true">148x12</button>
         <button type="button" data-s="157" aria-pressed="false">157x12</button>
+        <button type="button" data-s="both" aria-pressed="false">Both</button>
       </div>
     </div>
   </div>
@@ -790,7 +846,8 @@ built on those stiffnesses.</p>
     <button type="button" class="s-more" id="s-more" hidden>Show the full
       breakdown &mdash; stiffness, vertical hits and buckling margin &rarr;</button>
     <div class="s-credit">This project could not have been possible without the
-      work of Mechanical Engineer Matt Ford.</div>
+      work of Mechanical Engineer <a href="https://dashdotrobot.com/"
+      target="_blank" rel="noopener">Matt Ford</a>.</div>
   </div>
 </div>
 
@@ -1425,7 +1482,8 @@ const ST = Object.assign({}, DEFAULTS, {
   // size-based default -- so changing wheel size afterward doesn't clobber
   // a deliberate choice. See setWheel() and onTensionChange().
   tds148Touched: false, tds157Touched: false,
-  // Simplified mode shows one wheel; this is the standard it is showing.
+  // Simplified mode shows one wheel -- this is the slot it is showing, '148'
+  // or '157' -- or both side by side ('both').
   simpleSide: '148',
   // true only while simplified mode was applied by the width rule at boot
   // rather than chosen -- the only case that needs the way out spelled out.
@@ -1451,7 +1509,7 @@ function toggleCard(id) {
 function setSimple(on) {
   document.body.classList.toggle('simple', on);
   document.getElementById('simp-btn').setAttribute('aria-pressed', on ? 'true' : 'false');
-  if (SWHEEL) { if (on) SWHEEL.play(); else SWHEEL.pause(); }
+  if (SWHEEL) { if (on) wheelsPlay(); else wheelsPause(); }
   // The hint only ever applies inside the mode. Its parent is display:none out
   // here so this is not visible either way, but a stale flag is a trap.
   var more = document.getElementById('s-more');
@@ -1468,9 +1526,9 @@ function toggleSimple() {
   writeURL();
 }
 
-/* Switch which standard the single wheel is showing. */
+/* Switch which standard the wheel is showing, or show both side by side. */
 function setSimpleSide(v) {
-  if (v !== '148' && v !== '157') return;
+  if (v !== '148' && v !== '157' && v !== 'both') return;
   if (v === ST.simpleSide) return;
   ST.simpleSide = v;
   refresh();
@@ -1557,7 +1615,14 @@ function lerpGeo(from, to, t) {
 
 /* sPrevFlat is null until the wheel has been drawn once, so the first draw
    lands finished and only a later change is animated. */
-var SWHEEL = null, sPrevFlat = null;
+var SWHEEL = null, SWHEEL_B = null, sPrevFlat = null;
+
+/* The second wheel only runs while "Both" is showing. */
+function wheelsPlay() {
+  SWHEEL.play();
+  if (SWHEEL_B) { if (ST.simpleSide === 'both') SWHEEL_B.play(); else SWHEEL_B.pause(); }
+}
+function wheelsPause() { SWHEEL.pause(); if (SWHEEL_B) SWHEEL_B.pause(); }
 
 /* Drive-side bracing angle for a hub that isn't the one currently on the
    turntable. Mirrors makeWheel()'s own internal theta(gg) exactly (same
@@ -1573,7 +1638,7 @@ function bracingAngle(R, ds, pds) {
 /* Renders simplified mode's stage: both hubs with their figures, the sentence
    that compares them, and the wheel for whichever hub it is pointed at. */
 function drawSimple(m148, m157, hub148, hub157, Ns) {
-  var side = ST.simpleSide, isA = side === '148';
+  var side = ST.simpleSide, both = side === 'both', isA = side !== '157';
   var meHub = isA ? hub148 : hub157;
   var erd = WHEEL_ERDS[isA ? ST.wheel148 : ST.wheel157];
   var stage = document.getElementById('s-stage');
@@ -1621,11 +1686,23 @@ function drawSimple(m148, m157, hub148, hub157, Ns) {
     esc(sideName(rows[0])) + ') vs <span class="cb">' + thB.toFixed(2) + '°</span> (' +
     esc(sideName(rows[1])) + ')';
 
-  SWHEEL.set({
-    R: erd / 2, nds: meHub.nds, ds: meHub.ds, pds: meHub.pds, pnds: meHub.pnds,
-    spokes: Ns, accent: cssVar(isA ? '--a' : '--b'), ink: cssVar('--ink'),
-  }, sPrevFlat !== null, null);
+  var geo = function (hub, wheel, accent) {
+    return { R: WHEEL_ERDS[wheel] / 2, nds: hub.nds, ds: hub.ds, pds: hub.pds, pnds: hub.pnds,
+             spokes: Ns, accent: cssVar(accent), ink: cssVar('--ink') };
+  };
+  var animate = sPrevFlat !== null;
+  SWHEEL.set(geo(meHub, isA ? ST.wheel148 : ST.wheel157, isA ? '--a' : '--b'), animate, null);
+  // "Both": the first canvas holds the first row's hub, this one the second's.
+  if (both && SWHEEL_B) SWHEEL_B.set(geo(hub157, ST.wheel157, '--b'), animate, null);
   sPrevFlat = true;
+  [['a', rows[0]], ['b', rows[1]]].forEach(function (p) {
+    var cap = document.getElementById('s-cap-' + p[0]), n = sideName(p[1]);
+    cap.textContent = n;
+    cap.classList.toggle('long', n.length > 12);
+  });
+  document.getElementById('s-hint').textContent = both
+    ? 'Drag either wheel sideways to orbit both' : 'Drag the wheel sideways to orbit it';
+  if (window.SPIN_SYNC) window.SPIN_SYNC();      // starts or stops the second wheel
 
   /* Names both hubs and always leads with the stronger one, so the sentence
      reads in a single direction whichever row it came from. */
@@ -1663,17 +1740,20 @@ function cssVar(n) {
   return getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 }
 
-function makeWheel(canvas) {
+function makeWheel(canvas, view) {
   if (!canvas || !canvas.getContext) return null;
   var ctx = canvas.getContext('2d');
-  var W = 0, H = 0, yaw = 0.62, g = null;
+  /* The camera lives in `view`, which two wheels can share, so dragging either
+     of a pair turns both and they stay comparable. */
+  view = view || { yaw: 0.62, peers: [] };
+  var W = 0, H = 0, g = null;
   // One rAF loop drives the spin and the geometry tween together. Two loops
   // both calling draw() would double the paint rate and let them tear.
   var spin = 0, tween = null, raf = 0, lastT = 0, awake = false;
 
   function fit() {
     var r = canvas.getBoundingClientRect();
-    if (!r.width) return;
+    if (!r.width || (r.width === W && r.height === H)) return;
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width  = Math.round(r.width  * dpr);
     canvas.height = Math.round(r.height * dpr);
@@ -1683,7 +1763,7 @@ function makeWheel(canvas) {
   /* Rotate about Y (the yaw that brings the lateral offset into view), add a
      small fixed pitch so the wheel never reads as a flat disc, then project. */
   function proj(x, y, z) {
-    var cy = Math.cos(yaw), sy = Math.sin(yaw);
+    var cy = Math.cos(view.yaw), sy = Math.sin(view.yaw);
     var x1 = x * cy + z * sy, z1 = -x * sy + z * cy;
     var cp = Math.cos(0.16), sp = Math.sin(0.16);
     var y2 = y * cp - z1 * sp, z2 = y * sp + z1 * cp;
@@ -1732,7 +1812,7 @@ function makeWheel(canvas) {
 
     /* The angle only means anything once the wheel has turned enough to show
        it, so the annotation fades in with the yaw. */
-    var reveal = Math.max(0, Math.min(1, (yaw - 0.25) / 0.4));
+    var reveal = Math.max(0, Math.min(1, (view.yaw - 0.25) / 0.4));
     if (reveal > 0.01) {
       var f0 = proj(0, frD, ds), r0 = proj(0, g.R, 0), v0 = proj(0, g.R, ds);
       ctx.setLineDash([3, 4]);
@@ -1787,6 +1867,7 @@ function makeWheel(canvas) {
   /* set(geo, animate, onFrame): onFrame gets the eased progress, so the
      readouts can run off the same clock as the drawing and land together. */
   function set(geo, animate, onFrame) {
+    fit();          // the stage may have changed shape since the last frame
     if (!animate || !g || reduceMotion()) {
       tween = null; g = geo; draw();
       if (onFrame) onFrame(1);
@@ -1803,8 +1884,9 @@ function makeWheel(canvas) {
   function down(x) { dragging = true; lastX = x; }
   function move(x) {
     if (!dragging) return;
-    yaw = Math.max(0, Math.min(1.5, yaw + (x - lastX) * 0.006));
-    lastX = x; draw();
+    view.yaw = Math.max(0, Math.min(1.5, view.yaw + (x - lastX) * 0.006));
+    lastX = x;
+    view.peers.forEach(function (redraw) { redraw(); });
   }
   function up() { dragging = false; }
   canvas.addEventListener('mousedown', function (e) { e.preventDefault(); down(e.clientX); });
@@ -1815,7 +1897,9 @@ function makeWheel(canvas) {
   canvas.addEventListener('touchend', up);
   window.addEventListener('resize', function () { fit(); draw(); });
 
-  return { set: set, redraw: draw, play: play, pause: pause,
+  view.peers.push(draw);
+  return { set: set, redraw: function () { fit(); draw(); }, play: play, pause: pause,
+           view: view,
            theta: function () { return g ? theta(g) : 0; } };
 }
 
@@ -1837,7 +1921,7 @@ function makeWheel(canvas) {
       var key = slot === 'a' ? 'hub148' : 'hub157';
       ST[key] = sel.value;
       document.getElementById(key).value = sel.value;
-      ST.simpleSide = slot === 'a' ? '148' : '157';
+      if (ST.simpleSide !== 'both') ST.simpleSide = slot === 'a' ? '148' : '157';
       refresh();
     });
   });
@@ -2035,9 +2119,9 @@ function readURL() {
   const ti = THEMES.findIndex(t => t.id === p.th);
   if (ti >= 0) themeIdx = ti;
   if (p.adv === '1') document.getElementById('adv-panel').classList.add('open');
-  // sm names the standard the single wheel was showing; '1' is accepted so
+  // sm names the slot the wheel was showing (or 'both'); '1' is accepted so
   // links made before the mode went to one wheel still open.
-  if (p.sm === '148' || p.sm === '157') { ST.simpleSide = p.sm; setSimple(true); }
+  if (p.sm === '148' || p.sm === '157' || p.sm === 'both') { ST.simpleSide = p.sm; setSimple(true); }
   else setSimple(p.sm === '1');
 }
 function copyLink() {
@@ -3235,14 +3319,15 @@ document.getElementById('simp-btn').setAttribute('aria-pressed',
 // header lines still carry the verdicts. See COLLAPSE_ON_NARROW.
 if (window.innerWidth < NARROW_CARDS_PX) COLLAPSE_ON_NARROW.forEach(id => setCard(id, false));
 SWHEEL = makeWheel(document.getElementById('s-canvas'));
+SWHEEL_B = SWHEEL ? makeWheel(document.getElementById('s-canvas-b'), SWHEEL.view) : null;
 /* Keep the spin honest about when it is worth running: only while simplified
    mode is open, the tab is frontmost, and the stage is actually on screen. */
 (function () {
   var stage = document.getElementById('s-stage'), onScreen = true;
   function sync() {
     if (!SWHEEL) return;
-    if (document.body.classList.contains('simple') && onScreen && !document.hidden) SWHEEL.play();
-    else SWHEEL.pause();
+    if (document.body.classList.contains('simple') && onScreen && !document.hidden) wheelsPlay();
+    else wheelsPause();
   }
   if (window.IntersectionObserver) {
     new IntersectionObserver(function (es) {
