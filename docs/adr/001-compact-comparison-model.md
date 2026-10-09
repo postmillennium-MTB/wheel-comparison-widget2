@@ -1,6 +1,6 @@
 # ADR-001-compact-comparison-model: Two fixed hub rows and a stronger-first sentence
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-10-09
 **Feature:** 001-compact-mode-redesign
 
