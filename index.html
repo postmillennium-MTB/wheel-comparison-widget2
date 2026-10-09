@@ -16,8 +16,8 @@
    a result.
 
    Adding a theme: the DMC-12 block below is also on :root, so anything a theme
-   leaves out falls through to DMC-12. Restate every token (see the MGB block,
-   which resets the surface-role and carpet tokens to the plain look). */
+   leaves out falls through to DMC-12. Restate every token (see the MGB, TR6
+   and DB5 blocks, which each set the surface-role and carpet tokens). */
 :root{
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   /* Surface roles a theme can restyle without touching component CSS. The
@@ -66,24 +66,68 @@
   --carpet-display:block; --carpet-mask:url('images/pmr-carpet-1896-mask.png');
   --carpet-color:var(--accent); --carpet-alpha:.23;
 }
-/* ── MGB — deepened British Racing Green cabin: ivory-cream paper and card
-   (evoking cream leather and ivory gauges), a richer BRG accent used for
-   chrome (tagline, focus rings, link hovers) distinct from the 157 side's
-   own green, and warmer hairlines throughout. */
+/* ── MGB — British Racing Green. The page is the green itself, with the brass of
+   the MG badge worked into the carpet weave at 40%, and light panels (ivory
+   gauges against a green dash). The 148 side keeps its ochre. Because the
+   ground is dark, the text that sits on it is light, and each of those tokens
+   was chosen to stay above 4.5:1 on the brass ink at full strength (4.75:1 and
+   better). Panels read against the ground at 12:1. */
 html[data-theme="mgb"]{
-  --ink:#12241a; --muted:#4a5b50; --faint:#7c8a80;
-  --paper:#f1ecdd; --card:#fdfbf3; --line:rgba(4,73,44,.16);
-  --a:#b06d00; --a-text:#8a5500; --a-soft:#f7efdd;   /* 148 — ochre / tan  */
+  --ink:#12241a; --muted:#3f5247; --faint:#566a5e;
+  --paper:#0c3b2a; --card:#f8fbf8; --line:rgba(4,73,44,.18);
+  --edge:#a9c2b3; --edge-strong:#6a8576; --well:#e7efe9;
+  --lift:0 1px 0 rgba(255,255,255,.7) inset, 0 0 0 1px rgba(0,0,0,.28), 0 16px 30px -18px rgba(0,0,0,.85);
+  --a:#b06d00; --a-text:#8a5500; --a-soft:#f7efdd;   /* 148 — ochre        */
   --b:#0a5c37; --b-text:#064027; --b-soft:#e2efe7;   /* 157 — racing green */
   --ok:#0a5c37; --warn:#8a5500; --over:#a52a1e;
   --accent:#04492c; --accent-text:#033a23; --accent-soft:#dfe9e1;
   --accent-glow:rgba(4,73,44,.28);
-  /* Plain look: panels outlined by --line alone, no lift, no carpet. These reset
-     the DMC-12 surface roles that :root would otherwise leak into this theme. */
-  --edge:var(--line); --edge-strong:var(--line); --well:var(--paper); --lift:none;
-  --on-ground:var(--ink); --on-ground-muted:var(--muted);
-  --on-ground-accent:var(--b-text); --on-ground-link:var(--b-text);
-  --carpet-display:none; --carpet-mask:none; --carpet-color:transparent; --carpet-alpha:0;
+  --on-ground:#f6faf7; --on-ground-muted:#e4efe8; --on-ground-accent:#c3f2d8; --on-ground-link:#d0f5e1;
+  --on-ground-focus:#d0f5e1;
+  --carpet-display:block; --carpet-mask:url('images/pmr-carpet-1896-mask.png');
+  --carpet-color:#d8b04a; --carpet-alpha:.40;
+}
+/* ── TR6 — Sage ground, the light green-grey of the cabin, with a deeper brass
+   weave at 40% and the 148 side in tan leather (a redder brown than ochre, so
+   the page carries less yellow). Small text on the page stays above 5:1 on the
+   weave at full strength. */
+html[data-theme="tr6"]{
+  --ink:#12241a; --muted:#3f5247; --faint:#566a5e;
+  --paper:#cdd9d0; --card:#f8fbf8; --line:rgba(4,73,44,.18);
+  --edge:#8ea698; --edge-strong:#6a8576; --well:#e7efe9;
+  --lift:0 1px 0 rgba(255,255,255,.85) inset, 0 1px 2px rgba(6,40,24,.20), 0 12px 24px -16px rgba(6,40,24,.55);
+  --a:#a8541e; --a-text:#7d3a10; --a-soft:#f6e9df;   /* 148 — tan leather  */
+  --b:#0a5c37; --b-text:#064027; --b-soft:#e2efe7;   /* 157 — racing green */
+  --ok:#0a5c37; --warn:#8a5500; --over:#a52a1e;
+  --accent:#04492c; --accent-text:#033a23; --accent-soft:#dfe9e1;
+  --accent-glow:rgba(4,73,44,.28);
+  --on-ground:#0f2318; --on-ground-muted:#2f4337; --on-ground-accent:#04492c; --on-ground-link:#04492c;
+  --carpet-display:block; --carpet-mask:url('images/pmr-carpet-1896-mask.png');
+  --carpet-color:#a07f1e; --carpet-alpha:.40;
+}
+/* ── DB5 — California Sage, the Aston Martin's grey-green, as a mid-tone ground
+   with a Silver Birch weave (light on mid, so it reads as a sheen rather than
+   a pattern), Dubonnet red for the 148 side and Midnight Blue for the 157 side.
+   Red against blue stays apart for colour-blind readers, where the green and
+   ochre pair does not. The status "over" red is brighter than the Dubonnet, and
+   the buckling states also say so in words. The page starts as Caribbean Pearl
+   at the top and fades to California Sage at the bottom; the gradient is pinned
+   to the window (a fixed background), so it stays a gradient on a short page and
+   does not tile on a tall one. */
+html[data-theme="db5"]{
+  --ink:#14211a; --muted:#3f4f45; --faint:#56655c;
+  --paper:#93a894; --card:#fbfcfa; --line:rgba(20,40,30,.18);
+  --ground-image:linear-gradient(180deg,#8dbfdb 0%,#93a894 100%);   /* Caribbean Pearl at the top, California Sage at the bottom */
+  --edge:#5f7667; --edge-strong:#6a8576; --well:#e9eeea;
+  --lift:0 1px 0 rgba(255,255,255,.85) inset, 0 1px 2px rgba(10,30,20,.22), 0 12px 24px -16px rgba(10,30,20,.6);
+  --a:#7a1f33; --a-text:#6b1623; --a-soft:#f6e8ea;   /* 148 — Dubonnet red  */
+  --b:#1f3a6b; --b-text:#14284a; --b-soft:#e6ecf5;   /* 157 — Midnight Blue */
+  --ok:#1b6e48; --warn:#8a5500; --over:#b3261e;
+  --accent:#6b1623; --accent-text:#5a1020; --accent-soft:#f3e3e6;
+  --accent-glow:rgba(107,22,35,.28);
+  --on-ground:#101c15; --on-ground-muted:#1b2a21; --on-ground-accent:#5a1020; --on-ground-link:#14284a;
+  --carpet-display:block; --carpet-mask:url('images/pmr-carpet-1896-mask.png');
+  --carpet-color:#eef1ed; --carpet-alpha:.45;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
@@ -95,6 +139,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
    cards inside it -- more room. Kept under 1366px (a very common
    laptop width) so this doesn't introduce horizontal scroll there. */
 .wrap{max-width:1320px;margin:0 auto;position:relative;z-index:1}
+html[data-theme="db5"] body{background-attachment:fixed;background-repeat:no-repeat}
 /* ── Carpet texture ───────────────────────────────────────────────────────────
    The same alpha mask the Patent Atlas header uses: US Design Patent 25,495
    (Crowe, 1896, "Carpet", expired and public domain; see that repo's
@@ -123,6 +168,9 @@ h1{font-size:29px;font-weight:750;letter-spacing:-.015em;line-height:1.15;color:
 .sub{font-size:12.5px;color:var(--on-ground-muted);margin:2px 0 14px;max-width:62ch}
 button{cursor:pointer;font-family:inherit;color:var(--ink)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* Controls that sit on the page rather than on a panel use the page's own ring
+   colour, so it shows on a dark ground too. */
+.page-head :focus-visible,.note :focus-visible{outline-color:var(--on-ground-focus,var(--accent))}
 
 /* labels + controls */
 .slbl{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;
@@ -524,9 +572,9 @@ body.simple .note{display:none}
 .hero.flash{animation:heropop .45s cubic-bezier(.22,1,.36,1)}
 @keyframes heropop{0%{transform:scale(.978);opacity:.6}100%{transform:none;opacity:1}}
 
-/* MGB reads as a classic instrument, not a neon sign — swap the blurred glow
-   for a crisp brass/BRG hairline instead. */
-html[data-theme="mgb"] .hero{
+/* The three car themes read as classic instruments, not neon signs — swap the
+   blurred glow for a crisp hairline instead. */
+html[data-theme="mgb"] .hero,html[data-theme="tr6"] .hero,html[data-theme="db5"] .hero{
   box-shadow:0 10px 30px -22px rgba(0,0,0,.55),0 0 0 1px var(--accent-glow);
 }
 
@@ -1847,6 +1895,8 @@ function toggleAdv() {
 const THEMES = [
   { id:'dmc12', name:'DMC-12' },
   { id:'mgb',   name:'MGB'    },
+  { id:'tr6',   name:'TR6'    },
+  { id:'db5',   name:'DB5'    },
 ];
 let themeIdx = 0;
 function applyTheme() {
