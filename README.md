@@ -488,6 +488,8 @@ The physics engine is a port of Matt Ford's `bike-wheel-calc`, which is licensed
 
 Widget UI, hub data compilation, strength metric formulas, and this README: © PostMillennium MTB / RedFoxRun, 2026.
 
+This project's own code and text are released under the [PolyForm Noncommercial License 1.0.0](LICENSE) (free for noncommercial use; commercial use needs a separate license, asked through postmillenniumrenaissance.com). Matt Ford's `bike-wheel-calc` stays under its own MIT license; see `THIRD-PARTY-NOTICES.md`. Facts and figures from cited sources remain their authors'.
+
 The carpet texture behind the panels is US Design Patent 25,495 (E. A. Crowe, 1896), expired and in the public domain; see `images/pmr-carpet-1896-SOURCE.md`.
 
 ---
