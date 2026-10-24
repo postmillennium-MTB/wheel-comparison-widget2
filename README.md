@@ -138,16 +138,17 @@ drifting apart the way they once had.
 
 ### Exact library functions reproduced
 
-The four computed metrics correspond to specific functions in the Ford library:
+The computed metrics correspond to specific functions in the Ford library:
 
 | Widget metric | Library function | Key settings |
 |---|---|---|
 | Tension ratio NDS/DS | `BicycleWheel.apply_tension(T_right=T_DS)` | Equilibrium balance |
 | Lateral stiffness K_lat | `theory.calc_lat_stiff()` | N=24, smeared spokes, tension softening, no radial coupling, r0=False |
 | Radial stiffness K_rad | `theory.calc_rad_stiff()` | Same settings |
-| Critical buckling tension T_c | `theory.calc_buckling_tension()` | Linear approximation, N=24 |
+| Critical buckling tension T_c | `theory.calc_buckling_tension_modematrix()` | N=24, fully-discrete spokes, coupled, r0=False |
+| Strength F_lat, F_rad | built from `ModeMatrix` and `Spoke.calc_tension_change` (the library has no strength function) | N=24, fully-discrete spokes, coupled, tension=True, r0=False |
 
-"Smeared spokes" (the Smith–Pippard approximation) replaces the discrete spoke pattern with a continuous elastic foundation of equivalent stiffness, which is the standard approach for the Mode Matrix method. The widget does not currently support fully-discrete spoke calculations.
+"Smeared spokes" (the Smith–Pippard approximation) replaces the discrete spoke pattern with a continuous elastic foundation of equivalent stiffness. The two stiffness figures still use it. Strength and buckling tension use Ford's fully-discrete model instead, where each spoke sits at its own rim angle with its own direction, and lateral and radial deflection are coupled. That is the model the strength figures depend on most: in the October 2026 check (wheel-physics-core, `validation/strength/`), the smeared shortcut differed from it by −49% to +16% on lateral strength, with the large errors close to buckling. Discrete buckling tension runs 4–11% below the smeared linear estimate the widget used before.
 
 ### Model assumptions and their implications
 
@@ -155,7 +156,7 @@ Every analytical model makes simplifying assumptions. The ones that matter most 
 
 **Rim centroid radius.** Spoke geometry is computed from the rim's structural centroid, which sits approximately 11 mm radially inward from the spoke nipple seat (ERD/2). Ford §3.2 derives this from rim cross-section geometry. Using ERD/2 directly instead would introduce a ~3–4% error in spoke length that propagates through every stiffness and strength calculation. This 11 mm value is fixed for all rims in the widget; users with significantly different rim profiles may wish to note this.
 
-**Smeared spokes.** The continuous spoke foundation is accurate when the number of spokes is large enough that the circumferential spacing is small relative to the rim's characteristic deformation length — satisfied for typical 28–36 spoke wheels.
+**Smeared spokes (stiffness only).** K_lat and K_rad use the continuous spoke foundation, which is accurate when the circumferential spoke spacing is small relative to the rim's characteristic deformation length. Strength and buckling tension do not; see above.
 
 **No spoke offset.** The model assumes the spoke nipple sits at the rim's shear center (b = 0). For most double-wall MTB rims, the offset is small and its effect on overall stiffness is negligible.
 
@@ -201,35 +202,30 @@ Worth noting: wheel size matters much more for the other three metrics — K_lat
 
 How hard it is to push the rim sideways at the contact patch with a unit force. Higher is stiffer. Under the Mode Matrix method, the value accounts for both the rim's resistance to bending and torsion and the spoke bed's resistance to lateral displacement. The tension-softening effect — whereby pre-tension in the spokes actually reduces lateral stiffness slightly via hoop compression — is included.
 
-Across the 30 hubs in this dataset at standard build conditions (29 in, 32H, 2.0 mm spokes, 100 kgf DS tension, DT Swiss TK540 rim), K_lat ranges from **53.6 to 82.6 N/mm for 148** builds and **63.0 to 102.5 N/mm for 157** builds. The variation within each standard is as large as the difference between standards — meaning hub geometry and wheel size matter as much as the axle width.
+Across the 30 hubs in this dataset at standard build conditions (29 in, 32H, 2.0 mm spokes, 100 kgf DS tension, DT Swiss TK540 rim), K_lat ranges from **53.6 to 82.6 N/mm for 148** builds and **63.7 to 102.5 N/mm for 157** builds. The variation within each standard is as large as the difference between standards — meaning hub geometry and wheel size matter as much as the axle width.
 
 ### Lateral strength F_lat (kgf)
 
 The sideways load at the rim contact patch at which the first spoke on the low-tension side reaches zero pre-tension. This is the onset of spoke slack, not wheel collapse. Beyond this point, the slack spoke can no longer resist rim motion; repeated loading in this regime leads to fatigue and eventual wheel failure.
 
-**This is not a library output.** The Ford library computes stiffnesses and buckling loads; it does not define a "lateral strength" in this sense. The formula used here is:
+**This is not a library output.** The Ford library computes stiffnesses and buckling loads; it does not define a "lateral strength" in this sense. The widget builds it from the library's own routines, in Ford's fully-discrete model:
 
-```
-u_slack = T_side × L_side / (EA_side × |n_u,side|)
-F_lat   = K_lat × min(u_slack_DS, u_slack_NDS)
-```
+1. Assemble the wheel's stiffness matrix with `ModeMatrix` (rim plus every spoke at its own rim angle, lateral and radial coupled, spoke tension included).
+2. Apply a 1 N sideways point load at a spoke's rim point and solve for the rim's deflection.
+3. Get every spoke's tension change from that deflection, `ΔT = −(EA/L)·(n·d)` (`Spoke.calc_tension_change`).
+4. F_lat = the smallest load that brings any spoke to zero tension, `min(T / |ΔT|)`, over loads at each of the four spokes in one lacing period, in both directions.
 
-Where `u_slack` is the lateral rim deflection that bleeds off all pre-tension in the governing spoke, and the governing side (almost always NDS) is reported on the widget. This is a first-order linear approximation. The actual load at which a spoke first goes slack in a real wheel may differ due to spoke bedding, nipple friction, and local load concentration. Use this as a relative comparison between the two builds, not as an absolute failure prediction.
+The side whose spoke goes slack first is reported on the widget. wheel-physics-core runs the same steps in Ford's Python and checks the widget's engine against it to floating-point precision. This is a linear model up to first slack. The actual load at which a spoke first goes slack in a real wheel may differ due to spoke bedding, nipple friction, and local load concentration. Use it as a relative comparison between the two builds, not as an absolute failure prediction.
 
-**Caution: thinning the governing spoke's gauge always raises F_lat, with no ceiling.** Because `u_slack` scales with `1 / EA_side` and cross-sectional area falls as the square of diameter, thinning the governing spoke (almost always NDS) increases F_lat at an *accelerating* rate — each 0.1 mm step buys more than the last. Taken to its limit the formula implies an infinitely thin spoke gives an infinitely strong wheel, which is obviously not physical. Two things are actually happening when you do this in the widget:
-
-- **The tradeoff is real but lives in a different card.** A thinner, stretchier NDS spoke genuinely does stay tensioned through more deflection — this is the real-world reason NDS-side bladed or butted spokes are common on dished rear wheels. But it comes at the cost of lateral stiffness (K_lat), which drops steadily as gauge thins. F_lat only tells half the story; check K_lat alongside it before reading a thin-NDS build as an unqualified win.
-- **The model has no term that bounds the gain.** F_lat has no yield criterion, no fatigue term, and assumes straight-gauge spokes rather than the butted (e.g. 2.0–1.5–2.0) spokes typically paired with thin NDS gauges — a butted spoke's thicker ends raise its effective axial stiffness above straight-gauge 1.5 mm, so the widget likely overstates the F_lat gain at thin gauges, more so the thinner you go. Spoke tensile stress also isn't modeled; at fixed tension, thinning the spoke raises its stress roughly as `1/d²`.
-
-In short: F_lat correctly ranks two builds at a fixed spoke gauge, but it should not be used to justify going to unrealistically thin NDS spokes in isolation. Cross-check against K_lat, and treat straight-gauge results at 1.5–1.6 mm as an upper-bound estimate rather than a build recommendation.
+**Thinner NDS spokes.** Before October 2026 the widget used a smeared shortcut, `F_lat = K_lat × T·L / (EA·|n_u|)` for the governing spoke, which made F_lat rise without limit as the NDS spoke got thinner. Ford's discrete model does not show that. For the CK 148 at the standard build below (29", 32H, 100 kgf DS), thinning the NDS spokes from 2.0 to 1.5 mm takes F_lat from 21.5 to 21.1 kgf, and to 19.3 kgf at 1.2 mm, while K_lat falls from 74.4 to 50.1 to 37.7 N/mm. The model still assumes straight-gauge spokes (a butted spoke's thicker ends make it stiffer than its middle gauge suggests), and it has no yield or fatigue term: at fixed tension, thinning a spoke raises its stress roughly as `1/d²`.
 
 ### Radial strength F_rad (kgf)
 
-The downward load at the contact patch at which the first spoke on the bottom of the wheel reaches zero pre-tension. Computed by the same linearized approach as F_lat, using the radial direction cosines and the radial stiffness K_rad.
+The downward load at the contact patch at which the first spoke reaches zero pre-tension. Computed the same way as F_lat, with a radial point load in place of the sideways one.
 
 ### Buckling tension T_c (kgf)
 
-The spoke tension at which the rim becomes elastically unstable — it would buckle laterally ("taco") rather than simply deflect. Ford §5 derives this from the mode at which the lateral stiffness matrix becomes singular. The widget uses the linear approximation (`calc_buckling_tension(approx='linear')`).
+The spoke tension at which the rim becomes elastically unstable — it would buckle laterally ("taco") rather than simply deflect. Ford §5 derives this from the tension at which the wheel's stiffness matrix becomes singular. The widget uses the library's discrete-spoke version (`calc_buckling_tension_modematrix(smeared_spokes=False, coupling=True)`), so it comes from the same matrices as the strength figures; until October 2026 it used the smeared linear approximation (`calc_buckling_tension(approx='linear')`), which reads 4–11% higher.
 
 The table shows two representations of T_c:
 
@@ -326,46 +322,46 @@ The numbers are recorded here so the research is not lost and nobody re-derives 
 
 | Hub | Std | NDS/DS ratio | K_lat (N/mm) | K_rad (N/mm) | T_c avg (kgf) | Baseline |
 |---|---|---|---|---|---|---|
-| Onyx 148 MFU | 148 | 62.4% | 74.1 | 4731 | 154.1 | PASS |
-| SPANK HEX J-TYPE BOOST R148 | 148 | 68.0% | 78.4 | 4739 | 160.6 | PASS |
-| CK 148x12 CENTERLOCK REAR | 148 | 66.4% | 74.4 | 4738 | 155.6 | PASS |
-| project 321 G3 148x12 | 148 | 69.1% | 57.9 | 4750 | 137.6 | PASS |
-| Hydra Mountain 6 Bolt Rear 148 | 148 | 66.1% | 81.6 | 4735 | 163.8 | PASS |
-| I9 Hydra Centerlock Rear 148 | 148 | 62.2% | 82.6 | 4730 | 164.0 | PASS |
-| I9 1/1 Mountain 6 Bolt 148 | 148 | 62.5% | 75.6 | 4740 | 155.9 | PASS |
-| Hope Pro5 148 6 bolt | 148 | 64.9% | 68.4 | 4743 | 148.3 | PASS |
-| Erase MTB IS 148x12 V2 j-bend | 148 | 66.3% | 80.6 | 4729 | 162.8 | PASS |
-| Hadley 148x12 | 148 | 62.2% | 75.2 | 4736 | 155.3 | PASS |
-| OneUp Rear Hub 148x12 | 148 | 60.7% | 77.9 | 4728 | 158.1 | not yet run |
-| KOM Xeno Rear Boost 148x12 | 148 | 77.2% | 53.6 | 4737 | 135.2 | not yet run |
-| DMR Zone 148 Boost Centerlock | 148 | 55.6% | 76.2 | 4737 | 154.7 | not yet run |
-| DT Swiss 350 148 6-bolt | 148 | 63.7% | 74.4 | 4736 | 154.8 | not yet run |
-| e*thirteen Sidekick 148 Boost | 148 | 55.6% | 76.7 | 4741 | 155.3 | not yet run |
-| Onyx 150/157 | 157 | 66.6% | 95.2 | 4715 | 180.4 | PASS |
-| Onyx 150/157 Vesper | 157 | 65.8% | 93.7 | 4711 | 178.3 | PASS |
-| SPANK HEX J-TYPE R150/157 | 157 | 75.2% | 93.6 | 4726 | 180.9 | PASS |
-| CK 157 SB CENTERLOCK REAR | 157 | 71.8% | 94.8 | 4722 | 181.4 | PASS |
-| project 321 G3 157 SB | 157 | 81.6% | 63.0 | 4744 | 146.7 | PASS |
-| I9 Hydra 6 Bolt 150/157 | 157 | 71.1% | 97.7 | 4722 | 184.7 | PASS |
-| I9 Hydra Centerlock 157 SB | 157 | 65.9% | 101.8 | 4715 | 188.4 | PASS |
-| Hope Pro5 157 SB 6 bolt | 157 | 68.6% | 89.7 | 4727 | 174.2 | PASS |
-| Erase MTB IS 157x12 v2 j-bend | 157 | 70.0% | 102.5 | 4712 | 190.4 | PASS |
-| Hadley 150/157 | 157 | 66.6% | 97.0 | 4723 | 182.7 | PASS |
-| OneUp Rear Hub 157x12 | 157 | 74.3% | 72.1 | 4731 | 155.0 | not yet run |
-| KOM Xeno Rear Super Boost 157 | 157 | 80.2% | 74.4 | 4723 | 159.3 | not yet run |
-| DMR Zone 157 SB Centerlock | 157 | 61.3% | 91.2 | 4725 | 174.1 | not yet run |
-| DT Swiss 350 157 6-bolt | 157 | 67.9% | 96.0 | 4720 | 181.8 | not yet run |
-| e*thirteen Sidekick Pro 157 SB | 157 | 60.4% | 97.6 | 4725 | 181.7 | not yet run |
+| Onyx 148 MFU | 148 | 62.4% | 74.1 | 4731 | 142.8 | PASS |
+| SPANK HEX J-TYPE BOOST R148 | 148 | 68.0% | 78.4 | 4739 | 149.7 | PASS |
+| CK 148x12 CENTERLOCK REAR | 148 | 66.4% | 74.4 | 4738 | 144.9 | PASS |
+| project 321 G3 148x12 | 148 | 69.1% | 57.9 | 4750 | 129.5 | PASS |
+| Hydra Mountain 6 Bolt Rear 148 | 148 | 66.1% | 81.6 | 4735 | 152.2 | PASS |
+| I9 Hydra Centerlock Rear 148 | 148 | 62.2% | 82.6 | 4730 | 151.4 | PASS |
+| I9 1/1 Mountain 6 Bolt 148 | 148 | 62.5% | 75.6 | 4740 | 144.3 | PASS |
+| Hope Pro5 148 6 bolt | 148 | 64.9% | 68.4 | 4743 | 138.2 | PASS |
+| Erase MTB IS 148x12 V2 j-bend | 148 | 66.3% | 80.6 | 4729 | 151.3 | PASS |
+| Hadley 148x12 | 148 | 62.2% | 75.2 | 4736 | 143.8 | PASS |
+| OneUp Rear Hub 148x12 | 148 | 60.7% | 77.9 | 4728 | 145.8 | PASS |
+| KOM Xeno Rear Boost 148x12 | 148 | 77.2% | 53.6 | 4737 | 128.4 | PASS |
+| DMR Zone 148 Boost Centerlock | 148 | 55.6% | 76.2 | 4737 | 141.5 | PASS |
+| DT Swiss 350 148 6-bolt | 148 | 63.7% | 74.4 | 4736 | 143.7 | PASS |
+| e*thirteen Sidekick 148 Boost | 148 | 55.6% | 76.7 | 4741 | 142.0 | PASS |
+| Onyx 150/157 | 157 | 66.6% | 95.2 | 4715 | 167.0 | PASS |
+| Onyx 150/157 Vesper | 157 | 65.8% | 93.7 | 4711 | 164.9 | PASS |
+| SPANK HEX J-TYPE R150/157 | 157 | 75.2% | 93.6 | 4726 | 169.2 | PASS |
+| CK 157 SB CENTERLOCK REAR | 157 | 71.8% | 94.8 | 4722 | 169.0 | PASS |
+| project 321 G3 157 SB | 157 | 83.2% | 63.7 | 4743 | 140.4 | PASS |
+| I9 Hydra 6 Bolt 150/157 | 157 | 71.1% | 97.7 | 4722 | 171.9 | PASS |
+| I9 Hydra Centerlock 157 SB | 157 | 65.9% | 101.8 | 4715 | 173.9 | PASS |
+| Hope Pro5 157 SB 6 bolt | 157 | 68.6% | 89.7 | 4727 | 161.9 | PASS |
+| Erase MTB IS 157x12 v2 j-bend | 157 | 70.0% | 102.5 | 4712 | 176.7 | PASS |
+| Hadley 150/157 | 157 | 66.6% | 97.0 | 4723 | 169.0 | PASS |
+| OneUp Rear Hub 157x12 | 157 | 74.3% | 72.1 | 4731 | 145.8 | PASS |
+| KOM Xeno Rear Super Boost 157 | 157 | 80.2% | 74.4 | 4723 | 150.4 | PASS |
+| DMR Zone 157 SB Centerlock | 157 | 61.3% | 91.2 | 4725 | 160.0 | PASS |
+| DT Swiss 350 157 6-bolt | 157 | 67.9% | 96.0 | 4720 | 168.5 | PASS |
+| e*thirteen Sidekick Pro 157 SB | 157 | 60.4% | 97.6 | 4725 | 166.2 | PASS |
 
-"PASS" means the widget value matched the `bike-wheel-calc` Python library to < 10⁻¹² % (floating-point noise).
+"PASS" means the engine this widget ships matched Matthew Ford's `bike-wheel-calc` Python library to floating-point noise for that hub's geometry. The most recent run (2026-10-24, wheel-physics-core `validation/`) covered all 30 hubs at four build setups, including this one, and checked tension ratio, both stiffnesses, both buckling tensions and both strength figures.
 
-"not yet run" marks a hub added after the most recent congruence run (2026-08-20). Its figures above were computed with the shipped engine, but that engine has not been re-checked against the Python library *with this hub's geometry in the input set*. The two are not equivalent claims, so the column records the difference rather than glossing it. Since the engine is geometry-independent — the same code path runs for every hub — a passing run on 20 hubs is strong evidence the engine is correct, not proof for a specific untested row. These rows change to PASS at the next congruence re-run.
+T_c avg is the discrete-spoke buckling tension (see "Buckling tension T_c" above). Before October 2026 this column showed the smeared linear estimate, which is 4–11% higher.
 
 ### Notable results worth examining
 
-**project 321 G3 148 vs 157.** Both versions of this hub use an unusually narrow NDS offset (32 mm) for their respective standards. The 157 version reaches the highest tension ratio of any *conventionally dished* 157 here (81.6%) but among the lowest lateral stiffness in the 157 group (63.0 N/mm) — because while the ratio is excellent, the narrow NDS offset means the NDS spoke angle is steep and the absolute stiffness contribution is reduced. This is a good illustration of why no single metric tells the full story.
+**project 321 G3 148 vs 157.** Both versions of this hub use an unusually narrow NDS offset (32 mm) for their respective standards. The 157 version reaches the highest tension ratio of any *conventionally dished* 157 here (83.2%) but among the lowest lateral stiffness in the 157 group (63.7 N/mm) — because while the ratio is excellent, the narrow NDS offset means the NDS spoke angle is steep and the absolute stiffness contribution is reduced. This is a good illustration of why no single metric tells the full story.
 
-**I9 Hydra Centerlock 157 SB.** Among the highest lateral stiffness in the dataset (101.8 N/mm, second only to the Erase MTB IS 157x12 at 102.5) and one of the highest buckling margins (188.4 kgf), owing to a notably wide NDS offset (43 mm) that gives the NDS spokes excellent lateral bracing geometry.
+**I9 Hydra Centerlock 157 SB.** Among the highest lateral stiffness in the dataset (101.8 N/mm, second only to the Erase MTB IS 157x12 at 102.5) and one of the highest buckling margins (173.9 kgf, second only to the Erase MTB IS 157x12 at 176.7), owing to a notably wide NDS offset (43 mm) that gives the NDS spokes excellent lateral bracing geometry.
 
 **KOM Xeno Rear Boost 148 — the clearest tension-balance-versus-stiffness trade in the dataset.** This hub posts the best tension balance of any 148 in the catalogue by a wide margin (77.2%, against a 148 median near 65%) and simultaneously the lowest lateral stiffness of any hub here, either standard (53.6 N/mm). Both come from the same two geometry choices: a 46 mm flange PCD, the smallest in the dataset, and a flange spacing of 54 mm that sits the two flanges unusually close together. The small PCD shortens the lever the spokes act on and steepens their angle at the rim, which costs bracing stiffness; the narrow, comparatively even flange spacing is what keeps the two sides' tensions close. A builder reading only the tension-ratio column would rank this hub first among 148s, and a builder reading only the stiffness column would rank it last. Neither column is wrong, and this is the sharpest illustration in the catalogue of why the widget shows four metrics instead of a score.
 
@@ -377,7 +373,7 @@ What that buys is less than it might appear. Both land mid-pack for lateral stif
 
 The broader pattern in the 148 group is close to monotonic in the other direction. Ranked by stiffness, the top of the table runs 62–68% balance and the bottom runs 69–77%: project 321 (57.9 N/mm, 69.1%) and the KOM Xeno (53.6 N/mm, 77.2%) sit last on stiffness and first on balance. Across this catalogue the two metrics trade against each other far more often than they move together — which is the case for showing four numbers rather than one score.
 
-**Axle standard is not the only driver.** The 148 range (53.6–82.6 N/mm) and 157 range (63.0–102.5 N/mm) overlap substantially — the bottom quarter of the 157 range sits inside the 148 range entirely. A well-specified 148 build with a high-quality hub and large-flanged hubs can outperform a poorly specified 157 build. What the 157 standard enables is a structural ceiling that is simply not available at 148 mm — the best 157 hubs reach about 25% higher lateral stiffness than the best 148 hubs in this dataset.
+**Axle standard is not the only driver.** The 148 range (53.6–82.6 N/mm) and 157 range (63.7–102.5 N/mm) overlap substantially — the bottom quarter of the 157 range sits inside the 148 range entirely. A well-specified 148 build with a high-quality hub and large-flanged hubs can outperform a poorly specified 157 build. What the 157 standard enables is a structural ceiling that is simply not available at 148 mm — the best 157 hubs reach about 25% higher lateral stiffness than the best 148 hubs in this dataset.
 
 ---
 
