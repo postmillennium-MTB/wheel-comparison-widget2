@@ -192,9 +192,12 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
 .side-card{border-top:4px solid}
 .side-a{border-top-color:var(--a)} .side-b{border-top-color:var(--b)}
 /* card header: big numeric standard ("148x12") over a small marketing
-   nickname ("Boost axle"). The nickname carries a native title tooltip with
-   its trademark trivia — dotted underline + help cursor are the only hint
-   it's hoverable, since a title attribute alone gives no visual affordance. */
+   nickname ("Boost axle"). The nickname's trademark trivia shows in a CSS
+   bubble driven by data-tip, not the native `title` popup: that one is
+   unreliable inside an iframe (this widget is always embedded) and never
+   appears on a phone, which has no hover. The bubble shows on hover, on
+   keyboard focus, and on tap (JS toggles .tip-open; a tap elsewhere or Esc
+   closes it). */
 .side-head{margin-bottom:12px;text-align:center}
 .side-head .std-name{display:block;width:100%;background:none;border:1.5px dashed transparent;border-radius:9px;padding:2px 6px;cursor:pointer;font-family:inherit;font-size:32px;font-weight:800;
   letter-spacing:-.01em;line-height:1.15}
@@ -205,8 +208,29 @@ input.ctl-num{font-family:var(--mono);font-size:14px;padding:8px 10px;border:1px
 .std-name::after{content:" ⇄";font-size:.5em;vertical-align:.28em;opacity:.35;font-weight:600}
 .side-a .std-name{color:var(--a-text)}
 .side-b .std-name{color:var(--b-text)}
-.side-head .std-nick{display:inline-block;font-size:14px;color:var(--muted);
+.side-head .std-nick{position:relative;display:inline-block;font-size:14px;color:var(--muted);
   margin-top:1px;border-bottom:1px dotted var(--faint);cursor:help}
+.side-head .std-nick::after{content:attr(data-tip);position:absolute;top:calc(100% + 9px);
+  width:230px;max-width:min(230px,70vw);padding:9px 11px;
+  background:var(--ink);color:var(--card);font-size:12px;font-weight:500;line-height:1.4;
+  text-align:left;border-radius:7px;box-shadow:0 6px 16px rgba(0,0,0,.2);
+  opacity:0;visibility:hidden;transition:opacity .15s;pointer-events:none;z-index:30}
+/* Bubble grows away from each card's outer edge (left card -> right, right
+   card -> left) so it can't clip against the iframe's edge. */
+.side-a .std-nick::after{left:0}
+.side-b .std-nick::after{right:0}
+/* On a phone the cards stack full width and the nickname sits mid-card, so
+   centre the bubble under it instead. */
+@media (max-width:700px){
+  .side-a .std-nick::after,.side-b .std-nick::after{left:50%;right:auto;transform:translateX(-50%)}
+}
+.side-head .std-nick::before{content:"";position:absolute;left:50%;top:100%;
+  transform:translateX(-50%);border:6px solid transparent;border-bottom-color:var(--ink);
+  opacity:0;visibility:hidden;transition:opacity .15s;pointer-events:none;z-index:30}
+.side-head .std-nick:hover::after,.side-head .std-nick:hover::before,
+.side-head .std-nick:focus-visible::after,.side-head .std-nick:focus-visible::before,
+.side-head .std-nick.tip-open::after,.side-head .std-nick.tip-open::before{
+  opacity:1;visibility:visible}
 .fld{margin-bottom:12px}
 .fld:last-child{margin-bottom:0}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -858,7 +882,7 @@ Ford's discrete-spoke model, checked against his code the same way.</p>
   <div class="card side-card side-a">
     <div class="side-head"><button type="button" class="std-name" id="std148"
       onclick="cycleStd('148')" aria-label="Axle standard — click to switch this side"
-      >148x12</button><span class="std-nick" id="nick148" title="Boost is a marketing nickname from Trek, circa 2014/2015.">Boost axle</span></div>
+      >148x12</button><span class="std-nick" id="nick148" tabindex="0" role="button" aria-expanded="false" data-tip="Boost is a marketing nickname from Trek, circa 2014/2015." aria-label="Boost axle: Boost is a marketing nickname from Trek, circa 2014/2015.">Boost axle</span></div>
     <div class="fld simple-hide"><div class="slbl">Wheel size</div>
       <div class="seg" id="seg148" role="group" aria-label="148 wheel size">
         <button id="w148-26" aria-pressed="false" onclick="setWheel('148','26')">26″</button>
@@ -889,7 +913,7 @@ Ford's discrete-spoke model, checked against his code the same way.</p>
   <div class="card side-card side-b">
     <div class="side-head"><button type="button" class="std-name" id="std157"
       onclick="cycleStd('157')" aria-label="Axle standard — click to switch this side"
-      >157x12</button><span class="std-nick" id="nick157" title="Super Boost is a marketing nickname from Pivot, circa 2016.">Super Boost axle</span></div>
+      >157x12</button><span class="std-nick" id="nick157" tabindex="0" role="button" aria-expanded="false" data-tip="Super Boost is a marketing nickname from Pivot, circa 2016." aria-label="Super Boost axle: Super Boost is a marketing nickname from Pivot, circa 2016.">Super Boost axle</span></div>
     <div class="fld simple-hide"><div class="slbl">Wheel size</div>
       <div class="seg" id="seg157" role="group" aria-label="157 wheel size">
         <button id="w157-26" aria-pressed="false" onclick="setWheel('157','26')">26″</button>
@@ -1733,14 +1757,14 @@ if (typeof window !== 'undefined') {
 // ── Data ─────────────────────────────────────────────────────────────────────
 const HUBS_148 = [
   { id:'h1',  name:'Onyx 148 MFU',                   nds:36.9, ds:22.92, pds:50.0, pnds:50.0 },
-  { id:'h5',  name:'SPANK HEX J-TYPE BOOST R148',    nds:37,   ds:25,    pds:64.0, pnds:58.0 },
-  { id:'h6',  name:'CK 148x12 CENTERLOCK REAR',      nds:36.3, ds:24,    pds:57.4, pnds:57.4 },
-  { id:'h8',  name:'project 321 G3 148x12',          nds:32,   ds:22,    pds:60.5, pnds:55.0 },
-  { id:'h10', name:'Hydra Mountain 6 Bolt Rear 148', nds:38,   ds:25,    pds:60.0, pnds:58.0 },
-  { id:'h12', name:'I9 Hydra Centerlock Rear 148',   nds:39,   ds:24,    pds:60.0, pnds:49.0 },
-  { id:'h14', name:'I9 1/1 Mountain 6 Bolt 148',     nds:37,   ds:23,    pds:60.0, pnds:58.0 },
-  { id:'h15', name:'Hope Pro5 148 6 bolt',           nds:35,   ds:22.6,  pds:59.0, pnds:57.0 },
-  { id:'h17', name:'Erase MTB IS 148x12 V2 j-bend',  nds:38,   ds:25,    pds:56.0, pnds:50.0 },
+  { id:'h5',  name:'Spank Hex J-Type Boost R148',    nds:37,   ds:25,    pds:64.0, pnds:58.0 },
+  { id:'h6',  name:'CK 148x12 Centerlock Rear',      nds:36.3, ds:24,    pds:57.4, pnds:57.4 },
+  { id:'h8',  name:'Project 321 G3 148x12',          nds:32,   ds:22,    pds:60.5, pnds:55.0 },
+  { id:'h10', name:'Hydra Mountain 6-Bolt 148', nds:38,   ds:25,    pds:60.0, pnds:58.0 },
+  { id:'h12', name:'I9 Hydra Centerlock 148',   nds:39,   ds:24,    pds:60.0, pnds:49.0 },
+  { id:'h14', name:'I9 1/1 Mountain 6-Bolt 148',     nds:37,   ds:23,    pds:60.0, pnds:58.0 },
+  { id:'h15', name:'Hope Pro5 148 6-bolt',           nds:35,   ds:22.6,  pds:59.0, pnds:57.0 },
+  { id:'h17', name:'Erase MTB IS 148x12 V2',  nds:38,   ds:25,    pds:56.0, pnds:50.0 },
   { id:'h20', name:'Hadley 148x12',                  nds:37.1, ds:22.9,  pds:59.0, pnds:52.0 },
   { id:'h21', name:'OneUp Rear Hub 148x12',          nds:38,   ds:23,    pds:48.0, pnds:52.0 },
   { id:'h23', name:'KOM Xeno Rear Boost 148x12',     nds:30.5, ds:23.5,  pds:46.0, pnds:46.0 },
@@ -1751,13 +1775,13 @@ const HUBS_148 = [
 const HUBS_157 = [
   { id:'h2',  name:'Onyx 150/157',                   nds:41.4, ds:27.42, pds:50.0, pnds:50.0 },
   { id:'h3',  name:'Onyx 150/157 Vesper',            nds:41.4, ds:26.97, pds:50.0, pnds:42.0 },
-  { id:'h4',  name:'SPANK HEX J-TYPE R150/157',      nds:39.5, ds:29.5,  pds:64.0, pnds:58.0 },
-  { id:'h7',  name:'CK 157 SB CENTERLOCK REAR',      nds:40.3, ds:28.8,  pds:57.4, pnds:57.4 },
-  { id:'h9',  name:'project 321 G3 157 SB',          nds:32,   ds:26.5,   pds:60.5, pnds:55.0 },
-  { id:'h11', name:'I9 Hydra 6 Bolt 150/157',        nds:41,   ds:29,    pds:60.0, pnds:58.0 },
+  { id:'h4',  name:'Spank Hex J-Type R150/157',      nds:39.5, ds:29.5,  pds:64.0, pnds:58.0 },
+  { id:'h7',  name:'CK 157 SB Centerlock Rear',      nds:40.3, ds:28.8,  pds:57.4, pnds:57.4 },
+  { id:'h9',  name:'Project 321 G3 157 SB',          nds:32,   ds:26.5,   pds:60.5, pnds:55.0 },
+  { id:'h11', name:'I9 Hydra 6-Bolt 150/157',        nds:41,   ds:29,    pds:60.0, pnds:58.0 },
   { id:'h13', name:'I9 Hydra Centerlock 157 SB',     nds:43,   ds:28,    pds:60.0, pnds:49.0 },
-  { id:'h16', name:'Hope Pro5 157 SB 6 bolt',        nds:39.6, ds:27,    pds:59.0, pnds:57.0 },
-  { id:'h18', name:'Erase MTB IS 157x12 v2 j-bend',  nds:42.5, ds:29.5,  pds:56.0, pnds:50.0 },
+  { id:'h16', name:'Hope Pro5 157 SB 6-bolt',        nds:39.6, ds:27,    pds:59.0, pnds:57.0 },
+  { id:'h18', name:'Erase MTB IS 157x12 V2',  nds:42.5, ds:29.5,  pds:56.0, pnds:50.0 },
   { id:'h19', name:'Hadley 150/157',                 nds:41.5, ds:27.5,  pds:59.0, pnds:59.0 },
   { id:'h22', name:'OneUp Rear Hub 157x12',          nds:35,   ds:26,    pds:48.0, pnds:52.5 },
   { id:'h24', name:'KOM Xeno Rear Super Boost 157',  nds:35,   ds:28,    pds:46.0, pnds:46.0 },
@@ -1993,15 +2017,20 @@ function wheelsPlay() {
 }
 function wheelsPause() { SWHEEL.pause(); if (SWHEEL_B) SWHEEL_B.pause(); }
 
-/* Drive-side bracing angle for a hub that isn't the one currently on the
-   turntable. Mirrors makeWheel()'s own internal theta(gg) exactly (same
-   formula, same units) -- that copy is closured inside the wheel factory to
-   drive the on-canvas annotation, so it can't be called for a hub that
-   isn't loaded into the wheel. A single angle read on its own ("5.77°
-   drive-side bracing") doesn't say whether that's steep or shallow; printing
-   the other build's angle alongside it is what makes the number legible. */
-function bracingAngle(R, ds, pds) {
-  return Math.atan(ds / (R - pds / 2)) * 180 / Math.PI;
+/* Drive-side bracing angle (degrees): the angle between a spoke and the
+   wheel plane. Uses the engine's own spoke geometry (calc() above): rim
+   centroid radius ERD/2 + 11 mm, and a 3-cross spoke running a chord from
+   the flange's pitch circle to the rim rather than a radial line. It used to
+   be atan(offset / (ERD/2 - flange radius)), which reads about 11% high
+   (5.06° vs 4.56° for the CK 148 on a 29in, 32H wheel) and disagreed with
+   both the engine and the Wheel Strength Lab. Used for the sentence under
+   the compact rows and for the on-canvas annotation (makeWheel's theta). A
+   single angle read on its own doesn't say whether that's steep or shallow;
+   printing the other build's angle alongside it is what makes it legible. */
+function bracingAngle(erd_mm, ds, pds, Ns) {
+  var R = erd_mm / 2 + 11, Rh = pds / 2, dth = 2 * Math.PI / (Ns / 2) * 3;
+  var dv = R - Rh * Math.cos(dth), dw = Rh * Math.sin(dth);
+  return Math.atan(ds / Math.sqrt(dv * dv + dw * dw)) * 180 / Math.PI;
 }
 
 /* Renders simplified mode's stage: both hubs with their figures, the sentence
@@ -2048,8 +2077,8 @@ function drawSimple(m148, m157, hub148, hub157, Ns) {
 
   // Bracing angle of each hub's drive side, in row order. Computed here rather
   // than read off the wheel, which only knows the hub currently loaded into it.
-  var thA = bracingAngle(WHEEL_ERDS[ST.wheel148] / 2, hub148.ds, hub148.pds);
-  var thB = bracingAngle(WHEEL_ERDS[ST.wheel157] / 2, hub157.ds, hub157.pds);
+  var thA = bracingAngle(WHEEL_ERDS[ST.wheel148], hub148.ds, hub148.pds, Ns);
+  var thB = bracingAngle(WHEEL_ERDS[ST.wheel157], hub157.ds, hub157.pds, Ns);
   document.getElementById('s-cond').innerHTML = esc(condText()) +
     ' &middot; drive-side bracing <span class="ca">' + thA.toFixed(2) + '°</span> (' +
     esc(sideName(rows[0])) + ') vs <span class="cb">' + thB.toFixed(2) + '°</span> (' +
@@ -2156,7 +2185,7 @@ function makeWheel(canvas, view) {
     ctx.stroke(); ctx.globalAlpha = 1;
   }
   function theta(gg) {
-    return Math.atan(gg.ds / (gg.R - gg.pds / 2)) * 180 / Math.PI;
+    return bracingAngle(gg.R * 2, gg.ds, gg.pds, gg.spokes);
   }
   function draw() {
     if (!g) return;
@@ -2274,6 +2303,29 @@ function makeWheel(canvas, view) {
 
 (function () {
   var dets = document.getElementById('s-dets');
+  // Nickname tooltips: tap (or Enter/Space) toggles the bubble, since a
+  // phone has no hover; a tap anywhere else or Esc closes it.
+  var closeTips = function (except) {
+    document.querySelectorAll('.std-nick.tip-open').forEach(function (el) {
+      if (el !== except) { el.classList.remove('tip-open'); el.setAttribute('aria-expanded', 'false'); }
+    });
+  };
+  document.querySelectorAll('.std-nick').forEach(function (el) {
+    var toggle = function (e) {
+      e.stopPropagation();
+      var open = !el.classList.contains('tip-open');
+      closeTips(el);
+      el.classList.toggle('tip-open', open);
+      el.setAttribute('aria-expanded', open ? 'true' : 'false');
+    };
+    el.addEventListener('click', toggle);
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(e); }
+    });
+  });
+  document.addEventListener('click', function () { closeTips(null); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeTips(null); });
+
   if (dets) dets.addEventListener('click', function (e) {
     var b = e.target.closest('button');
     if (b) setSimpleSide(b.dataset.s);
@@ -2331,7 +2383,8 @@ function syncStdLabels() {
     var slot = pair[0], n = NICK[pair[1]];
     document.getElementById('std' + slot).textContent = n.name;
     var nick = document.getElementById('nick' + slot);
-    nick.textContent = n.nick; nick.title = n.tip;
+    nick.textContent = n.nick; nick.dataset.tip = n.tip;
+    nick.setAttribute('aria-label', n.nick + ': ' + n.tip);
     var det = document.querySelector('#s-dets button[data-s="' + slot + '"]');
     if (det) det.textContent = n.name;
   });
