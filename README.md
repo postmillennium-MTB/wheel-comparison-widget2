@@ -191,7 +191,7 @@ Yes, but only very slightly — wheel size is a minor, second-order effect on th
 | Hub | 26" | 27.5" | 29" | 32" | spread |
 |---|---|---|---|---|---|
 | CK 157 SB Centerlock | 71.85% | 71.82% | 71.77% | 71.72% | 0.14 pp |
-| Project 321 G3 157 SB | 81.68% | 81.66% | 81.63% | 81.58% | 0.11 pp |
+| Project 321 G3 157x12 | 81.68% | 81.66% | 81.63% | 81.58% | 0.11 pp |
 | DMR Zone 148 | 55.64% | 55.61% | 55.57% | 55.51% | 0.14 pp |
 
 So going from 27.5" to 29" moves the ratio by roughly 0.05 percentage points — essentially nothing next to the tens-of-points spread you see just from switching hubs. The mechanism is real (larger wheel radius → both spoke bracing angles shrink slightly, and they don't shrink at exactly the same rate when the two flanges differ in offset or PCD, so the ratio drifts a hair), but it's swamped by hub geometry.
@@ -322,36 +322,36 @@ The numbers are recorded here so the research is not lost and nobody re-derives 
 
 | Hub | Std | NDS/DS ratio | K_lat (N/mm) | K_rad (N/mm) | T_c avg (kgf) | Baseline |
 |---|---|---|---|---|---|---|
-| Onyx 148 MFU | 148 | 62.4% | 74.1 | 4731 | 142.8 | PASS |
-| SPANK HEX J-TYPE BOOST R148 | 148 | 68.0% | 78.4 | 4739 | 149.7 | PASS |
-| CK 148x12 CENTERLOCK REAR | 148 | 66.4% | 74.4 | 4738 | 144.9 | PASS |
-| project 321 G3 148x12 | 148 | 69.1% | 57.9 | 4750 | 129.5 | PASS |
-| Hydra Mountain 6 Bolt Rear 148 | 148 | 66.1% | 81.6 | 4735 | 152.2 | PASS |
-| I9 Hydra Centerlock Rear 148 | 148 | 62.2% | 82.6 | 4730 | 151.4 | PASS |
-| I9 1/1 Mountain 6 Bolt 148 | 148 | 62.5% | 75.6 | 4740 | 144.3 | PASS |
-| Hope Pro5 148 6 bolt | 148 | 64.9% | 68.4 | 4743 | 138.2 | PASS |
-| Erase MTB IS 148x12 V2 j-bend | 148 | 66.3% | 80.6 | 4729 | 151.3 | PASS |
+| Onyx MFU 148x12 | 148 | 62.4% | 74.1 | 4731 | 142.8 | PASS |
+| Spank Hex J-Type 148x12 | 148 | 68.0% | 78.4 | 4739 | 149.7 | PASS |
+| CK Centerlock 148x12 | 148 | 66.4% | 74.4 | 4738 | 144.9 | PASS |
+| Project 321 G3 148x12 | 148 | 69.1% | 57.9 | 4750 | 129.5 | PASS |
+| I9 Hydra Mountain 6-Bolt 148x12 | 148 | 66.1% | 81.6 | 4735 | 152.2 | PASS |
+| I9 Hydra Centerlock 148x12 | 148 | 62.2% | 82.6 | 4730 | 151.4 | PASS |
+| I9 1/1 Mountain 6-Bolt 148x12 | 148 | 62.5% | 75.6 | 4740 | 144.3 | PASS |
+| Hope Pro5 6-Bolt 148x12 | 148 | 64.9% | 68.4 | 4743 | 138.2 | PASS |
+| Erase MTB IS V2 148x12 | 148 | 66.3% | 80.6 | 4729 | 151.3 | PASS |
 | Hadley 148x12 | 148 | 62.2% | 75.2 | 4736 | 143.8 | PASS |
-| OneUp Rear Hub 148x12 | 148 | 60.7% | 77.9 | 4728 | 145.8 | PASS |
-| KOM Xeno Rear Boost 148x12 | 148 | 77.2% | 53.6 | 4737 | 128.4 | PASS |
-| DMR Zone 148 Boost Centerlock | 148 | 55.6% | 76.2 | 4737 | 141.5 | PASS |
-| DT Swiss 350 148 6-bolt | 148 | 63.7% | 74.4 | 4736 | 143.7 | PASS |
-| e*thirteen Sidekick 148 Boost | 148 | 55.6% | 76.7 | 4741 | 142.0 | PASS |
-| Onyx 150/157 | 157 | 66.6% | 95.2 | 4715 | 167.0 | PASS |
-| Onyx 150/157 Vesper | 157 | 65.8% | 93.7 | 4711 | 164.9 | PASS |
-| SPANK HEX J-TYPE R150/157 | 157 | 75.2% | 93.6 | 4726 | 169.2 | PASS |
-| CK 157 SB CENTERLOCK REAR | 157 | 71.8% | 94.8 | 4722 | 169.0 | PASS |
-| project 321 G3 157 SB | 157 | 83.2% | 63.7 | 4743 | 140.4 | PASS |
-| I9 Hydra 6 Bolt 150/157 | 157 | 71.1% | 97.7 | 4722 | 171.9 | PASS |
-| I9 Hydra Centerlock 157 SB | 157 | 65.9% | 101.8 | 4715 | 173.9 | PASS |
-| Hope Pro5 157 SB 6 bolt | 157 | 68.6% | 89.7 | 4727 | 161.9 | PASS |
-| Erase MTB IS 157x12 v2 j-bend | 157 | 70.0% | 102.5 | 4712 | 176.7 | PASS |
-| Hadley 150/157 | 157 | 66.6% | 97.0 | 4723 | 169.0 | PASS |
-| OneUp Rear Hub 157x12 | 157 | 74.3% | 72.1 | 4731 | 145.8 | PASS |
-| KOM Xeno Rear Super Boost 157 | 157 | 80.2% | 74.4 | 4723 | 150.4 | PASS |
-| DMR Zone 157 SB Centerlock | 157 | 61.3% | 91.2 | 4725 | 160.0 | PASS |
-| DT Swiss 350 157 6-bolt | 157 | 67.9% | 96.0 | 4720 | 168.5 | PASS |
-| e*thirteen Sidekick Pro 157 SB | 157 | 60.4% | 97.6 | 4725 | 166.2 | PASS |
+| OneUp 148x12 | 148 | 60.7% | 77.9 | 4728 | 145.8 | PASS |
+| KOM Xeno 148x12 | 148 | 77.2% | 53.6 | 4737 | 128.4 | PASS |
+| DMR Zone Centerlock 148x12 | 148 | 55.6% | 76.2 | 4737 | 141.5 | PASS |
+| DT Swiss 350 6-Bolt 148x12 | 148 | 63.7% | 74.4 | 4736 | 143.7 | PASS |
+| e*thirteen Sidekick 148x12 | 148 | 55.6% | 76.7 | 4741 | 142.0 | PASS |
+| Onyx 157x12 | 157 | 66.6% | 95.2 | 4715 | 167.0 | PASS |
+| Onyx Vesper 157x12 | 157 | 65.8% | 93.7 | 4711 | 164.9 | PASS |
+| Spank Hex J-Type 157x12 | 157 | 75.2% | 93.6 | 4726 | 169.2 | PASS |
+| CK Centerlock 157x12 | 157 | 71.8% | 94.8 | 4722 | 169.0 | PASS |
+| Project 321 G3 157x12 | 157 | 83.2% | 63.7 | 4743 | 140.4 | PASS |
+| I9 Hydra 6-Bolt 157x12 | 157 | 71.1% | 97.7 | 4722 | 171.9 | PASS |
+| I9 Hydra Centerlock 157x12 | 157 | 65.9% | 101.8 | 4715 | 173.9 | PASS |
+| Hope Pro5 6-Bolt 157x12 | 157 | 68.6% | 89.7 | 4727 | 161.9 | PASS |
+| Erase MTB IS V2 157x12 | 157 | 70.0% | 102.5 | 4712 | 176.7 | PASS |
+| Hadley 157x12 | 157 | 66.6% | 97.0 | 4723 | 169.0 | PASS |
+| OneUp 157x12 | 157 | 74.3% | 72.1 | 4731 | 145.8 | PASS |
+| KOM Xeno 157x12 | 157 | 80.2% | 74.4 | 4723 | 150.4 | PASS |
+| DMR Zone Centerlock 157x12 | 157 | 61.3% | 91.2 | 4725 | 160.0 | PASS |
+| DT Swiss 350 6-Bolt 157x12 | 157 | 67.9% | 96.0 | 4720 | 168.5 | PASS |
+| e*thirteen Sidekick Pro 157x12 | 157 | 60.4% | 97.6 | 4725 | 166.2 | PASS |
 
 "PASS" means the engine this widget ships matched Matthew Ford's `bike-wheel-calc` Python library to floating-point noise for that hub's geometry. The most recent run (2026-10-24, wheel-physics-core `validation/`) covered all 30 hubs at four build setups, including this one, and checked tension ratio, both stiffnesses, both buckling tensions and both strength figures.
 
@@ -359,17 +359,17 @@ T_c avg is the discrete-spoke buckling tension (see "Buckling tension T_c" above
 
 ### Notable results worth examining
 
-**project 321 G3 148 vs 157.** Both versions of this hub use an unusually narrow NDS offset (32 mm) for their respective standards. The 157 version reaches the highest tension ratio of any *conventionally dished* 157 here (83.2%) but among the lowest lateral stiffness in the 157 group (63.7 N/mm) — because while the ratio is excellent, the narrow NDS offset means the NDS spoke angle is steep and the absolute stiffness contribution is reduced. This is a good illustration of why no single metric tells the full story.
+**Project 321 G3 148x12 vs 157x12.** Both versions of this hub use an unusually narrow NDS offset (32 mm) for their respective standards. The 157 version reaches the highest tension ratio of any *conventionally dished* 157 here (83.2%) but among the lowest lateral stiffness in the 157 group (63.7 N/mm) — because while the ratio is excellent, the narrow NDS offset means the NDS spoke angle is steep and the absolute stiffness contribution is reduced. This is a good illustration of why no single metric tells the full story.
 
-**I9 Hydra Centerlock 157 SB.** Among the highest lateral stiffness in the dataset (101.8 N/mm, second only to the Erase MTB IS 157x12 at 102.5) and one of the highest buckling margins (173.9 kgf, second only to the Erase MTB IS 157x12 at 176.7), owing to a notably wide NDS offset (43 mm) that gives the NDS spokes excellent lateral bracing geometry.
+**I9 Hydra Centerlock 157x12.** Among the highest lateral stiffness in the dataset (101.8 N/mm, second only to the Erase MTB IS 157x12 at 102.5) and one of the highest buckling margins (173.9 kgf, second only to the Erase MTB IS 157x12 at 176.7), owing to a notably wide NDS offset (43 mm) that gives the NDS spokes excellent lateral bracing geometry.
 
-**KOM Xeno Rear Boost 148 — the clearest tension-balance-versus-stiffness trade in the dataset.** This hub posts the best tension balance of any 148 in the catalogue by a wide margin (77.2%, against a 148 median near 65%) and simultaneously the lowest lateral stiffness of any hub here, either standard (53.6 N/mm). Both come from the same two geometry choices: a 46 mm flange PCD, the smallest in the dataset, and a flange spacing of 54 mm that sits the two flanges unusually close together. The small PCD shortens the lever the spokes act on and steepens their angle at the rim, which costs bracing stiffness; the narrow, comparatively even flange spacing is what keeps the two sides' tensions close. A builder reading only the tension-ratio column would rank this hub first among 148s, and a builder reading only the stiffness column would rank it last. Neither column is wrong, and this is the sharpest illustration in the catalogue of why the widget shows four metrics instead of a score.
+**KOM Xeno 148x12 — the clearest tension-balance-versus-stiffness trade in the dataset.** This hub posts the best tension balance of any 148 in the catalogue by a wide margin (77.2%, against a 148 median near 65%) and simultaneously the lowest lateral stiffness of any hub here, either standard (53.6 N/mm). Both come from the same two geometry choices: a 46 mm flange PCD, the smallest in the dataset, and a flange spacing of 54 mm that sits the two flanges unusually close together. The small PCD shortens the lever the spokes act on and steepens their angle at the rim, which costs bracing stiffness; the narrow, comparatively even flange spacing is what keeps the two sides' tensions close. A builder reading only the tension-ratio column would rank this hub first among 148s, and a builder reading only the stiffness column would rank it last. Neither column is wrong, and this is the sharpest illustration in the catalogue of why the widget shows four metrics instead of a score.
 
 **DT Swiss 350 — a bigger flange on the side that needs it.** Almost every hub here uses a drive-side flange as large as or larger than the non-drive side: 15 of the 28 entries preceding this pair had the larger flange on the drive side, 11 ran them equal, and only OneUp went the other way. DT joins OneUp as the exception, and does it at both widths — 58 mm non-drive against 52 mm drive at 148, 60 against 50.5 at 157. A larger non-drive flange lengthens the lever those spokes pull on, which is the side a dished rear wheel has least to work with. The 157 lands at 96.0 N/mm on a 67.9% balance, a stronger combination than most of the group, without resorting to the deep dish of the DMR.
 
 **DMR Zone, both standards — the most dished hubs here, and what that does and does not buy.** The Zone 148 posts the lowest tension balance in the entire catalogue (55.6%) and the Zone 157 the lowest in its group (61.3%, below every other 157 and below 11 of the 13 148s). DMR runs the same idea at both widths: a 56 mm PCD with the flanges set wide and well off-centre — 38.0 NDS against 21.0 DS at 148, 41.0 against 25.0 at 157.
 
-What that buys is less than it might appear. Both land mid-pack for lateral stiffness, not at the top: the 148 is 7th of 15 (76.2 N/mm) and the 157 is 11th of 15 (91.2 N/mm). So the deep dish is not purchasing class-leading stiffness — the I9 Hydra Centerlock 148 is stiffer (82.6 N/mm) while carrying a far healthier 62.2% balance.
+What that buys is less than it might appear. Both land mid-pack for lateral stiffness, not at the top: the 148 is 7th of 15 (76.2 N/mm) and the 157 is 11th of 15 (91.2 N/mm). So the deep dish is not purchasing class-leading stiffness — the I9 Hydra Centerlock 148x12 is stiffer (82.6 N/mm) while carrying a far healthier 62.2% balance.
 
 The broader pattern in the 148 group is close to monotonic in the other direction. Ranked by stiffness, the top of the table runs 62–68% balance and the bottom runs 69–77%: project 321 (57.9 N/mm, 69.1%) and the KOM Xeno (53.6 N/mm, 77.2%) sit last on stiffness and first on balance. Across this catalogue the two metrics trade against each other far more often than they move together — which is the case for showing four numbers rather than one score.
 
