@@ -674,8 +674,19 @@ html[data-theme="mgb"] .hero,html[data-theme="tr6"] .hero,html[data-theme="db5"]
 .rand-btn .hint{font-weight:400;font-size:11.5px;color:var(--faint)}
 .rand-btn.rolling .dice{animation:roll .55s ease-in-out}
 @keyframes roll{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+/* Caption motion: when the hero's subtitle, word, badge or the bottom-line
+   sentence changes, the new words rise into place one after another, like a
+   subtitle track, so the eye catches that the verdict text changed and not
+   just the number. Runs only when the text actually changes (not on every
+   slider tick) and is off entirely under prefers-reduced-motion. Opacity and
+   transform only, so colors and contrast are the same as the static text. */
+.cw{display:inline-block;animation:capin .42s cubic-bezier(.22,1,.36,1) both;
+  animation-delay:calc(var(--i) * 26ms)}
+.cap-in{animation:capin .4s cubic-bezier(.22,1,.36,1) both;animation-delay:calc(var(--i, 0) * 26ms)}
+@keyframes capin{0%{opacity:0;transform:translateY(.45em)}100%{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){
-  .hero.flash{animation:none}.rand-btn.rolling .dice{animation:none}
+  .hero.flash{animation:none}
+  .cw,.cap-in{animation:none}.rand-btn.rolling .dice{animation:none}
   .rand-btn::after{animation:none;opacity:0}
   .hero-row .fill{transition:none}
 }
@@ -2268,7 +2279,9 @@ function drawSimple(m148, m157, hub148, hub157, Ns) {
   }
   var vs = document.getElementById('s-vs');
   vs.dataset.win = win;
-  vs.innerHTML = html;
+  // The percent moves with every slider step; only a change of who leads, or
+  // of the sentence's form, replays the caption motion.
+  setCaption(vs, html, 'parts', html.replace(/<b class="s-pct[\s\S]*?<\/b>/, ''));
 }
 
 /* A theme colour as the string the canvas needs. */
@@ -3055,6 +3068,50 @@ let heroAnim = null, heroLast = null;
 const reducedMotion = () =>
   window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/* Swap a caption's text with the caption motion above. `html` is trusted
+   markup built in this file. mode 'words' staggers word by word (sentences);
+   'whole' moves the element as one (short labels). Same text = no-op, so
+   nothing replays while a slider is dragged and the sentence stays put. */
+function setCaption(el, html, mode, key) {
+  if (el.dataset.cap === html) return;
+  el.dataset.cap = html;
+  el.innerHTML = html;
+  // `key` names what the caption says, minus live figures: a changed figure
+  // under the same key updates in place instead of replaying the motion.
+  if (key !== undefined) {
+    if (el.dataset.capKey === key) return;
+    el.dataset.capKey = key;
+  }
+  if (reducedMotion()) return;
+  if (mode === 'parts') {        // each child element enters in turn
+    Array.prototype.forEach.call(el.children, function (c, i) {
+      c.style.setProperty('--i', i * 4);
+      c.classList.add('cap-in');
+    });
+    return;
+  }
+  if (mode === 'whole') {
+    el.classList.remove('cap-in'); void el.offsetWidth; el.classList.add('cap-in');
+    return;
+  }
+  const texts = [], w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  while (w.nextNode()) texts.push(w.currentNode);
+  let i = 0;
+  texts.forEach(function (t) {
+    const parts = t.nodeValue.split(/(\s+)/), frag = document.createDocumentFragment();
+    parts.forEach(function (part) {
+      if (!part) return;
+      if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+      const sp = document.createElement('span');
+      sp.className = 'cw';
+      sp.style.setProperty('--i', Math.min(i++, 24));   // cap the tail at ~0.6 s
+      sp.textContent = part;
+      frag.appendChild(sp);
+    });
+    t.parentNode.replaceChild(frag, t);
+  });
+}
+
 function animateHeroNum(el, to) {
   const from = (heroLast === null) ? 0 : heroLast;
   heroLast = to;
@@ -3084,10 +3141,10 @@ function buildHero(m148, m157, hub148, hub157) {
     hero.dataset.win = 'tie';
     numEl.classList.add('word');
     numEl.textContent = 'N/A';
-    document.getElementById('hero-word').textContent = 'past buckling';
-    document.getElementById('hero-badge').textContent = 'No valid comparison';
-    document.getElementById('hero-sub').textContent =
-      'At least one build is beyond its modelled buckling tension, where lateral strength stops being meaningful. Lower its drive-side tension or choose a smaller wheel.';
+    setCaption(document.getElementById('hero-word'), 'past buckling', 'whole');
+    setCaption(document.getElementById('hero-badge'), 'No valid comparison', 'whole');
+    setCaption(document.getElementById('hero-sub'),
+      'At least one build is beyond its modelled buckling tension, where lateral strength stops being meaningful. Lower its drive-side tension or choose a smaller wheel.');
     document.getElementById('hero-lbl-a').textContent = stdA();
     document.getElementById('hero-lbl-b').textContent = stdB();
     [['a', m148], ['b', m157]].forEach(function (x) {
@@ -3108,27 +3165,27 @@ function buildHero(m148, m157, hub148, hub157) {
     heroLast = 0;
     numEl.classList.add('word');
     numEl.textContent = 'EVEN';
-    document.getElementById('hero-word').textContent = 'dead heat';
-    document.getElementById('hero-badge').textContent =
-      stdA() === stdB() ? 'Dead heat' : NICK[stdA()].name + ' = ' + NICK[stdB()].name;
-    document.getElementById('hero-sub').innerHTML =
+    setCaption(document.getElementById('hero-word'), 'dead heat', 'whole');
+    setCaption(document.getElementById('hero-badge'), esc(
+      stdA() === stdB() ? 'Dead heat' : NICK[stdA()].name + ' = ' + NICK[stdB()].name), 'whole');
+    setCaption(document.getElementById('hero-sub'),
       `<b>${hub148.name}</b> and <b>${hub157.name}</b> take the same sideways load ` +
-      `before the first spoke goes slack. Pick on something other than strength.`;
+      `before the first spoke goes slack. Pick on something other than strength.`);
   } else {
     numEl.classList.remove('word');
     animateHeroNum(numEl, d);
-    document.getElementById('hero-word').textContent = 'stronger';
-    document.getElementById('hero-badge').textContent =
+    setCaption(document.getElementById('hero-word'), 'stronger', 'whole');
+    setCaption(document.getElementById('hero-badge'), esc(
       (stdA() === stdB() ? winnerName(!winIs157) : NICK[winIs157 ? stdB() : stdA()].name)
-        + ' wheel wins';
+        + ' wheel wins'), 'whole');
     const winName  = winIs157 ? hub157.name : hub148.name;
     const loseName = winIs157 ? hub148.name : hub157.name;
     const same     = stdA() === stdB();
     const loseStd  = winIs157 ? stdA() : stdB();
-    document.getElementById('hero-sub').innerHTML =
+    setCaption(document.getElementById('hero-sub'),
       `<b>${winName}</b> takes that much more sideways force than ` +
       (same ? `<b>${loseName}</b>` : `the ${loseStd} build (<b>${loseName}</b>)`) +
-      ` before its first spoke goes slack.`;
+      ` before its first spoke goes slack.`);
   }
 
   // side-by-side bars, both scaled to the larger value. The labels name the
@@ -3186,17 +3243,17 @@ function condText() {
 function buildTakeaway(m148, m157, hub148, hub157) {
   const el = document.getElementById('takeaway');
   if (isBuckled(m148) || isBuckled(m157)) {
-    el.innerHTML = '<b>Bottom line:</b> no comparison at these settings \u2014 at least one build is past its modelled buckling tension, ' +
-      'so its lateral strength is not a meaningful number. Lower that side\u2019s drive-side tension or choose a smaller wheel.';
+    setCaption(el, '<b>Bottom line:</b> no comparison at these settings \u2014 at least one build is past its modelled buckling tension, ' +
+      'so its lateral strength is not a meaningful number. Lower that side\u2019s drive-side tension or choose a smaller wheel.');
     return;
   }
   const d = Math.abs(m157.F_lat - m148.F_lat) / Math.min(m148.F_lat, m157.F_lat) * 100;
   const n1 = hub148.name, n2 = hub157.name;
   if (d < 1) {
-    el.innerHTML = `<b>Bottom line:</b> with these two builds, the ${stdA()} (${n1}) and the ` +
+    setCaption(el, `<b>Bottom line:</b> with these two builds, the ${stdA()} (${n1}) and the ` +
       `${stdB()} (${n2}) are within a hair of each other — you'd take about the same ` +
       `sideways hit before a spoke starts to go slack. The choice comes down to ` +
-      `other factors, not strength.`;
+      `other factors, not strength.`);
     return;
   }
   const winIs157 = m157.F_lat > m148.F_lat;
@@ -3208,10 +3265,10 @@ function buildTakeaway(m148, m157, hub148, hub157) {
   const winCls   = winIs157 ? 'win-b' : 'win-a';
   // qualitative, so the exact figure stays in one place: the hero above
   const qual = d < 3 ? 'slightly' : d < 8 ? 'modestly' : d < 15 ? 'clearly' : 'substantially';
-  el.innerHTML = `<b>Bottom line:</b> the <span class="${winCls}"><b>${winStd}</b> build` +
+  setCaption(el, `<b>Bottom line:</b> the <span class="${winCls}"><b>${winStd}</b> build` +
     `${same ? '' : ` (${winName})`}</span> takes a <b>${qual} higher</b> sideways load before a ` +
     `spoke starts to go slack — the point where a wheel begins to lose its trueness. ` +
-    `That's the headline difference; open the cards below for stiffness, vertical hits, and buckling margin.`;
+    `That's the headline difference; open the cards below for stiffness, vertical hits, and buckling margin.`);
 }
 
 /* ── Why the numbers differ ──────────────────────────────────────────────────
