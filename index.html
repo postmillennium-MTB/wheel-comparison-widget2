@@ -3606,17 +3606,16 @@ function scatterModel(rim, xk) {
     if (isBuckled(r)) { excluded.push(h); return; }
     rows.push({ hub: h, std: std, spread: h.nds + h.ds, F: r.F_lat, ratio: r.ratio });
   }));
-  // Least squares of F_lat on the X variable across all hubs, for the dashed
-  // trend and the "how much does X alone explain" sentence.
+  // Least squares of F_lat on the X variable across all hubs, for the dashed trend.
   const n = rows.length;
   const mx = rows.reduce((a, r) => a + r[xk], 0) / n, my = rows.reduce((a, r) => a + r.F, 0) / n;
-  let sxx = 0, sxy = 0, syy = 0;
-  rows.forEach(r => { sxx += (r[xk] - mx) ** 2; sxy += (r[xk] - mx) * (r.F - my); syy += (r.F - my) ** 2; });
-  const slope = sxx ? sxy / sxx : 0, icpt = my - slope * mx, r2 = sxx && syy ? sxy * sxy / (sxx * syy) : 0;
+  let sxx = 0, sxy = 0;
+  rows.forEach(r => { sxx += (r[xk] - mx) ** 2; sxy += (r[xk] - mx) * (r.F - my); });
+  const slope = sxx ? sxy / sxx : 0, icpt = my - slope * mx;
   rows.forEach(r => { r.resid = r.F - (slope * r[xk] + icpt); });
   const mean = std => { const a = rows.filter(r => r.std === std); return a.reduce((s, r) => s + r.F, 0) / a.length; };
   const differs = ['wheel', 'tds', 'spkDS', 'spkNDS'].some(k => ref[k] !== other[k]);
-  return { rows, excluded, slope, icpt, r2, ref, differs, mean148: mean('148'), mean157: mean('157') };
+  return { rows, excluded, slope, icpt, ref, differs, mean148: mean('148'), mean157: mean('157') };
 }
 
 /* Greedy label placement: for each label try right, left, above, below and the
@@ -3723,7 +3722,9 @@ function renderScatter(rim) {
   }
   // Text that does not need the chart to be on screen: the summary line (shown
   // when the card is collapsed) and the notes.
-  setText('sum-scatter', `${X.name[0].toUpperCase() + X.name.slice(1)} alone explains ${Math.round(mdl.r2 * 100)}% of lateral strength`);
+  // No one-line summary: an r-squared over this catalogue read as "explains N% of
+  // lateral strength", a causal claim the fit does not support.
+  setText('sum-scatter', '');
   const ref = mdl.ref;
   const cond = `${ref.wheel}″ · ${rim.Ns}H · ${ref.tds} kgf DS · ${ref.spkDS.toFixed(1)}/${ref.spkNDS.toFixed(1)} mm spokes`;
   setText('sc-lede', `All ${rows.length} hubs on the same wheel, tension and spokes (${cond} — the left card's), so only the hub differs.` +
@@ -3739,7 +3740,7 @@ function renderScatter(rim) {
       ? `On average the 157x12 hubs here give ${mdl.mean157.toFixed(1)} kgf against ${mdl.mean148.toFixed(1)} for the 148x12 ` +
         `(${fmtSigned((mdl.mean157 / mdl.mean148 - 1) * 100, 0)}%). ` : '') +
     `The dashed line is the trend across all hubs; ` +
-    `the hubs furthest from it are ${ranked.slice(0, 2).map(rel).join(' and ')} what their ${X.name} alone would predict ` +
+    `the hubs furthest from it are ${ranked.slice(0, 2).map(rel).join(' and ')} the line ` +
     `— ${X.sizeNote}.` + gone;
   const byF = rows.slice().sort((a, b) => b.F - a.F);
   document.getElementById('sc-table').innerHTML = tableHTML(
