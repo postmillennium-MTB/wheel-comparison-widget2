@@ -714,7 +714,7 @@ html[data-theme="mgb"] .hero,html[data-theme="tr6"] .hero,html[data-theme="db5"]
 .ch:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
 .ch text{font-family:inherit;font-size:11px;fill:var(--muted)}
 .ch .ch-title{fill:var(--faint);font-size:11px;letter-spacing:.02em}
-.ch .ch-lbl{fill:var(--ink);font-weight:700}
+.ch .ch-lbl{fill:var(--ink);font-weight:700;stroke:var(--card);stroke-width:3px;stroke-linejoin:round;paint-order:stroke}
 .ch .ch-lbl.sub{fill:var(--muted);font-weight:500}
 .ch .ch-val{fill:var(--ink);font-weight:700;font-family:var(--mono);font-size:11.5px}
 .ch .ch-grid{stroke:var(--line);stroke-width:1}
@@ -725,6 +725,12 @@ html[data-theme="mgb"] .hero,html[data-theme="tr6"] .hero,html[data-theme="db5"]
 .ch .sc-pt.s148{fill:var(--a)} .ch .sc-pt.s157{fill:var(--b)}
 .ch .sc-ring{fill:none;stroke:var(--ink);stroke-width:2}
 .ch .sc-hover{fill:none;stroke:var(--ink);stroke-width:1.5;stroke-dasharray:2 2}
+/* X-axis switch for the catalogue scatter. Same shape as the simplified view's
+   standard switch, but the pressed state is ink, not the "winner" colours:
+   picking an axis is not a verdict. */
+.sc-xbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}
+.sc-x button{font-size:13px;padding:7px 12px}
+.sc-x button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:inset 0 -3px 0 var(--ink)}
 .ch .sw-line{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .ch .sw-line.dash{stroke-dasharray:5 4}
 .ch .sw-dot{stroke:var(--card);stroke-width:2}
@@ -1095,18 +1101,25 @@ Ford's discrete-spoke model, checked against his code the same way.</p>
   <div class="chart-pair">
   <div class="cmp-card secondary">
     <button class="sec-toggle" id="tog-scatter" aria-expanded="true" aria-controls="body-scatter" onclick="toggleCard('scatter')">
-      <span class="sec-title">Whole catalogue: spread vs strength</span>
+      <span class="sec-title" id="sc-title">Whole catalogue: spread vs strength</span>
       <span class="sec-sum" id="sum-scatter">—</span>
       <span class="sec-arrow">▼</span>
     </button>
     <div class="cmp-body" id="body-scatter">
       <div class="cmp-plain" id="sc-lede">—</div>
+      <div class="sc-xbar">
+        <span class="s-view-lbl" id="sc-x-lbl">X axis</span>
+        <div class="s-dets sc-x" id="sc-x" role="group" aria-labelledby="sc-x-lbl">
+          <button type="button" data-x="spread" aria-pressed="true" onclick="setScatterX('spread')">Flange spread</button>
+          <button type="button" data-x="ratio" aria-pressed="false" onclick="setScatterX('ratio')">Tension balance</button>
+        </div>
+      </div>
       <div class="ch-legend">
         <span class="ch-key"><svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="5" style="fill:var(--a)"/></svg>148x12</span>
         <span class="ch-key"><svg width="14" height="14" aria-hidden="true"><path d="M7 1.5 12.5 7 7 12.5 1.5 7Z" style="fill:var(--b)"/></svg>157x12</span>
         <span class="ch-key"><svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" style="fill:none;stroke:var(--ink);stroke-width:2"/></svg>on your cards</span>
         <span class="ch-key"><svg width="22" height="14" aria-hidden="true"><line x1="1" x2="21" y1="7" y2="7" style="stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 3"/></svg>trend, all hubs</span>
-        <span>Marker size = tension balance (bigger = more even)</span>
+        <span id="sc-size-key">Marker size = tension balance (bigger = more even)</span>
       </div>
       <div class="ch-wrap" id="sc-chart"></div>
       <div class="ch-readout" id="sc-readout" aria-live="polite">—</div>
@@ -3559,9 +3572,29 @@ function renderDecomp(rim) {
 
 /* ── 2. Whole-catalogue scatter ───────────────────────────────────────────── */
 
-const SCATTER = { rows: [], pts: [], order: [], idx: -1, ring: null, model: null };
+/* The two X axes the scatter can show, with F_lat on Y either way. Whichever
+   one is not on X becomes marker size, so a switch never drops a variable.
+   Tension balance is the engine's `ratio` (T_NDS / T_DS x 100, from
+   calc()'s apply_tension step) -- the same number as the "Tension balance
+   NDS / DS" card and the Lab's TENSION BALANCE tab. */
+const SCATTER_X = {
+  spread: { key: 'spread', name: 'spread', title: 'Flange spread, mm (NDS + DS offset)',
+            heading: 'Whole catalogue: spread vs strength',
+            sizeKey: 'Marker size = tension balance (bigger = more even)',
+            sizeNote: 'marker size shows the other big lever, how evenly each hub shares tension between its two sides' },
+  ratio:  { key: 'ratio', name: 'balance', title: 'Tension balance, % (NDS / DS tension)',
+            heading: 'Whole catalogue: balance vs strength',
+            sizeKey: 'Marker size = flange spread (bigger = wider)',
+            sizeNote: 'marker size shows the other big lever, how far apart each hub’s flanges sit' },
+};
+const SCATTER_MOVE_MS = 7000;      // switching the X axis glides every hub to its new spot over this long
+const SCATTER_AXIS_FADE = 0.18;    // share of the move spent cross-fading the old and new X axis
+const SCATTER_LATE_FADE = 0.8;     // share of the move after which the trend line and labels fade back in
 
-function scatterModel(rim) {
+const SCATTER = { rows: [], pts: [], order: [], idx: -1, ring: null, model: null,
+                  x: 'spread', moveFrom: null, anim: 0 };
+
+function scatterModel(rim, xk) {
   // One set of conditions for every hub, taken from the left card, so only the
   // hub varies. The right card's own wheel/tension/spokes are not applied.
   const ref = slotConfig('a'), other = slotConfig('b');
@@ -3573,14 +3606,14 @@ function scatterModel(rim) {
     if (isBuckled(r)) { excluded.push(h); return; }
     rows.push({ hub: h, std: std, spread: h.nds + h.ds, F: r.F_lat, ratio: r.ratio });
   }));
-  // Least squares of F_lat on spread across all hubs, for the dashed trend and
-  // the "how much does spread alone explain" sentence.
+  // Least squares of F_lat on the X variable across all hubs, for the dashed
+  // trend and the "how much does X alone explain" sentence.
   const n = rows.length;
-  const mx = rows.reduce((a, r) => a + r.spread, 0) / n, my = rows.reduce((a, r) => a + r.F, 0) / n;
+  const mx = rows.reduce((a, r) => a + r[xk], 0) / n, my = rows.reduce((a, r) => a + r.F, 0) / n;
   let sxx = 0, sxy = 0, syy = 0;
-  rows.forEach(r => { sxx += (r.spread - mx) ** 2; sxy += (r.spread - mx) * (r.F - my); syy += (r.F - my) ** 2; });
+  rows.forEach(r => { sxx += (r[xk] - mx) ** 2; sxy += (r[xk] - mx) * (r.F - my); syy += (r.F - my) ** 2; });
   const slope = sxx ? sxy / sxx : 0, icpt = my - slope * mx, r2 = sxx && syy ? sxy * sxy / (sxx * syy) : 0;
-  rows.forEach(r => { r.resid = r.F - (slope * r.spread + icpt); });
+  rows.forEach(r => { r.resid = r.F - (slope * r[xk] + icpt); });
   const mean = std => { const a = rows.filter(r => r.std === std); return a.reduce((s, r) => s + r.F, 0) / a.length; };
   const differs = ['wheel', 'tds', 'spkDS', 'spkNDS'].some(k => ref[k] !== other[k]);
   return { rows, excluded, slope, icpt, r2, ref, differs, mean148: mean('148'), mean157: mean('157') };
@@ -3621,9 +3654,14 @@ function scatterDefaultReadout() {
   const parts = ids.map(id => {
     const i = SCATTER.rows.findIndex(r => r.hub.id === id);
     return i >= 0 ? scatterReadout(i)
-      : `<b>${esc(hubById(id).name)}</b> \u2014 past its buckling tension at these settings, so it is not plotted`;
+      : `<b>${esc(hubById(id).name)}</b> — past its buckling tension at these settings, so it is not plotted`;
   });
   return 'On your cards: ' + parts.join('<br>') + '<br><span style="color:var(--faint)">Hover, tap, or use the arrow keys on the chart to read any hub.</span>';
+}
+function placeHover(i) {
+  const ring = SCATTER.ring, p = SCATTER.pts[i];
+  if (!ring || !p) return;
+  ring.setAttribute('cx', p.x.toFixed(1)); ring.setAttribute('cy', p.y.toFixed(1)); ring.setAttribute('r', (p.r + 5).toFixed(1));
 }
 function scatterSelect(i) {
   SCATTER.idx = i;
@@ -3633,29 +3671,59 @@ function scatterSelect(i) {
     document.getElementById('sc-readout').innerHTML = scatterDefaultReadout();
     return;
   }
-  const p = SCATTER.pts[i];
-  ring.setAttribute('cx', p.x); ring.setAttribute('cy', p.y); ring.setAttribute('r', p.r + 5);
+  placeHover(i);
   ring.setAttribute('visibility', 'visible');
   document.getElementById('sc-readout').innerHTML = scatterReadout(i);
 }
 
+/* Marker geometry: 148 hubs are circles, 157 hubs diamonds (shape as well as
+   colour tells the standards apart). */
+const diamondD = (x, y, r) => { const rr = r * 1.3;
+  return `M${x.toFixed(1)} ${(y - rr).toFixed(1)}L${(x + rr).toFixed(1)} ${y.toFixed(1)}L${x.toFixed(1)} ${(y + rr).toFixed(1)}L${(x - rr).toFixed(1)} ${y.toFixed(1)}Z`; };
+function moveMarker(el, std, p) {
+  if (std === '148') { el.setAttribute('cx', p.x.toFixed(1)); el.setAttribute('cy', p.y.toFixed(1)); el.setAttribute('r', p.r.toFixed(1)); }
+  else el.setAttribute('d', diamondD(p.x, p.y, p.r));
+}
+
+/* Switch the scatter's X axis. Every hub then glides from where it sat to its
+   new spot (SCATTER_MOVE_MS), while the old X axis fades out and the new one
+   fades in; the trend line and name labels, which only make sense for the new
+   axis, come back at the end. Under prefers-reduced-motion it redraws at once. */
+function setScatterX(xk) {
+  if (!SCATTER_X[xk] || xk === SCATTER.x) return;
+  // Start from wherever each hub is drawn right now, mid-glide included.
+  const from = new Map();
+  SCATTER.rows.forEach((r, i) => { if (SCATTER.pts[i]) from.set(r.hub.id, Object.assign({}, SCATTER.pts[i])); });
+  SCATTER.x = xk;
+  SCATTER.moveFrom = reducedMotion() || !from.size ? null : { pts: from, axis: SCATTER.axisSVG || '' };
+  renderScatter(rimSettings());
+}
+
 function renderScatter(rim) {
-  const mdl = scatterModel(rim), rows = mdl.rows;
+  const X = SCATTER_X[SCATTER.x], xk = X.key;
+  const move = SCATTER.moveFrom; SCATTER.moveFrom = null;   // a glide is only ever for the render the switch asked for
+  if (SCATTER.anim) { cancelAnimationFrame(SCATTER.anim); SCATTER.anim = 0; }
+  document.querySelectorAll('#sc-x button').forEach(b =>
+    b.setAttribute('aria-pressed', b.dataset.x === SCATTER.x ? 'true' : 'false'));
+  setText('sc-title', X.heading);
+  setText('sc-size-key', X.sizeKey);
+
+  const mdl = scatterModel(rim, xk), rows = mdl.rows;
   SCATTER.rows = rows; SCATTER.model = mdl;
 
   // Too few hubs left to say anything: nearly everything is past buckling at
   // the left card's wheel size and tension.
   if (rows.length < 3) {
-    setText('sum-scatter', 'Past buckling \u2014 not meaningful');
-    setText('sc-lede', 'At the left card\u2019s wheel size and tension nearly every hub is past its buckling tension, where the strength figure stops meaning anything, so there is nothing sensible to plot. Lower the drive-side tension or choose a smaller wheel.');
+    setText('sum-scatter', 'Past buckling — not meaningful');
+    setText('sc-lede', 'At the left card’s wheel size and tension nearly every hub is past its buckling tension, where the strength figure stops meaning anything, so there is nothing sensible to plot. Lower the drive-side tension or choose a smaller wheel.');
     document.getElementById('sc-chart').innerHTML = '';
     setText('sc-readout', ''); setText('sc-note', ''); document.getElementById('sc-table').innerHTML = '';
-    SCATTER.pts = []; SCATTER.ring = null;
+    SCATTER.pts = []; SCATTER.ring = null; SCATTER.axisSVG = '';
     return;
   }
   // Text that does not need the chart to be on screen: the summary line (shown
   // when the card is collapsed) and the notes.
-  setText('sum-scatter', `Spread alone explains ${Math.round(mdl.r2 * 100)}% of lateral strength`);
+  setText('sum-scatter', `${X.name[0].toUpperCase() + X.name.slice(1)} alone explains ${Math.round(mdl.r2 * 100)}% of lateral strength`);
   const ref = mdl.ref;
   const cond = `${ref.wheel}″ · ${rim.Ns}H · ${ref.tds} kgf DS · ${ref.spkDS.toFixed(1)}/${ref.spkNDS.toFixed(1)} mm spokes`;
   setText('sc-lede', `All ${rows.length} hubs on the same wheel, tension and spokes (${cond} — the left card's), so only the hub differs.` +
@@ -3671,8 +3739,8 @@ function renderScatter(rim) {
       ? `On average the 157x12 hubs here give ${mdl.mean157.toFixed(1)} kgf against ${mdl.mean148.toFixed(1)} for the 148x12 ` +
         `(${fmtSigned((mdl.mean157 / mdl.mean148 - 1) * 100, 0)}%). ` : '') +
     `The dashed line is the trend across all hubs; ` +
-    `the hubs furthest from it are ${ranked.slice(0, 2).map(rel).join(' and ')} what their spread alone would predict ` +
-    `— marker size shows the other big lever, how evenly each hub shares tension between its two sides.` + gone;
+    `the hubs furthest from it are ${ranked.slice(0, 2).map(rel).join(' and ')} what their ${X.name} alone would predict ` +
+    `— ${X.sizeNote}.` + gone;
   const byF = rows.slice().sort((a, b) => b.F - a.F);
   document.getElementById('sc-table').innerHTML = tableHTML(
     ['Hub', 'Std', 'Spread mm', 'Balance %', 'F_lat kgf'],
@@ -3680,48 +3748,95 @@ function renderScatter(rim) {
     i => selIds.includes(byF[i].hub.id));
 
   const w = boxWidth('sc-chart');
-  if (!w) return;
+  if (!w) { SCATTER.pts = []; SCATTER.axisSVG = ''; return; }
   const box = document.getElementById('sc-chart');
   const h = Math.round(Math.max(240, Math.min(400, w * 0.68)));
-  const xs = niceScale(Math.min(...rows.map(r => r.spread)), Math.max(...rows.map(r => r.spread)), 9);
+  const xs = niceScale(Math.min(...rows.map(r => r[xk])), Math.max(...rows.map(r => r[xk])), xk === 'ratio' ? 7 : 9);
   const ys = niceScale(Math.min(...rows.map(r => r.F)), Math.max(...rows.map(r => r.F)), 5);
   const f = makeFrame(w, h, xs, ys, { l: 44, r: 14, t: 12, b: 42 });
-  const rLo = Math.min(...rows.map(r => r.ratio)), rHi = Math.max(...rows.map(r => r.ratio));
-  const rad = r => SCATTER_R_MIN + (rHi > rLo ? (r.ratio - rLo) / (rHi - rLo) : 0.5) * (SCATTER_R_MAX - SCATTER_R_MIN);
+  // Marker size carries whichever variable is not on the X axis.
+  const sk = xk === 'ratio' ? 'spread' : 'ratio';
+  const sLo = Math.min(...rows.map(r => r[sk])), sHi = Math.max(...rows.map(r => r[sk]));
+  const rad = r => SCATTER_R_MIN + (sHi > sLo ? (r[sk] - sLo) / (sHi - sLo) : 0.5) * (SCATTER_R_MAX - SCATTER_R_MIN);
 
-  SCATTER.pts = rows.map(r => ({ x: f.px(r.spread), y: f.py(r.F), r: rad(r) }));
+  const target = rows.map(r => ({ x: f.px(r[xk]), y: f.py(r.F), r: rad(r) }));
+  SCATTER.pts = target.map(p => Object.assign({}, p));
   // Left-to-right order for the arrow keys.
-  SCATTER.order = rows.map((r, i) => i).sort((a, b) => rows[a].spread - rows[b].spread || rows[a].F - rows[b].F);
+  SCATTER.order = rows.map((r, i) => i).sort((a, b) => rows[a][xk] - rows[b][xk] || rows[a].F - rows[b].F);
 
+  const axis = axesSVG(f, xs, ys, X.title, 'F_lat, kgf');
+  SCATTER.axisSVG = axis;
   let svg = `<svg class="ch" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" tabindex="0" ` +
-    `aria-label="Scatter of lateral strength against flange spread for all ${rows.length} hubs. Use left and right arrow keys to step through hubs.">` +
+    `aria-label="Scatter of lateral strength against ${X.name === 'balance' ? 'tension balance' : 'flange spread'} for all ${rows.length} hubs. Use left and right arrow keys to step through hubs.">` +
     `<defs><clipPath id="sc-clip"><rect x="${f.g.l}" y="${f.g.t}" width="${f.iw}" height="${f.ih}"/></clipPath></defs>` +
-    axesSVG(f, xs, ys, 'Flange spread, mm (NDS + DS offset)', 'F_lat, kgf');
-  svg += `<line class="sc-trend" clip-path="url(#sc-clip)" x1="${f.px(xs.lo).toFixed(1)}" y1="${f.py(mdl.slope * xs.lo + mdl.icpt).toFixed(1)}" ` +
+    (move ? `<g id="sc-axis-old" aria-hidden="true">${move.axis}</g><g id="sc-axis-new" opacity="0">${axis}</g>` : axis);
+  const trend = `<line class="sc-trend" clip-path="url(#sc-clip)" x1="${f.px(xs.lo).toFixed(1)}" y1="${f.py(mdl.slope * xs.lo + mdl.icpt).toFixed(1)}" ` +
          `x2="${f.px(xs.hi).toFixed(1)}" y2="${f.py(mdl.slope * xs.hi + mdl.icpt).toFixed(1)}"/>`;
+  let marks = '';
   rows.forEach((r, i) => {
-    const p = SCATTER.pts[i], rr = p.r * 1.3;
-    svg += r.std === '148'
-      ? `<circle class="sc-pt s148" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${p.r.toFixed(1)}"/>`
-      : `<path class="sc-pt s157" d="M${p.x.toFixed(1)} ${(p.y - rr).toFixed(1)}L${(p.x + rr).toFixed(1)} ${p.y.toFixed(1)}L${p.x.toFixed(1)} ${(p.y + rr).toFixed(1)}L${(p.x - rr).toFixed(1)} ${p.y.toFixed(1)}Z"/>`;
+    const p = target[i];
+    marks += r.std === '148'
+      ? `<circle class="sc-pt s148" data-i="${i}" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${p.r.toFixed(1)}"/>`
+      : `<path class="sc-pt s157" data-i="${i}" d="${diamondD(p.x, p.y, p.r)}"/>`;
   });
   // Rings on the hubs that are on the cards, then names for them and for the outliers.
   const selRows = [];
   selIds.forEach(id => { const i = rows.findIndex(r => r.hub.id === id); if (i >= 0 && !selRows.includes(i)) selRows.push(i); });
-  selRows.forEach(i => { const p = SCATTER.pts[i];
-    svg += `<circle class="sc-ring" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${(p.r + 4).toFixed(1)}"/>`; });
-  const obstacles = SCATTER.pts.map((p, i) => { const e = p.r * 1.3 + (selRows.includes(i) ? 5 : 2);
+  selRows.forEach(i => { const p = target[i];
+    marks += `<circle class="sc-ring" data-i="${i}" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${(p.r + 4).toFixed(1)}"/>`; });
+  const obstacles = target.map((p, i) => { const e = p.r * 1.3 + (selRows.includes(i) ? 5 : 2);
     return { x0: p.x - e, x1: p.x + e, y0: p.y - e, y1: p.y + e }; });
-  const labelItems = selRows.map(i => ({ i, text: shortName(rows[i].hub.name, 26), r: SCATTER.pts[i].r + 4, x: SCATTER.pts[i].x, y: SCATTER.pts[i].y, must: true, bold: true, cls: 'ch-lbl' }))
+  const labelItems = selRows.map(i => ({ i, text: shortName(rows[i].hub.name, 26), r: target[i].r + 4, x: target[i].x, y: target[i].y, must: true, bold: true, cls: 'ch-lbl' }))
     .concat(outliers.map(o => { const i = rows.indexOf(o);
-      return { i, text: shortName(o.hub.name, 22), r: SCATTER.pts[i].r, x: SCATTER.pts[i].x, y: SCATTER.pts[i].y, must: false, bold: false, cls: 'ch-lbl sub' }; }));
+      return { i, text: shortName(o.hub.name, 22), r: target[i].r, x: target[i].x, y: target[i].y, must: false, bold: false, cls: 'ch-lbl sub' }; }));
+  let labels = '';
   placeLabels(labelItems, f, obstacles).forEach(l => {
-    svg += `<text class="${l.cls}" x="${l.x.toFixed(1)}" y="${l.y.toFixed(1)}" text-anchor="${l.anchor}">${esc(l.text)}</text>`;
+    labels += `<text class="${l.cls}" x="${l.x.toFixed(1)}" y="${l.y.toFixed(1)}" text-anchor="${l.anchor}">${esc(l.text)}</text>`;
   });
+  // Same stacking as always: trend under the markers, names on top.
+  const lateG = html => move ? `<g class="sc-late" opacity="0">${html}</g>` : html;
+  svg += lateG(trend) + marks + lateG(labels);
   svg += `<circle class="sc-hover" id="sc-hover" r="8" visibility="hidden"/></svg>`;
   box.innerHTML = svg;
   SCATTER.ring = document.getElementById('sc-hover');
   scatterSelect(Math.min(SCATTER.idx, rows.length - 1));
+  if (move) scatterGlide(box, rows, target, move);
+}
+
+/* The glide itself: interpolate every marker (and its "on your cards" ring)
+   from its old spot to its new one, eased in and out. SCATTER.pts follows the
+   markers so hover and tap keep finding the hub under the pointer mid-move.
+   A hub that was not drawn before (it had no old spot) just fades in. */
+function scatterGlide(box, rows, target, move) {
+  const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const marks = [...box.querySelectorAll('.sc-pt')], rings = [...box.querySelectorAll('.sc-ring')];
+  const start = rows.map((r, i) => move.pts.get(r.hub.id) || null);
+  const oldAx = document.getElementById('sc-axis-old'), newAx = document.getElementById('sc-axis-new');
+  const late = [...box.querySelectorAll('.sc-late')];
+  const t0 = performance.now();
+  const frame = now => {
+    const t = Math.min(1, (now - t0) / SCATTER_MOVE_MS), k = ease(t);
+    rows.forEach((r, i) => {
+      const a = start[i], b = target[i];
+      SCATTER.pts[i] = a ? { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k, r: a.r + (b.r - a.r) * k } : Object.assign({}, b);
+    });
+    marks.forEach(el => { const i = +el.dataset.i;
+      moveMarker(el, rows[i].std, SCATTER.pts[i]);
+      if (!start[i]) el.style.opacity = String(0.85 * t); });
+    rings.forEach(el => { const p = SCATTER.pts[+el.dataset.i];
+      el.setAttribute('cx', p.x.toFixed(1)); el.setAttribute('cy', p.y.toFixed(1)); el.setAttribute('r', (p.r + 4).toFixed(1)); });
+    const ax = Math.min(1, t / SCATTER_AXIS_FADE);
+    if (oldAx) oldAx.setAttribute('opacity', (1 - ax).toFixed(3));
+    if (newAx) newAx.setAttribute('opacity', ax.toFixed(3));
+    const lo = Math.max(0, (t - SCATTER_LATE_FADE) / (1 - SCATTER_LATE_FADE)).toFixed(3);
+    late.forEach(g => g.setAttribute('opacity', lo));
+    if (SCATTER.idx >= 0) placeHover(SCATTER.idx);
+    if (t < 1) { SCATTER.anim = requestAnimationFrame(frame); return; }
+    SCATTER.anim = 0;
+    marks.forEach(el => { el.style.opacity = ''; });
+    if (oldAx) oldAx.remove();
+  };
+  SCATTER.anim = requestAnimationFrame(frame);
 }
 
 /* ── 3. Tension sweep ─────────────────────────────────────────────────────── */
