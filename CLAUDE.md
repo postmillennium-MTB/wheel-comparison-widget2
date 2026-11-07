@@ -6,6 +6,27 @@ wheel comparison widget, a single-file `index.html` served live from `main`).
 The wheel-strength math comes from Matthew Ford's Mode Matrix method via
 `wheel-physics-core`; credit him whenever this tool's numbers are used.
 
+## Working rules
+
+- **Merging to `main` publishes.** The live page at
+  postmillenniumrenaissance.com/wheel-comparison-widget2/ serves this repo's
+  `main`, so work on a branch and merge only with Jon's go.
+- **The engine is a copy.** `<script id="engine">` in `index.html` is a copy
+  of wheel-physics-core's `js/engine.js` (currently from commit `1e81384`).
+  Change the math there, validate it there, then re-sync the copy; never edit
+  the physics here first. `js/build-link.js` is pasted in the same way.
+- **Stiffness and strength are different words.** Stiffness (`K_lat`,
+  `K_rad`) is load per unit deflection; strength (`F_lat`, `F_rad`) is the
+  load at which the first spoke goes slack. Never use one for the other in
+  card text, chart labels or docs.
+- **Cite Ford's thesis by its title page:** Ford, M.T. (2018), *Reinventing
+  the Wheel: Stress Analysis, Stability, and Optimization of the Bicycle
+  Wheel*, PhD thesis, Northwestern University.
+- **README numbers come from the engine.** When quoting a hub's K_lat,
+  F_lat or balance in `README.md`, take it from the catalogue table's
+  conditions (or say which conditions) and re-run it, rather than copying
+  an older figure.
+
 ## Color accessibility (colorblind-safe)
 
 Every color scheme and theme must stay readable for colorblind viewers
