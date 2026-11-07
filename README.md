@@ -2,7 +2,7 @@
 
 **Interactive browser widget comparing 148 mm (Boost) and 157 mm (Super Boost) rear axle standards using Mode Matrix structural analysis.**
 
-Live widget: [postmillennium-mtb.github.io/wheel-comparison-widget2](https://postmillennium-mtb.github.io/wheel-comparison-widget2)
+Live widget: [postmillenniumrenaissance.com/wheel-comparison-widget2](https://www.postmillenniumrenaissance.com/wheel-comparison-widget2/) (embedded there from this repo's `main` branch)
 
 ---
 
@@ -40,7 +40,11 @@ One naming wart worth knowing: the `148`/`157` in element ids and in `ST.hub148`
 
 **The wheel drawing** is ported from the PMR homepage's PLATE I: a wireframe wheel on a canvas with no library, N spokes, two flanges and a rim, rotated by a plain 3×3 and projected. Two things differ from the homepage version. First, the model: the homepage has no hub catalogue, so it derives both flange offsets from one spacing number using a fixed NDS ratio and a single PCD, whereas here each hub's real `nds`, `ds`, `pds` and `pnds` drive the drawing, the two flanges get their own radii, and the rim radius is the real ERD/2 — so changing wheel size changes the picture the way it changes the physics. Second, the drag: on the homepage, dragging spreads the hub, because spacing is the free variable there; here spacing is fixed by the hub you picked, so dragging it would contradict the number on screen. Drag orbits the camera instead, which is the gesture worth having anyway — a bracing angle is invisible head-on, and turning the wheel is what brings it into view. The homepage's `VIS_SPREAD = 1.8` drawing exaggeration carries over, and as there it is drawing-only: every quoted angle uses the true offsets.
 
-One thing the drawing invites readers to over-conclude, and which the catalogue does not support: symmetry alone does not make a wheel strong. The most symmetric 148 in the list (KOM Xeno Rear Boost, 77.2% balance) is also the softest laterally (K_lat 43.0), because it buys that symmetry with a narrow 54.0 mm flange spread and a 46 mm PCD — against DMR Zone's 55.6% balance and K_lat 68.9. Flange spread and PCD set how much lateral stiffness is available; symmetry decides how much of it survives to the non-drive side. The tagline "symmetry = strength" is a slogan, not the model.
+One thing the drawing invites readers to over-conclude, and which the catalogue does not support: symmetry alone does not make a wheel strong. The most symmetric 148 in the list (KOM Xeno 148x12, 77.2% balance) is also the softest laterally (K_lat 53.6 N/mm), because it buys that symmetry with a narrow 54.0 mm flange spread and a 46 mm PCD — against DMR Zone Centerlock 148x12's 55.6% balance and K_lat 76.2 N/mm (29", 32H, 2.0 mm, 100 kgf DS, as in the catalogue table below). Flange spread and PCD set how much lateral stiffness is available; symmetry decides how much of it survives to the non-drive side. The tagline "symmetry = strength" is a slogan, not the model.
+
+**Explore why in the Lab.** Both views carry a link that opens the Wheel Strength Lab (`/wheel-lab/`) on the same build: two hubs, wheel size, drive-side tension and spoke count travel in the URL in the format wheel-physics-core's `js/build-link.js` defines, and the Lab's "Quick compare" link hands a build back the same way. Tension is snapped to the destination's range (Lab 80–125 kgf, widget 95–125 kgf).
+
+**ISO 4210-7 note.** The lateral-strength card and the lateral-strength charts carry a one-line note: the bicycle safety standard's static test pushes a mountain-bike rim sideways with 370 N (37.7 kgf) and checks it is not left permanently bent. F_lat is an earlier, elastic limit (the first spoke going slack), so an F_lat below 37.7 kgf does not mean the wheel fails ISO.
 
 **Compare two at random.** Rerolls if it happens to land on the exact setup already on screen. The resulting comparison updates the shareable link like any manual change, so an interesting random pairing can be copied and sent as-is.
 
@@ -106,7 +110,7 @@ Ford's method treats the bicycle wheel as a curved beam (the rim) supported by a
 
 The core reference is:
 
-> Ford, M.T. (2018). *A Theoretical Analysis of the Bicycle Wheel.* PhD thesis, Northwestern University. Available via: [github.com/dashdotrobot/bike-wheel-calc](https://github.com/dashdotrobot/bike-wheel-calc)
+> Ford, M.T. (2018). *Reinventing the Wheel: Stress Analysis, Stability, and Optimization of the Bicycle Wheel.* PhD thesis, Northwestern University. Available via: [github.com/dashdotrobot/bike-wheel-calc](https://github.com/dashdotrobot/bike-wheel-calc)
 
 ### Where this widget's copy of the engine comes from
 
@@ -130,7 +134,12 @@ eyeballed once, but re-proven automatically on every single change to the
 engine, forever, not just at the two dated snapshots below.
 
 This widget's own `<script id="engine">` block (in `index.html`) is a
-synced copy of that already-checked JS file. The Python itself never runs
+copy of that already-checked JS file, taken at wheel-physics-core commit
+`1e81384` (2026-10-24, discrete-spoke strength and buckling). Later core
+additions (taco estimate, per-spoke and torque output, insight outputs) are
+used only by the Lab and are not in this copy; they left the outputs this
+widget shows unchanged. Nothing checks this copy automatically yet, so
+re-sync it by hand when the core's main outputs change. The Python itself never runs
 when someone opens this page — only the pre-checked JavaScript does; the
 Python's only job is sitting in wheel-physics-core as the thing the JS gets
 checked against, ahead of time, before a copy of it ever ships here.
@@ -192,13 +201,17 @@ Yes, but only very slightly — wheel size is a minor, second-order effect on th
 
 | Hub | 26" | 27.5" | 29" | 32" | spread |
 |---|---|---|---|---|---|
-| CK 157 SB Centerlock | 71.85% | 71.82% | 71.77% | 71.72% | 0.14 pp |
-| Project 321 G3 157x12 | 81.68% | 81.66% | 81.63% | 81.58% | 0.11 pp |
-| DMR Zone 148 | 55.64% | 55.61% | 55.57% | 55.51% | 0.14 pp |
+| CK Centerlock 157x12 | 71.85% | 71.82% | 71.77% | 71.72% | 0.14 pp |
+| Project 321 G3 157x12 | 83.24% | 83.22% | 83.18% | 83.14% | 0.10 pp |
+| DMR Zone Centerlock 148x12 | 55.64% | 55.61% | 55.57% | 55.51% | 0.14 pp |
+
+(32H, 2.0 mm spokes, 100 kgf DS, re-run 2026-11-07 on wheel-physics-core
+`1a8109f`. Project 321 G3 157x12 reads higher than the 81.6% this table
+showed before the October 2026 correction to that hub's offsets.)
 
 So going from 27.5" to 29" moves the ratio by roughly 0.05 percentage points — essentially nothing next to the tens-of-points spread you see just from switching hubs. The mechanism is real (larger wheel radius → both spoke bracing angles shrink slightly, and they don't shrink at exactly the same rate when the two flanges differ in offset or PCD, so the ratio drifts a hair), but it's swamped by hub geometry.
 
-Worth noting: wheel size matters much more for the other three metrics — K_lat, F_lat, buckling tension — because those depend on absolute spoke length and rim stiffness, not just the angle ratio. The README's line about "hub geometry and wheel size matter as much as axle width" is specifically about K_lat, not tension balance — it doesn't apply here with the same force.
+Worth noting: wheel size matters much more for the other three metrics — K_lat, F_lat, buckling tension — because those depend on absolute spoke length and rim stiffness, not just the angle ratio. The line below about "hub geometry and wheel size matter as much as axle width" is about K_lat, a stiffness, not tension balance.
 
 ### Lateral stiffness K_lat (N/mm)
 
@@ -277,7 +290,7 @@ The same document lists a "Spoke Offset Left & Right" of 0.5 mm, its spoke *seat
 
 What the conversion *does* change is the cassette's position relative to the frame. Symmetric caps leave the cassette where it sat on the 150, so a converted hub does not inherit a native Super Boost chainline, and frame and drivetrain clearance should be checked against the specific bike rather than assumed from the axle width. That is a fitment question, not a structural one, and it sits outside what this widget computes — but it is the reason a converted 150 and a native 157 SB were two different rows here rather than interchangeable ones.
 
-**Removal (2026-09).** The Hope Pro5 150→157 conversion entry described above has been removed from the catalogue. At 95.8% NDS/DS ratio it sat well clear of every other 157 in this dataset (next-highest is 81.6%) — not because it is an exceptionally well-balanced conventional 157 build, but because a 150 shell converted with endcaps is barely dished to begin with, which is a different thing to measure than the rest of this table compares. Left in, it skewed the 157 side's range and made the tension-balance comparison read as a recommendation for a build that isn't really a "157" in the sense the rest of the catalogue means. The sourcing and correction history above is kept as a record of the work already done on this hub, in case it's ever reintroduced with that context attached.
+**Removal (2026-09).** The Hope Pro5 150→157 conversion entry described above has been removed from the catalogue. At 95.8% NDS/DS ratio it sat well clear of every other 157 in this dataset (next-highest is 83.2%, Project 321 G3 157x12) — not because it is an exceptionally well-balanced conventional 157 build, but because a 150 shell converted with endcaps is barely dished to begin with, which is a different thing to measure than the rest of this table compares. Left in, it skewed the 157 side's range and made the tension-balance comparison read as a recommendation for a build that isn't really a "157" in the sense the rest of the catalogue means. The sourcing and correction history above is kept as a record of the work already done on this hub, in case it's ever reintroduced with that context attached.
 
 **Addition (2026-09), OneUp.** The two OneUp Components rear hubs were added from OneUp's own published product-page dimensions ([148x12](https://www.oneupcomponents.com/products/rear-hub), [157x12](https://www.oneupcomponents.com/products/rear-hub-157x12)), which are given in spoke-calculator form (PCD-L / Flange Dist-L / PCD-R / Flange Dist-R). Left maps to non-drive side, right to drive side, and "PCD" is the flange pitch circle diameter this dataset calls `pds`/`pnds`. One thing to note when reading these two rows: OneUp's published NDS offset is *smaller* on the 157 (35.0 mm) than on the 148 (38.0 mm), which is the reverse of the pattern in every other hub pair here. That is what the manufacturer publishes and it is recorded unaltered, but it means the OneUp 157's advantage over the OneUp 148 shows up as tension balance (74.3% vs 60.7%) rather than as lateral stiffness, where it is actually the lower of the two. Caliper measurements confirming or contradicting these figures are welcome.
 
@@ -296,7 +309,7 @@ Both Sidekick entries share one flange diameter, 60 mm on both sides — geometr
 | PRO5 Rear 150 6 Bolt | 57 / 59 | **28.0** / 26.8 |
 | PRO5 Rear 157 SB 6 Bolt | 57 / 59 | **39.6** / 27.0 |
 
-The v1 value sat on the *150* row, not the *157 SB* row. Hope ships those as two separate hubs with materially different geometry, and the v1 entry name — "Hope Pro5 150/157" — is what invited the slip. The entry is now named "Hope Pro5 157 SB 6 bolt" for that reason.
+The v1 value sat on the *150* row, not the *157 SB* row. Hope ships those as two separate hubs with materially different geometry, and the v1 entry name — "Hope Pro5 150/157" — is what invited the slip. The entry was renamed "Hope Pro5 157 SB 6 bolt" for that reason, and is now "Hope Pro5 6-Bolt 157x12" after the 2026-11 rename of every hub to the 148x12 / 157x12 style.
 
 **The 150 row is not irrelevant to the 157 side, though — which is the subtler half of this.** Hope's 150 shell converts to 157x12 with 3.5 mm endcaps per side, so it is a real 157x12 option, and it was added to the catalogue in its own right as "Hope Pro5 150 6 bolt (157 conv)" (since removed as an outlier — see "Removal (2026-09)" above). The v1 error was therefore not "used a 150 hub, which has no business here"; it was collapsing two genuinely different 157-capable Hope hubs into one entry and attaching the wrong geometry to the wrong name. Both belonged, as separate rows with separate numbers. A catalogue name that merges two axle standards is a latent sourcing bug precisely because the merge hides a real distinction rather than inventing a fake one.
 
@@ -325,14 +338,14 @@ The numbers are recorded here so the research is not lost and nobody re-derives 
 | Hub | Std | NDS/DS ratio | K_lat (N/mm) | K_rad (N/mm) | T_c avg (kgf) | Baseline |
 |---|---|---|---|---|---|---|
 | Onyx MFU 148x12 | 148 | 62.4% | 74.1 | 4731 | 142.8 | PASS |
-| SPANK HEX J-TYPE BOOST R148 | 148 | 68.0% | 78.4 | 4739 | 149.7 | PASS |
-| CK 148x12 CENTERLOCK REAR | 148 | 66.4% | 74.4 | 4738 | 144.9 | PASS |
-| project 321 G3 148x12 | 148 | 69.1% | 57.9 | 4750 | 129.5 | PASS |
-| Hydra Mountain 6 Bolt Rear 148 | 148 | 66.1% | 81.6 | 4735 | 152.2 | PASS |
-| I9 Hydra Centerlock Rear 148 | 148 | 62.2% | 82.6 | 4730 | 151.4 | PASS |
-| I9 1/1 Mountain 6 Bolt 148 | 148 | 62.5% | 75.6 | 4740 | 144.3 | PASS |
-| Hope Pro5 148 6 bolt | 148 | 64.9% | 68.4 | 4743 | 138.2 | PASS |
-| Erase MTB IS V2 148x12 j-bend | 148 | 66.3% | 80.6 | 4729 | 151.3 | PASS |
+| Spank Hex J-Type 148x12 | 148 | 68.0% | 78.4 | 4739 | 149.7 | PASS |
+| CK Centerlock 148x12 | 148 | 66.4% | 74.4 | 4738 | 144.9 | PASS |
+| Project 321 G3 148x12 | 148 | 69.1% | 57.9 | 4750 | 129.5 | PASS |
+| I9 Hydra Mountain 6-Bolt 148x12 | 148 | 66.1% | 81.6 | 4735 | 152.2 | PASS |
+| I9 Hydra Centerlock 148x12 | 148 | 62.2% | 82.6 | 4730 | 151.4 | PASS |
+| I9 1/1 Mountain 6-Bolt 148x12 | 148 | 62.5% | 75.6 | 4740 | 144.3 | PASS |
+| Hope Pro5 6-Bolt 148x12 | 148 | 64.9% | 68.4 | 4743 | 138.2 | PASS |
+| Erase MTB IS V2 148x12 | 148 | 66.3% | 80.6 | 4729 | 151.3 | PASS |
 | Hadley 148x12 | 148 | 62.2% | 75.2 | 4736 | 143.8 | PASS |
 | OneUp 148x12 | 148 | 60.7% | 77.9 | 4728 | 145.8 | PASS |
 | KOM Xeno 148x12 | 148 | 77.2% | 53.6 | 4737 | 128.4 | PASS |
@@ -341,13 +354,13 @@ The numbers are recorded here so the research is not lost and nobody re-derives 
 | e*thirteen Sidekick 148x12 | 148 | 55.6% | 76.7 | 4741 | 142.0 | PASS |
 | Onyx 157x12 | 157 | 66.6% | 95.2 | 4715 | 167.0 | PASS |
 | Onyx Vesper 157x12 | 157 | 65.8% | 93.7 | 4711 | 164.9 | PASS |
-| SPANK HEX J-TYPE R150/157 | 157 | 75.2% | 93.6 | 4726 | 169.2 | PASS |
-| CK 157 SB CENTERLOCK REAR | 157 | 71.8% | 94.8 | 4722 | 169.0 | PASS |
-| project 321 G3 157 SB | 157 | 83.2% | 63.7 | 4743 | 140.4 | PASS |
-| I9 Hydra 6 Bolt 150/157 | 157 | 71.1% | 97.7 | 4722 | 171.9 | PASS |
+| Spank Hex J-Type 157x12 | 157 | 75.2% | 93.6 | 4726 | 169.2 | PASS |
+| CK Centerlock 157x12 | 157 | 71.8% | 94.8 | 4722 | 169.0 | PASS |
+| Project 321 G3 157x12 | 157 | 83.2% | 63.7 | 4743 | 140.4 | PASS |
+| I9 Hydra 6-Bolt 157x12 | 157 | 71.1% | 97.7 | 4722 | 171.9 | PASS |
 | I9 Hydra Centerlock 157x12 | 157 | 65.9% | 101.8 | 4715 | 173.9 | PASS |
-| Hope Pro5 157 SB 6 bolt | 157 | 68.6% | 89.7 | 4727 | 161.9 | PASS |
-| Erase MTB IS 157x12 v2 j-bend | 157 | 70.0% | 102.5 | 4712 | 176.7 | PASS |
+| Hope Pro5 6-Bolt 157x12 | 157 | 68.6% | 89.7 | 4727 | 161.9 | PASS |
+| Erase MTB IS V2 157x12 | 157 | 70.0% | 102.5 | 4712 | 176.7 | PASS |
 | Hadley 157x12 | 157 | 66.6% | 97.0 | 4723 | 169.0 | PASS |
 | OneUp 157x12 | 157 | 74.3% | 72.1 | 4731 | 145.8 | PASS |
 | KOM Xeno 157x12 | 157 | 80.2% | 74.4 | 4723 | 150.4 | PASS |
@@ -355,21 +368,21 @@ The numbers are recorded here so the research is not lost and nobody re-derives 
 | DT Swiss 350 6-Bolt 157x12 | 157 | 67.9% | 96.0 | 4720 | 168.5 | PASS |
 | e*thirteen Sidekick Pro 157x12 | 157 | 60.4% | 97.6 | 4725 | 166.2 | PASS |
 
-"PASS" means the engine this widget ships matched Matthew Ford's `bike-wheel-calc` Python library to floating-point noise for that hub's geometry. The most recent run (2026-10-24, wheel-physics-core `validation/`) covered all 30 hubs at four build setups, including this one, and checked tension ratio, both stiffnesses, both buckling tensions and both strength figures.
+"PASS" means the engine this widget ships matched Matthew Ford's `bike-wheel-calc` Python library to floating-point noise for that hub's geometry. wheel-physics-core's CI re-runs that check on every change to its engine: all 30 hubs at four build setups, including this one, covering tension ratio, both stiffnesses, both buckling tensions and both strength figures. The table's numbers are unchanged by the 2026-11-07 hub renames.
 
 T_c avg is the discrete-spoke buckling tension (see "Buckling tension T_c" above). Before October 2026 this column showed the smeared linear estimate, which is 4–11% higher.
 
 ### Notable results worth examining
 
-**project 321 G3 148 vs 157.** Both versions of this hub use an unusually narrow NDS offset (32 mm) for their respective standards. The 157 version reaches the highest tension ratio of any *conventionally dished* 157 here (83.2%) but among the lowest lateral stiffness in the 157 group (63.7 N/mm) — because while the ratio is excellent, the narrow NDS offset means the NDS spoke angle is steep and the absolute stiffness contribution is reduced. This is a good illustration of why no single metric tells the full story.
+**Project 321 G3 148x12 vs 157x12.** Both versions of this hub use an unusually narrow NDS offset (32 mm) for their respective standards. The 157 version reaches the highest tension ratio of any *conventionally dished* 157 here (83.2%) but among the lowest lateral stiffness in the 157 group (63.7 N/mm) — because while the ratio is excellent, the narrow NDS offset means the NDS spoke angle is steep and the absolute stiffness contribution is reduced. This is a good illustration of why no single metric tells the full story.
 
 **I9 Hydra Centerlock 157x12.** Among the highest lateral stiffness in the dataset (101.8 N/mm, second only to the Erase MTB IS 157x12 at 102.5) and one of the highest buckling margins (173.9 kgf, second only to the Erase MTB IS 157x12 at 176.7), owing to a notably wide NDS offset (43 mm) that gives the NDS spokes excellent lateral bracing geometry.
 
-**KOM Xeno Rear Boost 148 — the clearest tension-balance-versus-stiffness trade in the dataset.** This hub posts the best tension balance of any 148 in the catalogue by a wide margin (77.2%, against a 148 median near 65%) and simultaneously the lowest lateral stiffness of any hub here, either standard (53.6 N/mm). Both come from the same two geometry choices: a 46 mm flange PCD, the smallest in the dataset, and a flange spacing of 54 mm that sits the two flanges unusually close together. The small PCD shortens the lever the spokes act on and steepens their angle at the rim, which costs bracing stiffness; the narrow, comparatively even flange spacing is what keeps the two sides' tensions close. A builder reading only the tension-ratio column would rank this hub first among 148s, and a builder reading only the stiffness column would rank it last. Neither column is wrong, and this is the sharpest illustration in the catalogue of why the widget shows four metrics instead of a score.
+**KOM Xeno 148x12 — the clearest tension-balance-versus-stiffness trade in the dataset.** This hub posts the best tension balance of any 148 in the catalogue by a wide margin (77.2%, against a 148 median near 65%) and simultaneously the lowest lateral stiffness of any hub here, either standard (53.6 N/mm). Both come from the same two geometry choices: a 46 mm flange PCD, the smallest in the dataset, and a flange spacing of 54 mm that sits the two flanges unusually close together. The small PCD shortens the lever the spokes act on and steepens their angle at the rim, which costs bracing stiffness; the narrow, comparatively even flange spacing is what keeps the two sides' tensions close. A builder reading only the tension-ratio column would rank this hub first among 148s, and a builder reading only the stiffness column would rank it last. Neither column is wrong, and this is the sharpest illustration in the catalogue of why the widget shows four metrics instead of a score.
 
 **DT Swiss 350 — a bigger flange on the side that needs it.** Almost every hub here uses a drive-side flange as large as or larger than the non-drive side: 15 of the 28 entries preceding this pair had the larger flange on the drive side, 11 ran them equal, and only OneUp went the other way. DT joins OneUp as the exception, and does it at both widths — 58 mm non-drive against 52 mm drive at 148, 60 against 50.5 at 157. A larger non-drive flange lengthens the lever those spokes pull on, which is the side a dished rear wheel has least to work with. The 157 lands at 96.0 N/mm on a 67.9% balance, a stronger combination than most of the group, without resorting to the deep dish of the DMR.
 
-**DMR Zone, both standards — the most dished hubs here, and what that does and does not buy.** The Zone 148 posts the lowest tension balance in the entire catalogue (55.6%) and the Zone 157 the lowest in its group (61.3%, below every other 157 and below 11 of the 13 148s). DMR runs the same idea at both widths: a 56 mm PCD with the flanges set wide and well off-centre — 38.0 NDS against 21.0 DS at 148, 41.0 against 25.0 at 157.
+**DMR Zone, both standards — among the most dished hubs here, and what that does and does not buy.** The Zone 148 ties the e\*thirteen Sidekick 148x12 for the lowest tension balance in the catalogue (55.6%; the two share the same 38.0 / 21.0 offsets), and the Zone 157 is second-lowest of the 157s (61.3%, above only the e\*thirteen Sidekick Pro 157x12 at 60.4%, and below 12 of the 15 148s). DMR runs the same idea at both widths: a 56 mm PCD with the flanges set wide and well off-centre — 38.0 NDS against 21.0 DS at 148, 41.0 against 25.0 at 157.
 
 What that buys is less than it might appear. Both land mid-pack for lateral stiffness, not at the top: the 148 is 7th of 15 (76.2 N/mm) and the 157 is 11th of 15 (91.2 N/mm). So the deep dish is not purchasing class-leading stiffness — the I9 Hydra Centerlock 148x12 is stiffer (82.6 N/mm) while carrying a far healthier 62.2% balance.
 
@@ -423,7 +436,7 @@ The validation results are stored in [`validation_baseline_v4_2026-06-11.csv`](.
 
 The validation confirms that the JavaScript engine faithfully reproduces Matt Ford's Python library under the same model assumptions. It does **not** independently validate Ford's model against physical measurements on real wheels — that is the work Ford's thesis itself undertakes, and readers interested in the theoretical foundations and experimental comparisons should consult the original work.
 
-The strength metrics (F_lat, F_rad) are **not** compared against the library, because they are not library outputs. They are transparent, first-principles calculations built on top of the validated stiffnesses. Their formulas are fully documented in the code comments.
+The two runs above predate the strength figures being checked. Since October 2026 the strength metrics (F_lat, F_rad) are checked too: the library has no strength function, so wheel-physics-core's `validation/reference.py` builds first spoke slack from the library's own `ModeMatrix` and `Spoke.calc_tension_change`, and the engine has to match it to floating-point precision (see "Lateral strength F_lat" above).
 
 ### Re-running the validation
 
@@ -446,7 +459,7 @@ into this widget's `<script id="engine">` block.
 |---|---|---|
 | Engine | Rewritten engine (incomplete port); did not match its own validation baseline | Direct port of Ford library; matches to floating-point precision |
 | Hub geometry: Hope Pro5 157 | nds = 28.0 mm (incorrect) | nds = 39.6 mm (corrected) |
-| Strength model (F_lat) | NDS slack load computed with Ns/2 factor (unconservative by ~16×) | First-spoke-slack threshold on K_lat; formula documented in code |
+| Strength model (F_lat) | NDS slack load computed with Ns/2 factor (unconservative by ~16×) | First spoke slack in Ford's discrete-spoke Mode Matrix, checked against his library (since Oct 2026; before that, a first-slack shortcut on K_lat) |
 | Verdict statements | Inverted in the case where 148 wins (named wrong hub as winner) | Fixed; winner always named with positive adjective, verified both directions |
 | Mobile layout | Fixed three-column grid, no responsive breakpoints | Mobile-first; stacks to single column below 560 px |
 | Colorblindness | Status communicated by red/amber/green only | Okabe–Ito colorblind-safe palette; status always paired with symbol + word |

@@ -1184,8 +1184,8 @@ Ford's discrete-spoke model, checked against his code the same way.</p>
 <b>Method.</b> Tension balance, lateral stiffness K_lat, radial stiffness K_rad, and buckling
 tension T_c are computed with a JavaScript port of Matt Ford's open-source
 <a href="https://github.com/dashdotrobot/bike-wheel-calc" target="_blank"
-rel="noopener"><b>bike-wheel-calc</b></a> library (Mode Matrix method; Ford 2018, <i>A Theoretical Analysis of the
-Bicycle Wheel</i>, Northwestern University). Stiffness uses smeared spokes, N Fourier modes and
+rel="noopener"><b>bike-wheel-calc</b></a> library (Mode Matrix method; Ford 2018, <i>Reinventing the Wheel: Stress
+Analysis, Stability, and Optimization of the Bicycle Wheel</i>, Northwestern University). Stiffness uses smeared spokes, N Fourier modes and
 tension softening; buckling tension uses the library's discrete-spoke Mode Matrix. The port
 matches the library to floating-point precision across the full hub catalogue.
 <b>Strength figures</b> (F_lat, F_rad) are the point loads at which the first spoke goes
@@ -1221,8 +1221,8 @@ Engineer <a href="https://dashdotrobot.com" target="_blank" rel="noopener">Matt 
  * (https://github.com/dashdotrobot/bike-wheel-calc), implementing the Mode
  * Matrix method from:
  *
- *   Ford, M.T. (2018). A Theoretical Analysis of the Bicycle Wheel.
- *   PhD thesis, Northwestern University.
+ *   Ford, M.T. (2018). Reinventing the Wheel: Stress Analysis, Stability,
+ *   and Optimization of the Bicycle Wheel. PhD thesis, Northwestern University.
  *
  * bike-wheel-calc is MIT-licensed, © 2015 Matthew Ford — included as the
  * third-party/dashdotrobot/bike-wheel-calc git submodule in this repo,
