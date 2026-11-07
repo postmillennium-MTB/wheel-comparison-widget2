@@ -138,8 +138,14 @@ copy of that already-checked JS file, taken at wheel-physics-core commit
 `1e81384` (2026-10-24, discrete-spoke strength and buckling). Later core
 additions (taco estimate, per-spoke and torque output, insight outputs) are
 used only by the Lab and are not in this copy; they left the outputs this
-widget shows unchanged. Nothing checks this copy automatically yet, so
-re-sync it by hand when the core's main outputs change. The Python itself never runs
+widget shows unchanged. `.github/workflows/core-sync.yml` checks the copy
+on every push, every PR and once a week: `tools/check-core-sync.mjs` runs
+the widget's engine and the core's current `js/engine.js` on all 30
+catalogue hubs at 26 builds and fails if any number the widget uses
+differs (to 1e-9, relative). It also requires the pasted
+`<script id="build-link">` to equal the core's `js/build-link.js`. When it
+fails, re-sync the copy from the core. To run it locally:
+`node tools/check-core-sync.mjs <path to a wheel-physics-core checkout>`. The Python itself never runs
 when someone opens this page — only the pre-checked JavaScript does; the
 Python's only job is sitting in wheel-physics-core as the thing the JS gets
 checked against, ahead of time, before a copy of it ever ships here.
@@ -489,6 +495,7 @@ into this widget's `<script id="engine">` block.
 | `validation_baseline_v4_2026-08-20.csv` | Re-run of the same congruence check, ~2 months later, after UI-only changes. All rows PASS, matching the June baseline to floating-point precision — confirms no engine drift. |
 | `images/pmr-carpet-1896-mask.png` | The carpet-weave mask for the DMC-12 page texture: US Design Patent 25,495 (Crowe, 1896, public domain), the same file the MTB Patent Atlas header uses. Loaded only by themes that turn the texture on. |
 | `images/pmr-carpet-1896-SOURCE.md` | Provenance of the mask: patent number, public-domain basis, and how the asset was made. |
+| `tools/check-core-sync.mjs` | Checks the pasted engine and build-link copies against wheel-physics-core (run by `.github/workflows/core-sync.yml`). |
 | `README.md` | This document. |
 
 ---
