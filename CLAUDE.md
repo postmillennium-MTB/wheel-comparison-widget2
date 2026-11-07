@@ -15,6 +15,9 @@ The wheel-strength math comes from Matthew Ford's Mode Matrix method via
   of wheel-physics-core's `js/engine.js` (currently from commit `1e81384`).
   Change the math there, validate it there, then re-sync the copy; never edit
   the physics here first. `js/build-link.js` is pasted in the same way.
+  `tools/check-core-sync.mjs` (CI: `core-sync.yml`, also weekly) fails when
+  either copy no longer matches the core's main branch; after a re-sync,
+  update the commit named here and in the README.
 - **Stiffness and strength are different words.** Stiffness (`K_lat`,
   `K_rad`) is load per unit deflection; strength (`F_lat`, `F_rad`) is the
   load at which the first spoke goes slack. Never use one for the other in

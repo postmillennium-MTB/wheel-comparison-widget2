@@ -1,0 +1,30 @@
+name: Engine copy matches wheel-physics-core
+
+# index.html carries pasted copies of wheel-physics-core's js/engine.js and
+# js/build-link.js. This checks them against the core's current main branch:
+# every number the widget's engine returns, for all 30 catalogue hubs at 26
+# builds, must equal the core's. It runs on every push and PR here, and
+# weekly, because a change in the core does not trigger this repo's CI.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: postmillennium-MTB/wheel-physics-core
+          path: wheel-physics-core
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Compare the widget's copies with the core
+        run: node tools/check-core-sync.mjs wheel-physics-core
