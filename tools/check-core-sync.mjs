@@ -47,12 +47,12 @@ const cat = JSON.parse(readFileSync(join(core, "validation", "hub_catalogue.json
 const R = cat.rim_constants;
 
 const builds = [];
-for (const erd of [534, 559, 600, 667])
+for (const erd of [538, 567, 605, 649])
   for (const ns of [28, 32])
     for (const t of [95, 110, 125])
       builds.push({ erd, ns, t, dDS: 2.0, dNDS: 2.0 });
-builds.push({ erd: 600, ns: 32, t: 100, dDS: 2.0, dNDS: 1.5 });
-builds.push({ erd: 600, ns: 32, t: 100, dDS: 1.8, dNDS: 1.5 });
+builds.push({ erd: 605, ns: 32, t: 100, dDS: 2.0, dNDS: 1.5 });
+builds.push({ erd: 605, ns: 32, t: 100, dDS: 1.8, dNDS: 1.5 });
 
 function close(a, b) {
   if (a === b) return true;
