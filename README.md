@@ -417,16 +417,6 @@ The rim is held constant on purpose: both wheels always share it, which isolates
 
 At these values EI_lat matters more than GJ for lateral stiffness: +10% EI_lat raises K_lat about 1.7%, +10% GJ about 0.9% (CK Centerlock 148x12, catalogue conditions). (This README used to say GJ was the more influential of the two; the engine does not bear that out at either the old or the new defaults.)
 
----|---|---|---|
-| Lateral bending stiffness | EI_lat | 50 N·m² | 40–80 N·m² |
-| Radial (in-plane) bending stiffness | EI_rad | 150 N·m² | 100–300 N·m² |
-| Torsional stiffness | GJ | 22 N·m² | 15–35 N·m² |
-| Axial (hoop) stiffness | EA_rim | 11.5 MN | 8–15 MN |
-
-GJ is the most influential rim parameter for lateral stiffness, not EI_lat, because the rim's curvature couples bending and torsion (Ford §3.4). Changing GJ from its default has a larger effect on K_lat than changing EI_lat by the same proportion. Users experimenting with rim parameters should treat GJ changes as the primary sensitivity.
-
-Both wheels always share the same rim defaults. This is intentional: it isolates the effect of hub geometry and axle width, which is the comparison the widget is designed to make.
-
 ---
 
 ## Validation
@@ -451,6 +441,8 @@ All 20 hubs passed. Worst-case absolute percentage difference across all hubs an
 The validation results are stored in [`validation_baseline_v4_2026-06-11.csv`](./validation_baseline_v4_2026-06-11.csv), which contains the side-by-side library and widget outputs for every hub, with the diff column confirming the match.
 
 **Re-run, 2026-08-20.** The same congruence check was re-run two months later — `bikewheelcalc` source fetched fresh from GitHub, engine re-extracted from the then-current `index.html` — after several UI-only changes had been made to the widget (card header layout, advanced-settings copy). All 20 hubs still passed at the same floating-point-noise level (worst case **1.13 × 10⁻¹³ %**), confirming the engine had not drifted from the Ford library across those changes. Results are in [`validation_baseline_v4_2026-08-20.csv`](./validation_baseline_v4_2026-08-20.csv); the June file is kept alongside it rather than overwritten, so the history of passing baselines is auditable over time.
+
+**Re-run, 2026-11-11, with the measured TK540 rim as default.** All 30 catalogue hubs passed against Ford's `bike-wheel-calc` (worst difference 1.6 × 10⁻¹⁰ %), at the June build (ERD 600, 32 spokes, 2.0 mm, 100 kgf DS), now including the strength figures F_lat and F_rad. The June and August files used the old placeholder rim (EI_lat 50 / EI_rad 150 / GJ 22 N·m²), so this file is **not** expected to match them: K_lat (lateral stiffness) is a median 67% higher and K_rad (radial stiffness) 8% higher on the 20 hubs both files share, and T_c is about twice as high because of the rim, partly offset by the move to discrete-spoke buckling. Causes and the per-hub comparison are in [`validation_baseline_v4_2026-11-11_NOTES.md`](./validation_baseline_v4_2026-11-11_NOTES.md); the data is in [`validation_baseline_v4_2026-11-11.csv`](./validation_baseline_v4_2026-11-11.csv). Re-create it with `tools/make-validation-baseline.mjs`, `tools/make_validation_baseline.py` and `tools/compare-baselines.py`.
 
 ### What the validation does and does not establish
 
@@ -507,6 +499,9 @@ into this widget's `<script id="engine">` block.
 | `index.html` | The complete widget — all HTML, CSS, and JavaScript in a single file. The physics engine is in the `<script id="engine">` tag. |
 | `validation_baseline_v4_2026-06-11.csv` | Congruence test results: widget vs `bike-wheel-calc` library, all 20 hubs, four metrics each. All rows PASS. |
 | `validation_baseline_v4_2026-08-20.csv` | Re-run of the same congruence check, ~2 months later, after UI-only changes. All rows PASS, matching the June baseline to floating-point precision — confirms no engine drift. |
+| `validation_baseline_v4_2026-11-11.csv` | Re-run, all 30 hubs, **measured TK540 default rim** (June/August files used the old rim, so differences are expected). Adds F_lat and F_rad columns. All rows PASS. |
+| `validation_baseline_v4_2026-11-11_NOTES.md` | What changed versus June and why, with the per-hub comparison. |
+| `tools/make-validation-baseline.mjs`, `tools/make_validation_baseline.py`, `tools/compare-baselines.py` | Generate and compare dated baselines (widget engine vs Ford's library via wheel-physics-core's validation helpers). |
 | `images/pmr-carpet-1896-mask.png` | The carpet-weave mask for the DMC-12 page texture: US Design Patent 25,495 (Crowe, 1896, public domain), the same file the MTB Patent Atlas header uses. Loaded only by themes that turn the texture on. |
 | `images/pmr-carpet-1896-SOURCE.md` | Provenance of the mask: patent number, public-domain basis, and how the asset was made. |
 | `tools/check-core-sync.mjs` | Checks the pasted engine and build-link copies against wheel-physics-core (run by `.github/workflows/core-sync.yml`). |
