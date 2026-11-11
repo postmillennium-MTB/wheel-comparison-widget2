@@ -1985,7 +1985,9 @@ const NICK = {
            tip: 'Super Boost is a marketing nickname from Pivot, circa 2016.' },
 };
 
-const WHEEL_ERDS = { '26':534, '27.5':559, '29':600, '32':667 };
+// Effective rim diameters, mm, one per wheel size, from manufacturer spec pages (sources in README):
+// 26" DT Swiss FR 560, 27.5" and 29" Tenet Coven AL, 32" Reserve 30|XC. Until Nov 2026: 534 / 559 / 600 / 667, unsourced.
+const WHEEL_ERDS = { '26':538, '27.5':567, '29':605, '32':649 };
 const WHEEL_SIZES = Object.keys(WHEEL_ERDS);
 const SPOKE_DIAS = ['1.5','1.6','1.7','1.8','1.9','2.0','2.1','2.2','2.3'];
 const DEFAULT_SPOKE_DIA = '2.0';
