@@ -550,6 +550,7 @@ body.simple .note{display:none}
 .adv-help .h{font-size:11px;font-weight:700;color:var(--b-text);text-transform:uppercase;letter-spacing:.05em}
 .adv-help p{font-size:12px;color:var(--muted);line-height:1.45;margin-top:2px}
 .adv-note{font-size:12px;color:var(--faint);margin-top:8px}
+.adv-note a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 .reset{font-size:12.5px;border:1px solid var(--edge-strong);background:#fff;border-radius:8px;
   padding:6px 12px;min-height:36px}
 .reset:hover{border-color:var(--faint)}
@@ -831,13 +832,13 @@ Ford's discrete-spoke model, checked against his code the same way.</p>
         <select class="ctl" id="g-ns" onchange="refresh()" aria-label="Spoke count"></select></div>
     </div>
     <div class="adv-help">
-      <div><div class="h">EI_lat</div><p>Rim lateral bending stiffness — resists the rim bowing sideways. Typical alloy double-wall rims: 40–80 N·m².</p></div>
-      <div><div class="h">EI_rad</div><p>Rim in-plane bending stiffness — how the rim spreads load around its hoop. Usually 3–10× EI_lat (100–300 N·m²).</p></div>
-      <div><div class="h">GJ</div><p>Rim torsional stiffness. Because the rim is curved, bending and twist are coupled, so GJ shapes lateral flexibility more than EI_lat does. Typical: 15–35 N·m².</p></div>
-      <div><div class="h">EA_rim</div><p>Rim hoop (axial) stiffness, used for the rim's in-plane response and the tension-softening terms. Typical alloy: 8–15 MN.</p></div>
+      <div><div class="h">EI_lat</div><p>Rim lateral bending stiffness — resists the rim bowing sideways. The eleven alloy rims Matthew Ford measured run 130–260 N·m².</p></div>
+      <div><div class="h">EI_rad</div><p>Rim in-plane bending stiffness — how the rim spreads load around its hoop. Ford's measured rims: 89–330 N·m².</p></div>
+      <div><div class="h">GJ</div><p>Rim torsional stiffness. Because the rim is curved, bending and twist are coupled, so GJ adds to lateral stiffness too, though less than EI_lat does at these values. Ford's measured rims: 15–190 N·m².</p></div>
+      <div><div class="h">EA_rim</div><p>Rim hoop (axial) stiffness, used for the rim's in-plane response and the tension-softening terms. Not measured directly; from rim mass it is about 5–8 MN for 380–600 g alloy rims.</p></div>
       <div><div class="h">Modes N</div><p>Fourier modes in the Mode Matrix sum. Harmonics used to approximate the rim's deformed shape. Accuracy converges by N~16–24; higher settings add no meaningful precision.</p></div>
     </div>
-    <div class="adv-note">Rim defaults: DT Swiss TK540 (EI_lat 50, EI_rad 150, GJ 22 N·m², EA 11.5 MN). Both wheels always share the same rim and spoke count, so differences below come from hub geometry, wheel size, spoke gauge, and DS tension only. DS tension is set per wheel now, not shared — see the "DS tension" field on each card below. That's a deliberate change: a wheel size this tool lets you pick on one side but not the other (26–32″) doesn't buckle at the same tension, so one shared value silently penalized whichever size buckles sooner. Each side defaults sensibly for its own size and can be moved independently.</div>
+    <div class="adv-note">Rim defaults: DT Swiss TK540 as measured by Matthew Ford (Ford, Peng &amp; Balogun 2018, from his <a href="https://bicyclewheel.info/rim-stiffness/" target="_blank" rel="noopener">rim stiffness library</a>): EI_lat 260, EI_rad 211, GJ 75 N·m², and EA 7.2 MN from its 550 g mass. Both wheels always share the same rim and spoke count, so differences below come from hub geometry, wheel size, spoke gauge, and DS tension only. DS tension is set per wheel now, not shared — see the "DS tension" field on each card below. That's a deliberate change: a wheel size this tool lets you pick on one side but not the other (26–32″) doesn't buckle at the same tension, so one shared value silently penalized whichever size buckles sooner. Each side defaults sensibly for its own size and can be moved independently.</div>
   </div>
 </div>
 
@@ -1193,7 +1194,8 @@ slack, computed with the library's own Mode Matrix using individual (discrete) s
 lateral and radial deflection coupled, and checked against it to floating-point precision.
 They mark the onset of lost preload, not wheel collapse; rim buckling (taco) is not modelled.
 Spoke geometry uses the rim beam-centroid radius (ERD/2 + 11 mm) per Ford §3.2; 3-cross lacing;
-steel spokes, E = 210 GPa. Hub flange dimensions compiled from manufacturer documentation.
+steel spokes, E = 210 GPa. Rim: DT Swiss TK540, stiffness as measured by Ford, Peng &amp; Balogun (2018).
+Hub flange dimensions compiled from manufacturer documentation.
 <span class="credit">This project could not have been possible without the work of Mechanical
 Engineer <a href="https://dashdotrobot.com" target="_blank" rel="noopener">Matt Ford</a>.</span>
 </p>
@@ -2001,7 +2003,7 @@ const DEFAULTS = { wheel148:'29', wheel157:'29', hub148:'h6', hub157:'h7' };
 const TDS_OPTIONS = [95, 100, 105, 110, 115, 120, 125];          // DS tension, kgf
 const MODE_OPTIONS = ['8', '16', '24', '48'];                    // Fourier modes N
 const SPOKE_COUNT_OPTIONS = ['28', '32', '36'];                  // spoke holes
-const RIM_DEFAULTS = { eil:50, eir:150, gj:22, ea:11.5, nn:'24', ns:'32' };  // DT Swiss TK540
+const RIM_DEFAULTS = { eil:260, eir:211, gj:75, ea:7.2, nn:'24', ns:'32' };  // DT Swiss TK540, measured by Ford, Peng & Balogun 2018 (bicyclewheel.info/rim-stiffness); EA from its 550 g mass
 const RIM_LIMITS = { eil:[1, 500], eir:[1, 1000], gj:[1, 200], ea:[1, 100] };
 const RIM_FIELD_IDS = { eil:'g-eil', eir:'g-eir', gj:'g-gj', ea:'g-ea', nn:'g-modes', ns:'g-ns' };
 
