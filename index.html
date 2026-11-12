@@ -581,6 +581,17 @@ body.simple .note{display:none}
 .act-btn .dot{width:10px;height:10px;border-radius:999px;flex-shrink:0}
 .act-btn .dot.a{background:var(--a)} .act-btn .dot.b{background:var(--b)}
 .act-btn.copied{border-color:var(--ok);color:var(--ok)}
+/* Share link / Copy result: the same pair of icons and names as the Lab's
+   header. The icon turns into a check for a moment once the copy worked, so
+   the confirmation does not rest on the green border alone. On a phone the
+   words drop and the icons stay (the button keeps its name for screen
+   readers), so the header still fits one row. */
+.share-btn svg{width:14px;height:14px;flex-shrink:0}
+.share-btn .ok-ico{display:none}
+.share-btn.copied .ok-ico{display:inline}
+.share-btn.copied .base-ico{display:none}
+.sr-status{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media(max-width:560px){ .share-btn .btn-txt{display:none} .share-btn{padding:6px 9px} }
 .simp-btn .sw{width:28px;height:16px;border-radius:999px;background:var(--line);
   position:relative;flex-shrink:0;transition:background .18s}
 .simp-btn .sw::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;
@@ -845,8 +856,10 @@ html[data-theme="mgb"] .hero,html[data-theme="tr6"] .hero,html[data-theme="db5"]
       aria-hidden="true"></span>Simplified</button>
     <button class="act-btn" id="theme-btn" onclick="cycleTheme()"
       aria-label="Switch color scheme"><span class="dot a"></span><span class="dot b"></span><span id="theme-name">DMC-12</span></button>
-    <button class="act-btn" id="copy-btn" onclick="copyLink()"
-      aria-label="Copy shareable link to this comparison"><span id="copy-label">Copy link</span></button>
+    <button class="act-btn share-btn" id="copy-btn" onclick="copyLink()"
+      aria-label="Share link to this comparison" title="Share link to this comparison"><svg class="lucide lucide-send base-ico" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg><svg class="lucide lucide-check ok-ico" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg><span class="btn-txt">Share link</span><span class="sr-status" role="status" id="copy-label"></span></button>
+    <button class="act-btn share-btn" id="result-btn" onclick="copyResult()"
+      aria-label="Copy result as text, for a comment or post" title="Copy result as text, for a comment or post"><svg class="lucide lucide-clipboard-copy base-ico" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M16 4h2a2 2 0 0 1 2 2v4"/><path d="M21 14H11"/><path d="m15 10-4 4 4 4"/></svg><svg class="lucide lucide-check ok-ico" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg><span class="btn-txt">Copy result</span><span class="sr-status" role="status" id="result-label"></span></button>
     <a class="pmr-link" href="https://www.postmillenniumrenaissance.com/" target="_top"
        aria-label="Back to Post Millennium Renaissance home">PMR</a>
   </div>
@@ -1978,6 +1991,106 @@ if (typeof window !== 'undefined') {
   window.WheelBuildLink = WheelBuildLink;
 }
 </script>
+<script id="share-text">
+/* ── "Copy result": the comparison as plain text ─────────────────────────────
+ * Shared by postmillennium-MTB/MTB-wheel-lab (build-time import) and
+ * postmillennium-MTB/wheel-comparison-widget2 (pasted copy, same as
+ * build-link.js). One file so both tools word a pasted result identically.
+ *
+ * Not physics. It only puts numbers the tool already computed with engine.js
+ * (Matthew Ford's Mode Matrix method) into sentences a reader can paste into
+ * a plain-text box such as a Pinkbike comment, which shows no link preview.
+ *
+ * Strength and stiffness get separate, labelled lines on purpose: they are
+ * different properties and can disagree. Strength (F_lat) is the sideways
+ * load at which the first spoke goes slack, in kgf. Stiffness (K_lat) is the
+ * sideways load per millimetre of flex, in N/mm.
+ *
+ * resultText({
+ *   a: { label: '148x12 (Onyx MFU)', F_lat: 38.3, K_lat: 95.1, wheel: '29', tension: 120 },
+ *   b: { label: '157x12 (Onyx MFU)', F_lat: 45.8, K_lat: 99.4, wheel: '29', tension: 120 },
+ *   spokes: '28',
+ *   note: 'rim offset 3 mm',     // optional, added to the build line
+ *   url: 'https://www.postmillenniumrenaissance.com/wheel-lab/#compare&...',
+ * })
+ *
+ * A side whose F_lat is not a positive number (a build at or past its
+ * buckling tension, where first-slack strength has no meaning) is reported
+ * as such rather than given a percentage.
+ *
+ * Same packaging rule as engine.js: no import/export keyword, so it works as
+ * a plain <script>, under Node's require(), and through a bundler.
+ */
+var WheelShareText = (function () {
+  // Below this difference (percent) the two are called equal; matches the
+  // widget's own verdict text.
+  var EQUAL_PCT = 0.05;
+
+  function ok(v) { return typeof v === 'number' && isFinite(v) && v > 0; }
+
+  // Percent gap measured against the smaller value, as both tools' headlines
+  // do. Whole percent from 1% up, one decimal below that.
+  function pct(x, y) {
+    var d = Math.abs(x - y) / Math.min(x, y) * 100;
+    return { d: d, text: (d >= 1 ? Math.round(d) : Math.round(d * 10) / 10) + '%' };
+  }
+
+  // "B is 20% stronger than A (45.8 vs 38.3 kgf)": the values follow the
+  // sentence's order, so each number sits next to the hub it belongs to.
+  function compare(a, b, key, digits, unit, adjective) {
+    var va = a[key], vb = b[key];
+    var p = pct(va, vb);
+    if (p.d < EQUAL_PCT) {
+      return a.label + ' and ' + b.label + ' are about the same (' +
+        va.toFixed(digits) + ' vs ' + vb.toFixed(digits) + ' ' + unit + ')';
+    }
+    var aWins = va > vb, win = aWins ? a : b, lose = aWins ? b : a;
+    return win.label + ' is ' + p.text + ' ' + adjective + ' than ' + lose.label + ' (' +
+      (aWins ? va : vb).toFixed(digits) + ' vs ' + (aWins ? vb : va).toFixed(digits) + ' ' + unit + ')';
+  }
+
+  function buildLine(a, b, spokes, note) {
+    var sp = spokes ? spokes + ' spokes' : null;
+    if (a.wheel === b.wheel && a.tension === b.tension) {
+      return 'Build: ' + [a.wheel + '"', sp, a.tension + ' kgf drive-side spoke tension', note]
+        .filter(Boolean).join(', ') + '.';
+    }
+    var side = function (s) { return s.label + ' ' + s.wheel + '" at ' + s.tension + ' kgf'; };
+    return 'Build: ' + side(a) + '; ' + side(b) + (sp ? '; ' + sp : '') +
+      (note ? '; ' + note : '') + ' (drive-side spoke tension).';
+  }
+
+  function resultText(r) {
+    var a = r.a, b = r.b, lines = [];
+    if (ok(a.F_lat) && ok(b.F_lat)) {
+      lines.push('Lateral STRENGTH (sideways load before the first spoke goes slack): ' +
+        compare(a, b, 'F_lat', 1, 'kgf', 'stronger') + '.');
+    } else {
+      var gone = [a, b].filter(function (s) { return !ok(s.F_lat); })
+        .map(function (s) { return s.label; }).join(' and ');
+      lines.push('Lateral STRENGTH: no figure for ' + gone +
+        ', which is at or past its buckling tension.');
+    }
+    if (ok(a.K_lat) && ok(b.K_lat)) {
+      lines.push('Lateral STIFFNESS (sideways load per mm of flex, a different property): ' +
+        compare(a, b, 'K_lat', 0, 'N/mm', 'stiffer') + '.');
+    }
+    lines.push(buildLine(a, b, r.spokes, r.note));
+    lines.push("Model: Matthew Ford's Mode Matrix method (Ford 2018, PhD thesis, Northwestern).");
+    if (r.url) lines.push(r.url);
+    return lines.join('\n');
+  }
+
+  return { resultText: resultText, EQUAL_PCT: EQUAL_PCT };
+})();
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = WheelShareText;
+}
+if (typeof window !== 'undefined') {
+  window.WheelShareText = WheelShareText;
+}
+</script>
 
 <script>
 // ── Data ─────────────────────────────────────────────────────────────────────
@@ -2782,29 +2895,70 @@ function readURL() {
   if (p.sm === '148' || p.sm === '157' || p.sm === 'both') { ST.simpleSide = p.sm; setSimple(true); }
   else setSimple(p.sm === '1');
 }
-function copyLink() {
-  writeURL();
-  // Share the PMR-hosted page, not the raw GitHub address, so people who click
-  // the link land on your site next to your other tools. The settings ride along
-  // in the hash; the small snippet on the PMR page passes them into this widget.
-  const PMR_PAGE = 'https://www.postmillenniumrenaissance.com/wheel-comparison-widget2';
-  const url = PMR_PAGE + location.hash;
-  const done = ok => {
-    const btn = document.getElementById('copy-btn');
-    const lbl = document.getElementById('copy-label');
-    lbl.textContent = ok ? 'Copied ✓' : 'Copy failed';
-    btn.classList.toggle('copied', ok);
-    setTimeout(() => { lbl.textContent = 'Copy link'; btn.classList.remove('copied'); }, 1800);
-  };
+// Share the PMR-hosted page, not the raw GitHub address, so people who click
+// the link land on your site next to your other tools. The settings ride along
+// in the hash; the small snippet on the PMR page passes them into this widget.
+const PMR_PAGE = 'https://www.postmillenniumrenaissance.com/wheel-comparison-widget2';
+function shareURL() { writeURL(); return PMR_PAGE + location.hash; }
+
+// Brief confirmation on a header button: check icon + green border, and the
+// words for screen readers. A failed copy says so in the button's tooltip.
+function flashCopied(btnId, lblId, ok) {
+  const btn = document.getElementById(btnId);
+  const lbl = document.getElementById(lblId);
+  lbl.textContent = ok ? 'Copied' : 'Copy failed';
+  btn.classList.toggle('copied', ok);
+  clearTimeout(btn._t);
+  btn._t = setTimeout(() => { lbl.textContent = ''; btn.classList.remove('copied'); }, 1800);
+}
+function copyText(text, done) {
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(url).then(() => done(true), () => done(false));
-  } else {
-    // fallback for older / iframe-restricted browsers
+    navigator.clipboard.writeText(text).then(() => done(true), () => fallback());
+  } else fallback();
+  // older / iframe-restricted browsers
+  function fallback() {
     const ta = document.createElement('textarea');
-    ta.value = url; document.body.appendChild(ta); ta.select();
+    ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
     let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
     document.body.removeChild(ta); done(ok);
   }
+}
+// Share link: the device's share sheet where the browser offers one to this
+// page (phones, mostly; a framed page usually is not offered one), otherwise
+// copy the link. Same behaviour as the Lab's share button.
+function copyLink() {
+  const url = shareURL();
+  const done = ok => flashCopied('copy-btn', 'copy-label', ok);
+  if (navigator.share) {
+    navigator.share({ title: document.title, url: url }).catch(err => {
+      if (!err || err.name !== 'AbortError') copyText(url, done);
+    });
+    return;
+  }
+  copyText(url, done);
+}
+// Copy result: the comparison on screen as a few plain-text lines for places
+// that show no link preview (a Pinkbike comment, a forum post). The wording
+// lives in wheel-physics-core's js/share-text.js, shared with the Lab, so a
+// pasted result reads the same from either tool. Strength and stiffness get
+// separate, labelled lines.
+let LAST_RESULT = null;
+function copyResult() {
+  if (!LAST_RESULT) return;
+  const { m148, m157, hub148, hub157, Ns } = LAST_RESULT;
+  const side = (m, hub, wheel, tds) => ({
+    label: hub.name,
+    // Past buckling the widget shows no strength figure; neither does the text.
+    F_lat: isBuckled(m) ? NaN : m.F_lat, K_lat: m.K_lat,
+    wheel: wheel, tension: tds,
+  });
+  const text = WheelShareText.resultText({
+    a: side(m148, hub148, ST.wheel148, ST.tds148),
+    b: side(m157, hub157, ST.wheel157, ST.tds157),
+    spokes: String(Ns), url: shareURL(),
+  });
+  copyText(text, ok => flashCopied('result-btn', 'result-label', ok));
 }
 
 // Built once: the catalogue never changes while the page is open, and
@@ -3108,6 +3262,7 @@ function refresh() {
   document.getElementById('cmp-tc-stmt').firstChild.textContent = tcStmt;
   document.getElementById('sum-tc').textContent = tcStmt;
 
+  LAST_RESULT = { m148, m157, hub148, hub157, Ns };
   syncStdLabels();
   buildHero(m148, m157, hub148, hub157);
   buildTakeaway(m148, m157, hub148, hub157);
