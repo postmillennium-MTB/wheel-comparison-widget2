@@ -14,7 +14,7 @@ The wheel-strength math comes from Matthew Ford's Mode Matrix method via
 - **The engine is a copy.** `<script id="engine">` in `index.html` is a copy
   of wheel-physics-core's `js/engine.js` (currently from commit `1e81384`).
   Change the math there, validate it there, then re-sync the copy; never edit
-  the physics here first. `js/build-link.js` is pasted in the same way.
+  the physics here first. `js/build-link.js` and `js/share-text.js` are pasted in the same way.
   `tools/check-core-sync.mjs` (CI: `core-sync.yml`, also weekly) fails when
   either copy no longer matches the core's main branch; after a re-sync,
   update the commit named here and in the README.

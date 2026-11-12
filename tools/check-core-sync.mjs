@@ -10,11 +10,15 @@
 //    fails this check until the copy is re-synced.
 // 2. Build links (<script id="build-link">): must be the core's
 //    js/build-link.js, character for character.
+// 3. "Copy result" wording (<script id="share-text">): must be the core's
+//    js/share-text.js, character for character. Skipped, with a note, while
+//    the core's main branch does not have that file yet (the widget's copy
+//    arrived alongside the core change that adds it).
 //
 // The physics is Matthew Ford's Mode Matrix method (bike-wheel-calc, MIT);
 // wheel-physics-core checks its engine against his library, this script only
 // checks that the widget's copy is the same engine.
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import vm from "node:vm";
@@ -90,8 +94,18 @@ console.log(`engine: ${rows} builds (${cat.hubs.length} hubs x ${builds.length})
 const linkOk = block("build-link").trim() === readFileSync(join(core, "js", "build-link.js"), "utf8").trim();
 console.log(`build-link: ${linkOk ? "identical to" : "DIFFERS from"} core js/build-link.js`);
 
-if (failures || !linkOk) {
+// ── 3. share text ────────────────────────────────────────────────────────
+const shareCore = join(core, "js", "share-text.js");
+let shareOk = true;
+if (existsSync(shareCore)) {
+  shareOk = block("share-text").trim() === readFileSync(shareCore, "utf8").trim();
+  console.log(`share-text: ${shareOk ? "identical to" : "DIFFERS from"} core js/share-text.js`);
+} else {
+  console.log("share-text: core has no js/share-text.js yet; check skipped");
+}
+
+if (failures || !linkOk || !shareOk) {
   console.error("\nThe widget's copy no longer matches wheel-physics-core. Re-sync the <script> block(s) from the core (see README, \"Where this widget's copy of the engine comes from\").");
   process.exit(1);
 }
-console.log("PASS: the widget's engine and build-link copies match wheel-physics-core.");
+console.log("PASS: the widget's engine, build-link and share-text copies match wheel-physics-core.");
