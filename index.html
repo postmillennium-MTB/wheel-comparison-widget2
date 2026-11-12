@@ -763,6 +763,24 @@ html[data-theme="mgb"] .hero,html[data-theme="tr6"] .hero,html[data-theme="db5"]
 .dc-bar{position:absolute;top:0;bottom:0;min-width:3px;border-radius:999px}
 .dc-bar.neg{background:repeating-linear-gradient(135deg,var(--muted) 0 3px,transparent 3px 6px)!important;
   outline:1px solid var(--muted);outline-offset:-1px}
+/* Step-through: rows not reached yet are faded, the current one is marked by a
+   rule on its left (position, not colour), and each bar grows from where the
+   running total stood. No motion under prefers-reduced-motion. */
+.dc-play{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 2px}
+.dc-play[hidden],.dc-step[hidden]{display:none}
+.dc-btn{font:inherit;font-size:12.5px;font-weight:650;color:var(--ink);background:var(--card);
+  border:1px solid var(--edge-strong);border-radius:8px;padding:6px 11px;min-height:34px;cursor:pointer}
+.dc-btn:hover,.dc-btn:focus-visible{border-color:var(--ink)}
+.dc-btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.dc-btn:disabled{opacity:.45;cursor:default}
+.dc-step{margin:6px 0 2px;padding:8px 11px;border-radius:8px;background:var(--well);
+  font-size:13px;line-height:1.45;color:var(--ink)}
+#dc-rows.stepping .dc-row{transition:opacity .35s}
+#dc-rows.stepping .dc-row.later{opacity:.35}
+#dc-rows.stepping .dc-row.later .dc-bar{visibility:hidden}   /* min-width would leave a 3px stub */
+#dc-rows.stepping .dc-row.now{box-shadow:-3px 0 0 var(--ink);padding-left:8px}
+#dc-rows.stepping .dc-bar{transition:left .7s cubic-bezier(.22,1,.36,1),width .7s cubic-bezier(.22,1,.36,1)}
+@media(prefers-reduced-motion:reduce){#dc-rows.stepping .dc-row,#dc-rows.stepping .dc-bar{transition:none}}
 
 @media(max-width:639px){
   /* A collapsed card's one-line verdict is what a phone visitor scans, so let
@@ -1095,6 +1113,12 @@ Ford's discrete-spoke model, checked against his code the same way.</p>
     </button>
     <div class="cmp-body" id="body-decomp">
       <div class="cmp-plain" id="dc-lede">—</div>
+      <!-- Step-through of the bars below; see "Step-through" in the script. -->
+      <div class="dc-play" id="dc-play" hidden>
+        <button type="button" class="dc-btn" id="dc-play-btn">&#9654; Play it step by step</button>
+        <button type="button" class="dc-btn" id="dc-next-btn">Next step</button>
+      </div>
+      <div class="dc-step" id="dc-step" aria-live="polite" hidden></div>
       <div id="dc-rows"></div>
       <div class="adv-note" id="dc-foot">Each factor is credited by swapping it from the weaker hub's value to the stronger hub's value while the others are in every possible state, then averaging. That way the split does not depend on which change you imagine happening first, and the bars add up exactly to the gap.</div>
       <div class="adv-note iso-note">ISO check: the bicycle safety standard (ISO 4210-7) pushes a mountain-bike rim sideways with 370 N (37.7 kgf) and checks that it is not left permanently bent. Lateral strength here is an earlier, springy limit, the first spoke going slack, so a figure below 37.7 kgf does not mean the wheel fails ISO.</div>
@@ -3526,12 +3550,14 @@ function renderDecomp(rim) {
     setText('sum-decomp', 'Past buckling \u2014 not meaningful');
     setText('dc-lede', 'At these settings at least one build (or a hybrid of the two) is past its buckling tension, where the model\u2019s strength figure stops meaning anything, so the gap cannot be split. Lower the drive-side tension or choose a smaller wheel.');
     rows.innerHTML = '';
+    dcStepReset(null);
     return;
   }
   if (!m.active.length) {
     setText('sum-decomp', 'Identical builds');
     setText('dc-lede', 'Both sides are the same hub with the same settings, so there is no gap to split.');
     rows.innerHTML = '';
+    dcStepReset(null);
     return;
   }
   const top = m.phi.reduce((best, v, i) => v > m.phi[best] ? i : best, 0);
@@ -3557,7 +3583,9 @@ function renderDecomp(rim) {
   const scale = maxV * 1.03 || 1;
   const bar = (from, to, color, neg) => {
     const l = Math.min(from, to) / scale * 100, w = Math.abs(to - from) / scale * 100;
-    return `<span class="dc-bar${neg ? ' neg' : ''}" style="left:${l.toFixed(2)}%;width:${w.toFixed(2)}%;background:${color}"></span>`;
+    // data-x0: where the bar starts growing from in the step-through (the running total before it)
+    return `<span class="dc-bar${neg ? ' neg' : ''}" data-x0="${(from / scale * 100).toFixed(2)}" ` +
+      `style="left:${l.toFixed(2)}%;width:${w.toFixed(2)}%;background:${color}"></span>`;
   };
   const row = (label, sub, val, sub2, barHTML) =>
     `<div class="dc-row"><div class="dc-head"><span class="dc-lbl">${label}${sub ? `<span class="dc-sub">${sub}</span>` : ''}</span>` +
@@ -3576,7 +3604,106 @@ function renderDecomp(rim) {
   html += row(esc(hiName), 'ends here — the stronger build', `${m.Fhi.toFixed(1)} kgf`,
               pct < TIE_PCT ? '' : `${fmtSigned(pct, 0)}${PCT_ICON} overall`, bar(0, m.Fhi, slotColor(m.hiSlot)));
   rows.innerHTML = html;
+
+  // Step-through text, one line per row (start, each factor, end).
+  const lowerFirst = t => t.charAt(0).toLowerCase() + t.slice(1);
+  const texts = [`Start with <b>${esc(loName)}</b>, the weaker build: <b>${m.Flo.toFixed(1)} kgf</b> of sideways load before its first spoke goes slack.`];
+  steps.forEach(st => {
+    const tiny = Math.abs(st.d) < NO_EFFECT_KGF;
+    texts.push(`Give it the stronger build’s <b>${esc(lowerFirst(st.f.label))}</b> (${esc(st.f.describe(m.lo, m.hi))}). ` +
+      (tiny ? 'On its own share this makes no real difference' : `Lateral strength ${st.d > 0 ? 'rises' : 'falls'} by <b>${Math.abs(st.d).toFixed(1)} kgf</b>`) +
+      `, to <b>${st.to.toFixed(1)} kgf</b>.`);
+  });
+  texts.push(`That is <b>${esc(hiName)}</b>: <b>${m.Fhi.toFixed(1)} kgf</b>, ${pct.toFixed(0)}% more than where it started. The steps add up exactly to the gap.`);
+  dcStepReset(pct >= TIE_PCT ? texts : null);
 }
+
+/* ── Step-through ─────────────────────────────────────────────────────────────
+   "Play it step by step" fades every row of the gap chart, then brings them in
+   one at a time with a plain sentence for each, so the gap is built up from the
+   weaker build to the stronger one. "Next step" does the same by hand. Any
+   redraw of the chart (a changed setting, a resize) ends it. Display only. */
+const DC_STEP_MS = 2600;
+const DCP = { texts: null, i: -1, timer: 0 };
+function dcStepReset(texts) {
+  // Same chart redrawn (a resize, e.g. a phone's address bar sliding away):
+  // keep the step-through where it is instead of starting over.
+  if (texts && DCP.texts && DCP.i >= 0 && texts.join('\n') === DCP.texts.join('\n')) { dcRestore(); return; }
+  clearTimeout(DCP.timer); DCP.timer = 0;
+  DCP.texts = texts; DCP.i = -1;
+  document.getElementById('dc-play').hidden = !texts;
+  document.getElementById('dc-step').hidden = true;
+  document.getElementById('dc-rows').classList.remove('stepping');
+  dcButtons();
+}
+function dcRestore() {
+  const rows = document.getElementById('dc-rows'), list = rows.querySelectorAll('.dc-row');
+  const done = DCP.i >= DCP.texts.length - 1;
+  rows.classList.add('stepping');
+  list.forEach((r, k) => {
+    const b = r.querySelector('.dc-bar');
+    if (b) { b.dataset.l = b.style.left; b.dataset.w = b.style.width;
+      if (k > DCP.i) { b.style.transition = 'none'; b.style.left = b.dataset.x0 + '%'; b.style.width = '0'; } }
+    r.classList.toggle('later', !done && k > DCP.i); r.classList.toggle('now', !done && k === DCP.i);
+  });
+  void rows.offsetWidth;
+  list.forEach(r => { const b = r.querySelector('.dc-bar'); if (b) b.style.transition = ''; });
+  document.getElementById('dc-play').hidden = false;
+  document.getElementById('dc-step').hidden = false;
+  dcButtons();
+}
+function dcButtons() {
+  const n = DCP.texts ? DCP.texts.length : 0, done = DCP.i >= n - 1 && DCP.i >= 0;
+  const play = document.getElementById('dc-play-btn'), next = document.getElementById('dc-next-btn');
+  play.innerHTML = DCP.timer ? '&#10073;&#10073; Pause' : done ? '&#8635; Play again' : DCP.i >= 0 ? '&#9654; Play' : '&#9654; Play it step by step';
+  next.disabled = done;
+  next.textContent = DCP.i < 0 ? 'Step through by hand' : 'Next step';
+}
+function dcShow(i) {
+  const rows = document.getElementById('dc-rows'), list = rows.querySelectorAll('.dc-row');
+  const entering = i === 0;
+  if (entering) {
+    rows.classList.add('stepping');
+    // Every bar back to zero width at its starting point, without animating that.
+    list.forEach(r => { const b = r.querySelector('.dc-bar'); if (!b) return;
+      b.dataset.l = b.style.left; b.dataset.w = b.style.width;
+      b.style.transition = 'none'; b.style.left = b.dataset.x0 + '%'; b.style.width = '0'; });
+    void rows.offsetWidth;
+    list.forEach(r => { const b = r.querySelector('.dc-bar'); if (b) b.style.transition = ''; });
+  }
+  list.forEach((r, k) => {
+    r.classList.toggle('later', k > i); r.classList.toggle('now', k === i);
+    const b = r.querySelector('.dc-bar');
+    if (b && k <= i && b.dataset.w !== undefined) { b.style.left = b.dataset.l; b.style.width = b.dataset.w; }
+  });
+  DCP.i = i;
+  const st = document.getElementById('dc-step');
+  st.hidden = false;
+  st.innerHTML = `<b>Step ${i + 1} of ${DCP.texts.length}.</b> ` + DCP.texts[i];
+  if (i >= DCP.texts.length - 1) {          // finished: leave the full chart in place, current row unmarked
+    clearTimeout(DCP.timer); DCP.timer = 0;
+    list.forEach(r => r.classList.remove('later', 'now'));
+  }
+  dcButtons();
+}
+function dcTick() {
+  if (!DCP.texts) return;
+  dcShow(DCP.i + 1);
+  if (DCP.i < DCP.texts.length - 1) DCP.timer = setTimeout(dcTick, DC_STEP_MS);
+  dcButtons();
+}
+document.getElementById('dc-play-btn').addEventListener('click', () => {
+  if (!DCP.texts) return;
+  if (DCP.timer) { clearTimeout(DCP.timer); DCP.timer = 0; dcButtons(); return; }     // pause
+  if (DCP.i >= DCP.texts.length - 1) DCP.i = -1;                                    // play again
+  DCP.timer = 1;      // marks "playing" while the first step is drawn
+  dcTick();
+});
+document.getElementById('dc-next-btn').addEventListener('click', () => {
+  if (!DCP.texts || DCP.i >= DCP.texts.length - 1) return;
+  clearTimeout(DCP.timer); DCP.timer = 0;
+  dcShow(DCP.i + 1);
+});
 
 /* ── 2. Whole-catalogue scatter ───────────────────────────────────────────── */
 
