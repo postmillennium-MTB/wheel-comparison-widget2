@@ -615,6 +615,35 @@ body.simple .note{display:none}
 .takeaway b{font-weight:700}
 .takeaway .win-a{color:var(--a-text)} .takeaway .win-b{color:var(--b-text)}
 
+/* Stiffness vs strength callout, under the bottom line (buildTwist()). Same
+   card as the takeaway; the dashed rule and the "≠" glyph set it apart without
+   a new colour. Winner names reuse the slot text colours and are always named
+   in words too. */
+.twist{background:var(--card);border:1px solid var(--edge);border-left:4px dashed var(--ink);
+  border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:14px;line-height:1.5;box-shadow:var(--lift)}
+.twist[hidden]{display:none}
+.twist .tw-head{display:block;font-weight:700;margin-bottom:3px}
+.twist .tw-head .ne{display:inline-block;min-width:1.3em;font-size:1.15em;margin-right:4px}
+.twist .win-a{color:var(--a-text);font-weight:700} .twist .win-b{color:var(--b-text);font-weight:700}
+.twist .tw-def{display:block;font-size:12.5px;color:var(--muted);margin-top:4px}
+.twist .tw-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+
+/* Small action buttons: the twist callout, and the chart readouts' "put this on
+   a card" / "set this tension" buttons. Ink on card, so every theme's
+   validated ink/card contrast covers them. */
+.ch-act{font:inherit;font-size:12.5px;font-weight:650;color:var(--ink);background:var(--card);
+  border:1px solid var(--edge-strong);border-radius:8px;padding:6px 11px;min-height:34px;cursor:pointer}
+.ch-act:hover,.ch-act:focus-visible{border-color:var(--ink)}
+.ch-act:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.ch-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.ch-done{display:block;margin-bottom:4px;color:var(--ink);font-weight:600}
+.ch-done a{color:var(--ink);text-decoration:underline;text-underline-offset:2px;font-weight:500}
+.iso-ref a{color:var(--muted);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px}
+.iso-ref a:hover{color:var(--ink)}
+.iso-note.flash{animation:isoflash 1.2s ease-out}
+@keyframes isoflash{0%{background:var(--well)}100%{background:transparent}}
+@media(prefers-reduced-motion:reduce){.iso-note.flash{animation:none}}
+
 /* ── HERO VERDICT — the headline of the entire tool ───────────────────────────
    Everything else on the page supports this one number. The winning side's
    color drives the whole block via a --win custom property, but color is never
@@ -782,6 +811,24 @@ html[data-theme="mgb"] .hero,html[data-theme="tr6"] .hero,html[data-theme="db5"]
 .dc-bar{position:absolute;top:0;bottom:0;min-width:3px;border-radius:999px}
 .dc-bar.neg{background:repeating-linear-gradient(135deg,var(--muted) 0 3px,transparent 3px 6px)!important;
   outline:1px solid var(--muted);outline-offset:-1px}
+/* Step-through: rows not reached yet are faded, the current one is marked by a
+   rule on its left (position, not colour), and each bar grows from where the
+   running total stood. No motion under prefers-reduced-motion. */
+.dc-play{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 2px}
+.dc-play[hidden],.dc-step[hidden]{display:none}
+.dc-btn{font:inherit;font-size:12.5px;font-weight:650;color:var(--ink);background:var(--card);
+  border:1px solid var(--edge-strong);border-radius:8px;padding:6px 11px;min-height:34px;cursor:pointer}
+.dc-btn:hover,.dc-btn:focus-visible{border-color:var(--ink)}
+.dc-btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.dc-btn:disabled{opacity:.45;cursor:default}
+.dc-step{margin:6px 0 2px;padding:8px 11px;border-radius:8px;background:var(--well);
+  font-size:13px;line-height:1.45;color:var(--ink)}
+#dc-rows.stepping .dc-row{transition:opacity .35s}
+#dc-rows.stepping .dc-row.later{opacity:.35}
+#dc-rows.stepping .dc-row.later .dc-bar{visibility:hidden}   /* min-width would leave a 3px stub */
+#dc-rows.stepping .dc-row.now{box-shadow:-3px 0 0 var(--ink);padding-left:8px}
+#dc-rows.stepping .dc-bar{transition:left .7s cubic-bezier(.22,1,.36,1),width .7s cubic-bezier(.22,1,.36,1)}
+@media(prefers-reduced-motion:reduce){#dc-rows.stepping .dc-row,#dc-rows.stepping .dc-bar{transition:none}}
 
 @media(max-width:639px){
   /* A collapsed card's one-line verdict is what a phone visitor scans, so let
@@ -1023,6 +1070,11 @@ Ford's discrete-spoke model, checked against his code the same way.</p>
 
   <div class="takeaway" id="takeaway">—</div>
 
+<!-- Stiffness vs strength: shown under the bottom line. Says so outright when
+     the stiffer build is not the stronger one; otherwise offers a pair where
+     they split. See buildTwist(). -->
+<div class="twist" id="twist" aria-live="polite"></div>
+
 </div>
 </div>
 
@@ -1047,7 +1099,7 @@ Ford's discrete-spoke model, checked against his code the same way.</p>
       <div class="tug" aria-hidden="true"><div class="half l"><div class="ha" id="bar-flat-a"></div></div><div class="half"><div class="hb" id="bar-flat-b"></div></div></div>
       <div class="tug-lbl"><span class="slot-a">148</span><span class="slot-b">157</span></div>
       <div class="verdict" id="cmp-flat-stmt">—</div>
-      <div class="adv-note iso-note">ISO check: the bicycle safety standard (ISO 4210-7) pushes a mountain-bike rim sideways with 370 N (37.7 kgf) and checks that it is not left permanently bent. Lateral strength here is an earlier, springy limit, the first spoke going slack, so a figure below 37.7 kgf does not mean the wheel fails ISO.</div>
+      <div class="adv-note iso-note" id="iso-note" tabindex="-1">ISO check: the bicycle safety standard (ISO 4210-7) pushes a mountain-bike rim sideways with 370 N (37.7 kgf) and checks that it is not left permanently bent. Lateral strength here is an earlier, springy limit, the first spoke going slack, so a figure below 37.7 kgf does not mean the wheel fails ISO.</div>
     </div>
   </div>
 
@@ -1117,9 +1169,15 @@ Ford's discrete-spoke model, checked against his code the same way.</p>
     </button>
     <div class="cmp-body" id="body-decomp">
       <div class="cmp-plain" id="dc-lede">—</div>
+      <!-- Step-through of the bars below; see "Step-through" in the script. -->
+      <div class="dc-play" id="dc-play" hidden>
+        <button type="button" class="dc-btn" id="dc-play-btn">&#9654; Play it step by step</button>
+        <button type="button" class="dc-btn" id="dc-next-btn">Next step</button>
+      </div>
+      <div class="dc-step" id="dc-step" aria-live="polite" hidden></div>
       <div id="dc-rows"></div>
       <div class="adv-note" id="dc-foot">Each factor is credited by swapping it from the weaker hub's value to the stronger hub's value while the others are in every possible state, then averaging. That way the split does not depend on which change you imagine happening first, and the bars add up exactly to the gap.</div>
-      <div class="adv-note iso-note">ISO check: the bicycle safety standard (ISO 4210-7) pushes a mountain-bike rim sideways with 370 N (37.7 kgf) and checks that it is not left permanently bent. Lateral strength here is an earlier, springy limit, the first spoke going slack, so a figure below 37.7 kgf does not mean the wheel fails ISO.</div>
+      <div class="adv-note iso-ref"><a href="#iso-note" onclick="return showIsoNote()">How this compares with the ISO 4210-7 side-load test &uarr;</a></div>
     </div>
   </div>
 
@@ -1149,7 +1207,7 @@ Ford's discrete-spoke model, checked against his code the same way.</p>
       <div class="ch-wrap" id="sc-chart"></div>
       <div class="ch-readout" id="sc-readout" aria-live="polite">—</div>
       <div class="adv-note" id="sc-note">—</div>
-      <div class="adv-note iso-note">ISO check: the bicycle safety standard (ISO 4210-7) pushes a mountain-bike rim sideways with 370 N (37.7 kgf) and checks that it is not left permanently bent. Lateral strength here is an earlier, springy limit, the first spoke going slack, so a figure below 37.7 kgf does not mean the wheel fails ISO.</div>
+      <div class="adv-note iso-ref"><a href="#iso-note" onclick="return showIsoNote()">How this compares with the ISO 4210-7 side-load test &uarr;</a></div>
       <details class="ch-table"><summary>Show as table</summary><div id="sc-table"></div></details>
     </div>
   </div>
@@ -1166,7 +1224,7 @@ Ford's discrete-spoke model, checked against his code the same way.</p>
       <div class="ch-wrap" id="sw-chart"></div>
       <div class="ch-readout" id="sw-readout" aria-live="polite">—</div>
       <div class="adv-note" id="sw-note">—</div>
-      <div class="adv-note iso-note">ISO check: the bicycle safety standard (ISO 4210-7) pushes a mountain-bike rim sideways with 370 N (37.7 kgf) and checks that it is not left permanently bent. Lateral strength here is an earlier, springy limit, the first spoke going slack, so a figure below 37.7 kgf does not mean the wheel fails ISO.</div>
+      <div class="adv-note iso-ref"><a href="#iso-note" onclick="return showIsoNote()">How this compares with the ISO 4210-7 side-load test &uarr;</a></div>
       <details class="ch-table"><summary>Show as table</summary><div id="sw-table"></div></details>
     </div>
   </div>
@@ -3451,6 +3509,7 @@ function refresh() {
   syncStdLabels();
   buildHero(m148, m157, hub148, hub157);
   buildTakeaway(m148, m157, hub148, hub157);
+  buildTwist(m148, m157);
   renderBuckleNote(m148, m157, hub148, hub157);
   renderWhyCharts(rim);
 
@@ -3690,6 +3749,107 @@ function buildTakeaway(m148, m157, hub148, hub157) {
     `That's the headline difference; open the cards below for stiffness, vertical hits, and buckling margin.`);
 }
 
+/* ── Stiffness is not strength ───────────────────────────────────────────────
+   Stiffness (K_lat, N/mm) is how much load it takes to flex the wheel a given
+   amount; strength (F_lat, kgf) is the load at which the first spoke goes
+   slack. They usually move together, but not always (a stiff hub with a
+   narrow NDS flange can lose spoke tension sooner). When the two winners
+   differ, this says so; when they agree, it offers a real catalogue pair, at
+   the cards' own settings, where they split. Display only: the numbers are the
+   same K_lat / F_lat the cards print. */
+const TWIST_MIN_PCT = 1;            // a split smaller than this on either metric is not worth a callout
+const TWIST = { undo: null };       // { hub148, hub157, shown148, shown157 } while an example is on the cards
+const pctGap = (a, b) => Math.abs(a - b) / Math.min(a, b) * 100;
+function cfgWithHub(cfg, h) {
+  const S = h.nds + h.ds;
+  return Object.assign({}, cfg, { hub: h, S: S, f: h.ds / S, pds: h.pds, pnds: h.pnds });
+}
+function isTwist(ma, mb) {
+  return (ma.K_lat > mb.K_lat) !== (ma.F_lat > mb.F_lat) &&
+    pctGap(ma.K_lat, mb.K_lat) >= TWIST_MIN_PCT && pctGap(ma.F_lat, mb.F_lat) >= TWIST_MIN_PCT;
+}
+function buildTwist(m148, m157) {
+  const el = document.getElementById('twist');
+  if (TWIST.undo && (ST.hub148 !== TWIST.undo.shown148 || ST.hub157 !== TWIST.undo.shown157)) TWIST.undo = null;
+  if (isBuckled(m148) || isBuckled(m157)) { el.hidden = true; return; }
+  el.hidden = false;
+  const name = s => `<span class="win-${s}">${esc(slotLabel(s))}</span>`;
+  const undo = TWIST.undo ? '<button type="button" class="ch-act" data-twist="undo">Back to my hubs</button>' : '';
+  let html;
+  if (isTwist(m148, m157)) {
+    const stiff = m148.K_lat > m157.K_lat ? 'a' : 'b', strong = stiff === 'a' ? 'b' : 'a';
+    const K = { a: m148.K_lat, b: m157.K_lat }, F = { a: m148.F_lat, b: m157.F_lat };
+    html = `<span class="tw-head"><span class="ne" aria-hidden="true">≠</span>Stiffer isn’t stronger here</span>` +
+      `The ${name(stiff)} build is the <b>stiffer</b> wheel, ${pctGap(K.a, K.b).toFixed(0)}% stiffer ` +
+      `(K_lat ${K[stiff].toFixed(0)} vs ${K[strong].toFixed(0)} N/mm): it flexes less under the same sideways push. ` +
+      `But the ${name(strong)} build is the <b>stronger</b> wheel, ${pctGap(F.a, F.b).toFixed(0)}% stronger ` +
+      `(F_lat ${F[strong].toFixed(1)} vs ${F[stiff].toFixed(1)} kgf): it takes more sideways load before its first spoke goes slack.` +
+      `<span class="tw-def">Stiffness is how much a wheel flexes under load. Strength is how much load it takes before something gives out. ` +
+      `A stiffer wheel is not automatically a stronger one.</span>` +
+      (undo ? `<span class="tw-acts">${undo}</span>` : '');
+  } else {
+    const dK = pctGap(m148.K_lat, m157.K_lat), dF = pctGap(m148.F_lat, m157.F_lat);
+    const both = (dK < TWIST_MIN_PCT || dF < TWIST_MIN_PCT) ? 'Here the two builds are close on stiffness or strength.'
+      : `Here the ${name(m148.F_lat > m157.F_lat ? 'a' : 'b')} build wins both: ${dK.toFixed(0)}% stiffer and ${dF.toFixed(0)}% stronger.`;
+    html = `<span class="tw-head"><span class="ne" aria-hidden="true">≠</span>Stiffness and strength are different things</span>` +
+      `${both} Stiffness is how much the wheel flexes under a sideways push; strength is how much push it takes before the first spoke goes slack. ` +
+      `They usually move together, but not always.` +
+      `<span class="tw-acts"><button type="button" class="ch-act" data-twist="show">Show me two hubs where they split</button>${undo}</span>`;
+  }
+  setCaption(el, html);
+}
+/* Finds the catalogue pair, at the cards' own wheel, tension and spokes, where
+   stiffness and strength disagree most clearly (largest smaller-of-the-two
+   gap). Keeps the left hub if it can, then the right, then tries any pair. */
+function findTwistPair() {
+  const rim = rimSettings(), ca = slotConfig('a'), cb = slotConfig('b');
+  const all = HUBS_148.concat(HUBS_157);
+  const score = (ha, hb) => {
+    if (ha.id === hb.id) return -1;
+    const ma = calcCfg(cfgWithHub(ca, ha), rim), mb = calcCfg(cfgWithHub(cb, hb), rim);
+    if (isBuckled(ma) || isBuckled(mb) || !isTwist(ma, mb)) return -1;
+    return Math.min(pctGap(ma.K_lat, mb.K_lat), pctGap(ma.F_lat, mb.F_lat));
+  };
+  const best = pairs => pairs.reduce((b, p) => { const v = score(p[0], p[1]); return v > b.v ? { v, p } : b; }, { v: -1, p: null }).p;
+  const A = hubById(ST.hub148), B = hubById(ST.hub157);
+  const other = std => std === '148' ? HUBS_157 : HUBS_148;
+  return best(other(stdOf(A.id)).map(h => [A, h])) ||
+         best(other(stdOf(B.id)).map(h => [h, B])) ||
+         best([].concat(...all.map(ha => all.map(hb => [ha, hb]))));
+}
+function setHubs(a, b) {
+  ST.hub148 = a; ST.hub157 = b;
+  document.getElementById('hub148').value = a;
+  document.getElementById('hub157').value = b;
+  refresh();
+}
+document.getElementById('twist').addEventListener('click', e => {
+  const btn = e.target.closest('[data-twist]');
+  if (!btn) return;
+  if (btn.dataset.twist === 'undo' && TWIST.undo) {
+    const u = TWIST.undo; TWIST.undo = null; setHubs(u.hub148, u.hub157); return;
+  }
+  const pair = findTwistPair();
+  if (!pair) { btn.disabled = true; btn.textContent = 'No split at these settings'; return; }
+  const prev = { hub148: ST.hub148, hub157: ST.hub157 };
+  TWIST.undo = Object.assign(prev, { shown148: pair[0].id, shown157: pair[1].id });
+  setHubs(pair[0].id, pair[1].id);
+  const tw = document.getElementById('twist');
+  const btn2 = tw.querySelector('[data-twist="undo"]');
+  if (btn2) btn2.focus({ preventScroll: true });
+});
+
+/* The ISO 4210-7 note is printed once, under the lateral-strength card; the
+   charts link to it. Opens that card if it is collapsed. */
+function showIsoNote() {
+  setCard('flat', true);
+  const el = document.getElementById('iso-note');
+  el.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
+  el.focus({ preventScroll: true });
+  el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  return false;
+}
+
 /* ── Why the numbers differ ──────────────────────────────────────────────────
    The hero says WHICH build is stronger and by how much. These three cards say
    why, each from a different angle:
@@ -3924,12 +4084,14 @@ function renderDecomp(rim) {
     setText('sum-decomp', 'Past buckling \u2014 not meaningful');
     setText('dc-lede', 'At these settings at least one build (or a hybrid of the two) is past its buckling tension, where the model\u2019s strength figure stops meaning anything, so the gap cannot be split. Lower the drive-side tension or choose a smaller wheel.');
     rows.innerHTML = '';
+    dcStepReset(null);
     return;
   }
   if (!m.active.length) {
     setText('sum-decomp', 'Identical builds');
     setText('dc-lede', 'Both sides are the same hub with the same settings, so there is no gap to split.');
     rows.innerHTML = '';
+    dcStepReset(null);
     return;
   }
   const top = m.phi.reduce((best, v, i) => v > m.phi[best] ? i : best, 0);
@@ -3955,7 +4117,9 @@ function renderDecomp(rim) {
   const scale = maxV * 1.03 || 1;
   const bar = (from, to, color, neg) => {
     const l = Math.min(from, to) / scale * 100, w = Math.abs(to - from) / scale * 100;
-    return `<span class="dc-bar${neg ? ' neg' : ''}" style="left:${l.toFixed(2)}%;width:${w.toFixed(2)}%;background:${color}"></span>`;
+    // data-x0: where the bar starts growing from in the step-through (the running total before it)
+    return `<span class="dc-bar${neg ? ' neg' : ''}" data-x0="${(from / scale * 100).toFixed(2)}" ` +
+      `style="left:${l.toFixed(2)}%;width:${w.toFixed(2)}%;background:${color}"></span>`;
   };
   const row = (label, sub, val, sub2, barHTML) =>
     `<div class="dc-row"><div class="dc-head"><span class="dc-lbl">${label}${sub ? `<span class="dc-sub">${sub}</span>` : ''}</span>` +
@@ -3974,7 +4138,106 @@ function renderDecomp(rim) {
   html += row(esc(hiName), 'ends here — the stronger build', `${m.Fhi.toFixed(1)} kgf`,
               pct < TIE_PCT ? '' : `${fmtSigned(pct, 0)}${PCT_ICON} overall`, bar(0, m.Fhi, slotColor(m.hiSlot)));
   rows.innerHTML = html;
+
+  // Step-through text, one line per row (start, each factor, end).
+  const lowerFirst = t => t.charAt(0).toLowerCase() + t.slice(1);
+  const texts = [`Start with <b>${esc(loName)}</b>, the weaker build: <b>${m.Flo.toFixed(1)} kgf</b> of sideways load before its first spoke goes slack.`];
+  steps.forEach(st => {
+    const tiny = Math.abs(st.d) < NO_EFFECT_KGF;
+    texts.push(`Give it the stronger build’s <b>${esc(lowerFirst(st.f.label))}</b> (${esc(st.f.describe(m.lo, m.hi))}). ` +
+      (tiny ? 'On its own share this makes no real difference' : `Lateral strength ${st.d > 0 ? 'rises' : 'falls'} by <b>${Math.abs(st.d).toFixed(1)} kgf</b>`) +
+      `, to <b>${st.to.toFixed(1)} kgf</b>.`);
+  });
+  texts.push(`That is <b>${esc(hiName)}</b>: <b>${m.Fhi.toFixed(1)} kgf</b>, ${pct.toFixed(0)}% more than where it started. The steps add up exactly to the gap.`);
+  dcStepReset(pct >= TIE_PCT ? texts : null);
 }
+
+/* ── Step-through ─────────────────────────────────────────────────────────────
+   "Play it step by step" fades every row of the gap chart, then brings them in
+   one at a time with a plain sentence for each, so the gap is built up from the
+   weaker build to the stronger one. "Next step" does the same by hand. Any
+   redraw of the chart (a changed setting, a resize) ends it. Display only. */
+const DC_STEP_MS = 2600;
+const DCP = { texts: null, i: -1, timer: 0 };
+function dcStepReset(texts) {
+  // Same chart redrawn (a resize, e.g. a phone's address bar sliding away):
+  // keep the step-through where it is instead of starting over.
+  if (texts && DCP.texts && DCP.i >= 0 && texts.join('\n') === DCP.texts.join('\n')) { dcRestore(); return; }
+  clearTimeout(DCP.timer); DCP.timer = 0;
+  DCP.texts = texts; DCP.i = -1;
+  document.getElementById('dc-play').hidden = !texts;
+  document.getElementById('dc-step').hidden = true;
+  document.getElementById('dc-rows').classList.remove('stepping');
+  dcButtons();
+}
+function dcRestore() {
+  const rows = document.getElementById('dc-rows'), list = rows.querySelectorAll('.dc-row');
+  const done = DCP.i >= DCP.texts.length - 1;
+  rows.classList.add('stepping');
+  list.forEach((r, k) => {
+    const b = r.querySelector('.dc-bar');
+    if (b) { b.dataset.l = b.style.left; b.dataset.w = b.style.width;
+      if (k > DCP.i) { b.style.transition = 'none'; b.style.left = b.dataset.x0 + '%'; b.style.width = '0'; } }
+    r.classList.toggle('later', !done && k > DCP.i); r.classList.toggle('now', !done && k === DCP.i);
+  });
+  void rows.offsetWidth;
+  list.forEach(r => { const b = r.querySelector('.dc-bar'); if (b) b.style.transition = ''; });
+  document.getElementById('dc-play').hidden = false;
+  document.getElementById('dc-step').hidden = false;
+  dcButtons();
+}
+function dcButtons() {
+  const n = DCP.texts ? DCP.texts.length : 0, done = DCP.i >= n - 1 && DCP.i >= 0;
+  const play = document.getElementById('dc-play-btn'), next = document.getElementById('dc-next-btn');
+  play.innerHTML = DCP.timer ? '&#10073;&#10073; Pause' : done ? '&#8635; Play again' : DCP.i >= 0 ? '&#9654; Play' : '&#9654; Play it step by step';
+  next.disabled = done;
+  next.textContent = DCP.i < 0 ? 'Step through by hand' : 'Next step';
+}
+function dcShow(i) {
+  const rows = document.getElementById('dc-rows'), list = rows.querySelectorAll('.dc-row');
+  const entering = i === 0;
+  if (entering) {
+    rows.classList.add('stepping');
+    // Every bar back to zero width at its starting point, without animating that.
+    list.forEach(r => { const b = r.querySelector('.dc-bar'); if (!b) return;
+      b.dataset.l = b.style.left; b.dataset.w = b.style.width;
+      b.style.transition = 'none'; b.style.left = b.dataset.x0 + '%'; b.style.width = '0'; });
+    void rows.offsetWidth;
+    list.forEach(r => { const b = r.querySelector('.dc-bar'); if (b) b.style.transition = ''; });
+  }
+  list.forEach((r, k) => {
+    r.classList.toggle('later', k > i); r.classList.toggle('now', k === i);
+    const b = r.querySelector('.dc-bar');
+    if (b && k <= i && b.dataset.w !== undefined) { b.style.left = b.dataset.l; b.style.width = b.dataset.w; }
+  });
+  DCP.i = i;
+  const st = document.getElementById('dc-step');
+  st.hidden = false;
+  st.innerHTML = `<b>Step ${i + 1} of ${DCP.texts.length}.</b> ` + DCP.texts[i];
+  if (i >= DCP.texts.length - 1) {          // finished: leave the full chart in place, current row unmarked
+    clearTimeout(DCP.timer); DCP.timer = 0;
+    list.forEach(r => r.classList.remove('later', 'now'));
+  }
+  dcButtons();
+}
+function dcTick() {
+  if (!DCP.texts) return;
+  dcShow(DCP.i + 1);
+  if (DCP.i < DCP.texts.length - 1) DCP.timer = setTimeout(dcTick, DC_STEP_MS);
+  dcButtons();
+}
+document.getElementById('dc-play-btn').addEventListener('click', () => {
+  if (!DCP.texts) return;
+  if (DCP.timer) { clearTimeout(DCP.timer); DCP.timer = 0; dcButtons(); return; }     // pause
+  if (DCP.i >= DCP.texts.length - 1) DCP.i = -1;                                    // play again
+  DCP.timer = 1;      // marks "playing" while the first step is drawn
+  dcTick();
+});
+document.getElementById('dc-next-btn').addEventListener('click', () => {
+  if (!DCP.texts || DCP.i >= DCP.texts.length - 1) return;
+  clearTimeout(DCP.timer); DCP.timer = 0;
+  dcShow(DCP.i + 1);
+});
 
 /* ── 2. Whole-catalogue scatter ───────────────────────────────────────────── */
 
@@ -3998,7 +4261,9 @@ const SCATTER_AXIS_FADE = 0.18;    // share of the move spent cross-fading the o
 const SCATTER_LATE_FADE = 0.8;     // share of the move after which the trend line and labels fade back in
 
 const SCATTER = { rows: [], pts: [], order: [], idx: -1, ring: null, model: null,
-                  x: 'spread', moveFrom: null, anim: 0 };
+                  x: 'spread', moveFrom: null, anim: 0,
+                  pin: null,     // hub id the reader tapped (or pressed Enter on): its readout offers "put on a card"
+                  done: '' };    // one-off confirmation shown in the readout after a hub is put on a card
 
 function scatterModel(rim, xk) {
   // One set of conditions for every hub, taken from the left card, so only the
@@ -4054,6 +4319,17 @@ function scatterReadout(i) {
   return `<b>${esc(r.hub.name)}</b> · ${r.std}x12 — spread <b>${r.spread.toFixed(1)}</b> mm · ` +
     `tension balance <b>${r.ratio.toFixed(1)}</b>% · F_lat <b>${r.F.toFixed(1)}</b> kgf`;
 }
+/* The tapped hub's readout also offers to swap it onto either card. Named by
+   the hub it would replace, so it reads the same on a phone (cards stacked)
+   and a laptop (cards side by side). */
+function scatterActions(i) {
+  const id = SCATTER.rows[i].hub.id;
+  if (SCATTER.pin !== id) return '<br><span style="color:var(--faint)">Tap it (or press Enter) to put it on one of your cards.</span>';
+  const btn = (slot, cur) => cur === id ? '' :
+    `<button type="button" class="ch-act" data-load="${slot}" data-hub="${esc(id)}">Replace ${esc(hubById(cur).name)}</button>`;
+  const b = btn('a', ST.hub148) + btn('b', ST.hub157);
+  return b ? `<span class="ch-acts">${b}</span>` : '<br><span style="color:var(--faint)">Already on both cards.</span>';
+}
 function scatterDefaultReadout() {
   const ids = [ST.hub148, ST.hub157].filter((id, k, a) => a.indexOf(id) === k);
   const parts = ids.map(id => {
@@ -4061,7 +4337,8 @@ function scatterDefaultReadout() {
     return i >= 0 ? scatterReadout(i)
       : `<b>${esc(hubById(id).name)}</b> — past its buckling tension at these settings, so it is not plotted`;
   });
-  return 'On your cards: ' + parts.join('<br>') + '<br><span style="color:var(--faint)">Hover, tap, or use the arrow keys on the chart to read any hub.</span>';
+  const done = SCATTER.done ? `<span class="ch-done">${SCATTER.done}</span>` : '';
+  return done + 'On your cards: ' + parts.join('<br>') + '<br><span style="color:var(--faint)">Hover, tap, or use the arrow keys on the chart to read any hub. Tap one to put it on a card.</span>';
 }
 function placeHover(i) {
   const ring = SCATTER.ring, p = SCATTER.pts[i];
@@ -4078,8 +4355,9 @@ function scatterSelect(i) {
   }
   placeHover(i);
   ring.setAttribute('visibility', 'visible');
-  document.getElementById('sc-readout').innerHTML = scatterReadout(i);
+  document.getElementById('sc-readout').innerHTML = scatterReadout(i) + scatterActions(i);
 }
+const scatterPinned = () => SCATTER.pin ? SCATTER.rows.findIndex(r => r.hub.id === SCATTER.pin) : -1;
 
 /* Marker geometry: 148 hubs are circles, 157 hubs diamonds (shape as well as
    colour tells the standards apart). */
@@ -4248,7 +4526,9 @@ function scatterGlide(box, rows, target, move) {
 
 /* ── 3. Tension sweep ─────────────────────────────────────────────────────── */
 
-const SWEEP = { model: null, geo: null, cur: -1 };
+const SWEEP = { model: null, geo: null, cur: -1,
+                pin: null,   // tension (kgf) the reader tapped: its readout offers to set the cards to it
+                done: '' };  // one-off confirmation after the cards were set
 
 function sweepModel(rim) {
   const cfg = { a: slotConfig('a'), b: slotConfig('b') };
@@ -4299,7 +4579,8 @@ function sweepDefaultReadout() {
   const part = s => isBuckled(m.now[s])
     ? `<b>${esc(slotLabel(s))}</b> is past its buckling tension at ${m.cfg[s].tds} kgf DS`
     : `<b>${esc(slotLabel(s))}</b> ${m.now[s].F_lat.toFixed(1)} kgf at ${m.cfg[s].tds} kgf DS (${m.now[s].T_safety.toFixed(0)}% of buckling)`;
-  return `Your cards: ${part('a')} · ${part('b')}<br><span style="color:var(--faint)">Hover, tap, or use the arrow keys on the chart to read any tension.</span>`;
+  const done = SWEEP.done ? `<span class="ch-done">${SWEEP.done}</span>` : '';
+  return done + `Your cards: ${part('a')} · ${part('b')}<br><span style="color:var(--faint)">Hover, tap, or use the arrow keys on the chart to read any tension. Tap one to set your cards to it.</span>`;
 }
 function sweepSelect(i) {
   SWEEP.cur = i;
@@ -4311,8 +4592,20 @@ function sweepSelect(i) {
   }
   const x = SWEEP.geo.px(SWEEP.model.ts[i]);
   hair.setAttribute('x1', x); hair.setAttribute('x2', x); hair.setAttribute('visibility', 'visible');
-  document.getElementById('sw-readout').innerHTML = sweepReadout(i);
+  document.getElementById('sw-readout').innerHTML = sweepReadout(i) + sweepActions(i);
 }
+/* The tapped tension's readout offers to set both cards' drive-side tension to
+   it, when it is one the cards' menus offer (TDS_OPTIONS). The sweep runs a
+   little wider than the menus, so the ends are read-only. */
+function sweepActions(i) {
+  const t = SWEEP.model.ts[i];
+  if (SWEEP.pin !== t) return '<br><span style="color:var(--faint)">Tap it (or press Enter) to set your cards to this tension.</span>';
+  if (TDS_OPTIONS.indexOf(t) < 0)
+    return `<br><span style="color:var(--faint)">The cards offer ${TDS_OPTIONS[0]}–${TDS_OPTIONS[TDS_OPTIONS.length - 1]} kgf, so ${t} kgf can be read here but not set.</span>`;
+  if (ST.tds148 === t && ST.tds157 === t) return '<br><span style="color:var(--faint)">Both cards are already at this tension.</span>';
+  return `<span class="ch-acts"><button type="button" class="ch-act" data-tds="${t}">Set both cards to ${t} kgf DS</button></span>`;
+}
+const sweepPinned = () => SWEEP.pin !== null && SWEEP.model ? SWEEP.model.ts.indexOf(SWEEP.pin) : -1;
 
 function renderSweep(rim) {
   const m = sweepModel(rim); SWEEP.model = m;
@@ -4437,10 +4730,23 @@ function renderWhyCharts(rim) {
     SCATTER.pts.forEach((p, i) => { const d = Math.hypot(p.x - pt.x, p.y - pt.y); if (d < bd) { bd = d; best = i; } });
     return best;
   };
+  // Hover previews; a tap pins a hub so its readout can offer "put it on a
+  // card" (leaving the chart returns to the pinned hub, not to nothing).
   sc.addEventListener('pointermove', e => { const i = nearest(e); if (i !== SCATTER.idx) scatterSelect(i); });
-  sc.addEventListener('pointerdown', e => { scatterSelect(nearest(e)); });
-  sc.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') scatterSelect(-1); });
+  sc.addEventListener('pointerdown', e => {
+    const i = nearest(e);
+    SCATTER.pin = i >= 0 ? SCATTER.rows[i].hub.id : null; SCATTER.done = '';
+    scatterSelect(i);
+  });
+  sc.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') scatterSelect(scatterPinned()); });
   sc.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === ' ') && SCATTER.idx >= 0) {
+      e.preventDefault();
+      SCATTER.pin = SCATTER.rows[SCATTER.idx].hub.id; SCATTER.done = '';
+      scatterSelect(SCATTER.idx);
+      const b = document.querySelector('#sc-readout .ch-act'); if (b) b.focus();
+      return;
+    }
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
     e.preventDefault();
     const o = SCATTER.order, at = o.indexOf(SCATTER.idx);
@@ -4457,15 +4763,51 @@ function renderWhyCharts(rim) {
     return Math.max(0, Math.min(SWEEP.model.ts.length - 1, Math.round((t - SWEEP_T_MIN) / SWEEP_T_STEP)));
   };
   sw.addEventListener('pointermove', e => { const i = tIndex(e); if (i !== SWEEP.cur) sweepSelect(i); });
-  sw.addEventListener('pointerdown', e => { sweepSelect(tIndex(e)); });
-  sw.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') sweepSelect(-1); });
+  sw.addEventListener('pointerdown', e => {
+    const i = tIndex(e);
+    SWEEP.pin = i >= 0 ? SWEEP.model.ts[i] : null; SWEEP.done = '';
+    sweepSelect(i);
+  });
+  sw.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') sweepSelect(sweepPinned()); });
   sw.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === ' ') && SWEEP.cur >= 0) {
+      e.preventDefault();
+      SWEEP.pin = SWEEP.model.ts[SWEEP.cur]; SWEEP.done = '';
+      sweepSelect(SWEEP.cur);
+      const b = document.querySelector('#sw-readout .ch-act'); if (b) b.focus();
+      return;
+    }
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
     e.preventDefault();
     const n = SWEEP.model.ts.length;
     const next = SWEEP.cur < 0 ? (e.key === 'ArrowRight' ? 0 : n - 1)
                                : Math.max(0, Math.min(n - 1, SWEEP.cur + (e.key === 'ArrowRight' ? 1 : -1)));
     sweepSelect(next);
+  });
+  // The readouts' action buttons. Both go through the same controls the cards
+  // use, so the result is exactly what picking it from the card's menu gives.
+  const backToHero = ' <a href="#hero" onclick="document.getElementById(\'hero\').scrollIntoView({block:\'center\'});return false">See the headline result &uarr;</a>';
+  document.getElementById('sc-readout').addEventListener('click', e => {
+    const b = e.target.closest('[data-load]');
+    if (!b) return;
+    const slot = b.dataset.load, id = b.dataset.hub, was = hubById(slot === 'a' ? ST.hub148 : ST.hub157).name;
+    if (slot === 'a') ST.hub148 = id; else ST.hub157 = id;
+    document.getElementById(slot === 'a' ? 'hub148' : 'hub157').value = id;
+    SCATTER.pin = null; SCATTER.idx = -1;
+    SCATTER.done = `${esc(hubById(id).name)} is on your cards in place of ${esc(was)} (ringed below).` + backToHero;
+    refresh();
+    SCATTER.done = '';   // shown once, by the render refresh() just did
+  });
+  document.getElementById('sw-readout').addEventListener('click', e => {
+    const b = e.target.closest('[data-tds]');
+    if (!b) return;
+    const t = +b.dataset.tds;
+    ST.tds148 = ST.tds157 = t; ST.tds148Touched = ST.tds157Touched = true;
+    document.getElementById('tds148').value = t; document.getElementById('tds157').value = t;
+    SWEEP.pin = null; SWEEP.cur = -1;
+    SWEEP.done = `Both cards are now at ${t} kgf DS (dots below).` + backToHero;
+    refresh();
+    SWEEP.done = '';
   });
   // Redraw at the new width after a resize or rotation.
   let timer = 0;
