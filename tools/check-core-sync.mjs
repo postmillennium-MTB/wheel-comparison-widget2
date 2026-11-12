@@ -10,8 +10,9 @@
 //    fails this check until the copy is re-synced.
 // 2. Build links (<script id="build-link">): must be the core's
 //    js/build-link.js, character for character.
-// 3. "Copy result" wording (<script id="share-text">): must be the core's
-//    js/share-text.js, character for character. Skipped, with a note, while
+// 3. "Copy result" wording (<script id="share-text">) and the "My wheel"
+//    record (<script id="my-wheel">): each must be the core's js/ file of the
+//    same name, character for character. Each is skipped, with a note, while
 //    the core's main branch does not have that file yet (the widget's copy
 //    arrived alongside the core change that adds it).
 //
@@ -94,18 +95,21 @@ console.log(`engine: ${rows} builds (${cat.hubs.length} hubs x ${builds.length})
 const linkOk = block("build-link").trim() === readFileSync(join(core, "js", "build-link.js"), "utf8").trim();
 console.log(`build-link: ${linkOk ? "identical to" : "DIFFERS from"} core js/build-link.js`);
 
-// ── 3. share text ────────────────────────────────────────────────────────
-const shareCore = join(core, "js", "share-text.js");
+// ── 3. pasted helper files ──────────────────────────────────────────────
 let shareOk = true;
-if (existsSync(shareCore)) {
-  shareOk = block("share-text").trim() === readFileSync(shareCore, "utf8").trim();
-  console.log(`share-text: ${shareOk ? "identical to" : "DIFFERS from"} core js/share-text.js`);
-} else {
-  console.log("share-text: core has no js/share-text.js yet; check skipped");
+for (const name of ["share-text", "my-wheel"]) {
+  const f = join(core, "js", name + ".js");
+  if (existsSync(f)) {
+    const same = block(name).trim() === readFileSync(f, "utf8").trim();
+    if (!same) shareOk = false;
+    console.log(`${name}: ${same ? "identical to" : "DIFFERS from"} core js/${name}.js`);
+  } else {
+    console.log(`${name}: core has no js/${name}.js yet; check skipped`);
+  }
 }
 
 if (failures || !linkOk || !shareOk) {
   console.error("\nThe widget's copy no longer matches wheel-physics-core. Re-sync the <script> block(s) from the core (see README, \"Where this widget's copy of the engine comes from\").");
   process.exit(1);
 }
-console.log("PASS: the widget's engine, build-link and share-text copies match wheel-physics-core.");
+console.log("PASS: the widget's engine, build-link, share-text and my-wheel copies match wheel-physics-core.");

@@ -88,6 +88,8 @@ Any URL carrying state overrides the rule outright — a shared full-mode link o
 
 **Shareable link.** "Share link" (the paper-plane button; it opens the device's share sheet where the browser offers one, otherwise copies the link) packs every current setting — both hubs, wheel sizes, spoke gauges, and any advanced rim/tension overrides — into the URL hash, so a copied link reproduces the exact comparison for whoever opens it.
 
+**My wheel.** A reader can save one build (a hub from the list, its wheel size, tension and spoke count) as "My wheel"; it is kept in their own browser only, opens again on their next visit, and is shared with the Wheel Strength Lab, which reads the same record. A link that carries a build always opens as sent; the saved wheel then stays one tap away ("Show my wheel"), and "Forget" removes it. The record format is wheel-physics-core's `js/my-wheel.js`, pasted as `<script id="my-wheel">`. Because this widget is served from `postmillennium-mtb.github.io` inside the PMR page (a different origin from the Lab), it asks that page to store the record over `postMessage` when framed there, and falls back to its own storage anywhere else. Only listed hubs can be saved; there is no custom hub entry. Nothing is sent to any server. On a phone in simplified mode the save prompt is hidden until a wheel is saved, to keep the answer on the first screen.
+
 **Copy result.** The clipboard button copies the comparison on screen as a few plain-text lines, for places that show no link preview, such as a Pinkbike comment: lateral strength and lateral stiffness on separate, labelled lines (they are different properties and can disagree), the build, a credit to Ford's Mode Matrix method, and the share link. The wording is wheel-physics-core's `js/share-text.js`, pasted as `<script id="share-text">` the same way as `build-link.js`, so a result reads the same from the Lab. A build past its buckling tension gets no strength percentage, matching the cards. Example:
 
 ```
@@ -540,7 +542,7 @@ into this widget's `<script id="engine">` block.
 | `tools/make-validation-baseline.mjs`, `tools/make_validation_baseline.py`, `tools/compare-baselines.py` | Generate and compare dated baselines (widget engine vs Ford's library via wheel-physics-core's validation helpers). |
 | `images/pmr-carpet-1896-mask.png` | The carpet-weave mask for the DMC-12 page texture: US Design Patent 25,495 (Crowe, 1896, public domain), the same file the MTB Patent Atlas header uses. Loaded only by themes that turn the texture on. |
 | `images/pmr-carpet-1896-SOURCE.md` | Provenance of the mask: patent number, public-domain basis, and how the asset was made. |
-| `tools/check-core-sync.mjs` | Checks the pasted engine, build-link and share-text copies against wheel-physics-core (run by `.github/workflows/core-sync.yml`). |
+| `tools/check-core-sync.mjs` | Checks the pasted engine, build-link, share-text and my-wheel copies against wheel-physics-core (run by `.github/workflows/core-sync.yml`). |
 | `README.md` | This document. |
 
 ---
